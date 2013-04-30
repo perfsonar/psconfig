@@ -1,0 +1,6 @@
+MAILTO=root
+# 10 minutes after the mesh configuration agent has run, restart the PingER, perfSONARBUOY and Traceroute collector servers
+10 2 * * * root /etc/init.d/perfsonarbuoy_bw_master restart
+10 2 * * * root /etc/init.d/perfsonarbuoy_owp_master restart
+10 2 * * * root /etc/init.d/PingER restart
+10 2 * * * root /etc/init.d/traceroute_master restart

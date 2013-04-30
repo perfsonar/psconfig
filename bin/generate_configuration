@@ -1,0 +1,105 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use FindBin qw($RealBin);
+use lib "$RealBin/../lib";
+
+use Config::General;
+use File::Path;
+use Getopt::Long;
+use JSON;
+use Log::Log4perl qw(:easy);
+
+use perfSONAR_PS::MeshConfig::Agent;
+
+Log::Log4perl->easy_init($DEBUG);
+
+my $CONFIG_FILE = "$RealBin/../etc/agent_configuration.conf";
+my $ADDRESS;
+my $LOGGER_CONF;
+my $DEBUGFLAG;
+my $HELP;
+
+my ( $status, $res );
+
+$status = GetOptions(
+    'config=s'  => \$CONFIG_FILE,
+    'address=s' => \$ADDRESS,
+    'logger=s'  => \$LOGGER_CONF,
+    'verbose'   => \$DEBUGFLAG,
+    'help'      => \$HELP
+);
+
+my $logger;
+unless ( $LOGGER_CONF ) {
+    use Log::Log4perl qw(:easy);
+
+    my $output_level = $INFO;
+    if ( $DEBUGFLAG ) {
+        $output_level = $DEBUG;
+    }
+
+    my %logger_opts = (
+        level  => $output_level,
+        layout => '%d (%P) %p> %F{1}:%L %M - %m%n',
+    );
+
+    Log::Log4perl->easy_init( \%logger_opts );
+}
+else {
+    use Log::Log4perl qw(get_logger :levels);
+
+    Log::Log4perl->init( $LOGGER_CONF );
+}
+
+$logger = get_logger( "perfSONAR_PS" );
+$logger->level( $DEBUG ) if $DEBUGFLAG;
+
+# Allow multiple addresses to be specified
+if ($ADDRESS and $ADDRESS =~ /,/) {
+    my @addresses = split(/\W*,\W*/, $ADDRESS);
+    $ADDRESS = \@addresses;
+}
+
+my %conf = Config::General->new( $CONFIG_FILE )->getall();
+$conf{address}                = $ADDRESS if ($ADDRESS);
+
+my $addresses;
+if ($conf{address}) {
+    if (ref($conf{address}) eq "ARRAY") {
+        $addresses = $conf{address};
+    }                     
+    else {
+        $addresses = [ $conf{address} ];
+    }
+}                         
+
+my $admin_emails;
+if ($conf{admin_email}) {
+    unless (ref($conf{admin_email}) eq "ARRAY") {
+        $conf{admin_email} = [ $conf{admin_email} ];
+    }
+}
+
+unless (ref($conf{mesh}) eq "ARRAY") {
+    $conf{mesh} = [ $conf{mesh} ];
+}
+
+my $agent = perfSONAR_PS::MeshConfig::Agent->new();
+$agent->init({
+        meshes => $conf{mesh},
+        addresses => $addresses,
+        traceroute_master_conf => $conf{traceroute_master_conf},
+        owmesh_conf => $conf{owmesh_conf},
+        pinger_landmarks => $conf{pinger_landmarks},
+        restart_services => $conf{restart_services},
+        use_toolkit      => $conf{use_toolkit},
+        send_error_emails => $conf{send_error_emails},
+        from_address     => $conf{email_from_address},
+        administrator_emails => $conf{admin_email},
+        skip_redundant_tests => $conf{skip_redundant_tests},
+});
+
+$agent->run();
