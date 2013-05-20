@@ -3,7 +3,7 @@
 %define crontab_1 cron-mesh_config_agent
 %define crontab_2 cron-mesh_config_gui_agent
 
-%define relnum 666666 
+%define relnum 6 
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-MeshConfig
