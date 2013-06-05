@@ -582,6 +582,7 @@ sub __build_test_spec {
             'window_size'     => 'WindowSize',
             'ipv4_only'       => 'IPv4Only',
             'ipv6_only'       => 'IPv6Only',
+            'random_start_percentage' => 'TestIntervalStartAlpha',
         },
         "perfsonarbuoy/owamp" => {
             'bucket_width'    => 'BUCKETWIDTH',

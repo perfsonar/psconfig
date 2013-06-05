@@ -35,6 +35,7 @@ has 'window_size'     => (is => 'rw', isa => 'Int');
 has 'force_bidirectional' => (is => 'rw', isa => 'Bool');
 has 'ipv4_only'       => (is => 'rw', isa => 'Bool');
 has 'ipv6_only'       => (is => 'rw', isa => 'Bool');
+has 'random_start_percentage' => (is => 'rw', isa => 'Int');
 
 1;
 
