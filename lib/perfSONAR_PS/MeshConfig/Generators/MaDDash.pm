@@ -171,6 +171,17 @@ sub generate_maddash_config {
                 $column_id = __generate_yaml_key($grid_name)."-column";
                 $row_id = __generate_yaml_key($grid_name)."-row";
             }
+            elsif ($test->members->type eq "disjoint") {
+                foreach my $a_member (@{ $test->members->a_members }) {
+                    push @row_members, $a_member;
+                }
+                foreach my $b_member (@{ $test->members->b_members }) {
+                    push @column_members, $b_member;
+                }
+                $column_id = __generate_yaml_key($grid_name)."-column";
+                $row_id = __generate_yaml_key($grid_name)."-row";
+            
+            }
             else {
                 # try to do it in a generic fashion. i.e. go through all the
                 # source/dest pairs and add each source/dest to both the column and
