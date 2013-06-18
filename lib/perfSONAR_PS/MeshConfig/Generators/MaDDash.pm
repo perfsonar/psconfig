@@ -161,7 +161,8 @@ sub generate_maddash_config {
 
             my $column_id;
             my @column_members = ();
-
+            
+            my $columnAlgorithm = "all";
             if ($test->members->type eq "star") {
                 push @row_members, $test->members->center_address;
                 foreach my $member (@{ $test->members->members }) {
@@ -181,6 +182,14 @@ sub generate_maddash_config {
                 $column_id = __generate_yaml_key($grid_name)."-column";
                 $row_id = __generate_yaml_key($grid_name)."-row";
             
+            }
+            elsif ($test->members->type eq "ordered_mesh") {
+                foreach my $member (@{ $test->members->members }) {
+                    push @row_members, $member;
+                    push @column_members, $member;
+                }
+                $row_id = $column_id = __generate_yaml_key($grid_name);
+                $columnAlgorithm = "afterSelf";
             }
             else {
                 # try to do it in a generic fashion. i.e. go through all the
@@ -320,7 +329,7 @@ sub generate_maddash_config {
             $grid->{rowOrder}        = "alphabetical";
             $grid->{colOrder}        = "alphabetical";
             $grid->{excludeSelf}     = 1;
-            $grid->{columnAlgorithm} = "all";
+            $grid->{columnAlgorithm} = $columnAlgorithm;
             $grid->{checks}          = [ $check->{id}, $rev_check->{id} ];
             $grid->{statusLabels}    = {
                 ok => $check->{ok_description},
