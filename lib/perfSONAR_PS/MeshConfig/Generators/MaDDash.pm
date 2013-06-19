@@ -434,9 +434,9 @@ sub __build_check {
     if ($type eq "perfsonarbuoy/bwctl") {
         my $ok_throughput = __get_check_option({ option => "acceptable_throughput", test_type => $type, maddash_options => $maddash_options });
         my $critical_throughput = __get_check_option({ option => "critical_throughput", test_type => $type, maddash_options => $maddash_options });
-        $check->{ok_description} = "Throughput >= ".$ok_throughput."Mbps";
-        $check->{warning_description} = "Throughput < ".$ok_throughput."Mbps";
-        $check->{critical_description} = "Throughput <= ".$critical_throughput."Mbps";
+        $check->{ok_description} = "Throughput >= ".$ok_throughput."Gbps";
+        $check->{warning_description} = "Throughput < ".$ok_throughput."Gbps";
+        $check->{critical_description} = "Throughput <= ".$critical_throughput."Gbps";
         $check->{params}->{graphUrl} = 'http://'.$host.'/serviceTest/bandwidthGraph.cgi?url=%maUrl&key=%maKeyF&keyR=%maKeyR&dstIP=%dstIP&srcIP=%srcIP&dst=%dstName&src=%srcName&type=TCP&length=2592000';
 
         # convert to Gbps used in the nagios plugin
@@ -468,13 +468,13 @@ sub __build_check {
         if ($direction eq "reverse") {
             $check->{name} = 'Loss Reverse';
             $check->{description} = 'Loss from %col to %row';
-            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.delayBuckets&srcRaw=%col&dstRaw=%row&count=108000&bucket_width=0';
+            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.delayBuckets&srcRaw=%col&dstRaw=%row&count=0&bucket_width=0';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %col -d %row';
         }
         else {
             $check->{name} = 'Loss';
             $check->{description} = 'Loss from %row to %col';
-            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.delayBuckets&srcRaw=%row&dstRaw=%col&count=108000&bucket_width=0';
+            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.delayBuckets&srcRaw=%row&dstRaw=%col&count=0&bucket_width=0';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %row -d %col';
         }
     }
