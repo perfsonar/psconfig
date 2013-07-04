@@ -30,6 +30,7 @@ my $OUTPUT = '-';
 my $LOGGER_CONF;
 my $DEBUGFLAG;
 my $SKIP_VALIDATION;
+my $RESOLVE_INCLUDES;
 my $HELP;
 
 $status = GetOptions(
@@ -37,6 +38,7 @@ $status = GetOptions(
     'output=s' => \$OUTPUT,
     'logger=s'  => \$LOGGER_CONF,
     'skip-validation' => \$SKIP_VALIDATION,
+    'resolve-includes' => \$RESOLVE_INCLUDES,
     'verbose'   => \$DEBUGFLAG,
     'help'      => \$HELP
 );
@@ -115,48 +117,50 @@ foreach my $group_id (keys %{ $configuration{"group"} }) {
     $groups{$group_id} = __parse_hash($desc, [], "group");
 }
 
-my @tests = ();
+if ($configuration{"test"}) {
+    my @tests = ();
 
-$configuration{"test"} = [] unless $configuration{"test"};
+    $configuration{"test"} = [] unless $configuration{"test"};
 
-if (ref($configuration{"test"}) ne "ARRAY") {
-    $configuration{"test"} = [ $configuration{"test"} ];
+    if (ref($configuration{"test"}) ne "ARRAY") {
+        $configuration{"test"} = [ $configuration{"test"} ];
+    }
+
+    # Parse all the tests, and merge their group and test_spec so that the test is
+    # of the appropriate json format.
+    foreach my $test (@{ $configuration{"test"} }) {
+        $test = __parse_hash($test, [], "test");
+        my $group = $test->{group};
+        my $test_spec = $test->{test_spec};
+
+        delete($test->{group});
+        delete($test->{test_spec});
+
+        unless ($test_specs{$test_spec}) {
+           die("missing test spec: ".$test_spec);
+        }
+
+        unless ($groups{$group}) {
+           die("missing group: ".$group);
+        }
+
+        my %test_spec = %{ $test_specs{$test_spec} };
+        my %group = %{ $groups{$group} };
+
+        $test->{parameters} = \%test_spec;
+        $test->{members}    = \%group;
+
+        # In the .json, no_agents are specified at the group level.
+        if ($test->{no_agents}) {
+            $test->{members}->{no_agents} = $test->{no_agents};
+            delete($test->{no_agents});
+        }
+
+        push @tests, $test;
+    }
+
+    $json_configuration{tests} = \@tests;
 }
-
-# Parse all the tests, and merge their group and test_spec so that the test is
-# of the appropriate json format.
-foreach my $test (@{ $configuration{"test"} }) {
-    $test = __parse_hash($test, [], "test");
-    my $group = $test->{group};
-    my $test_spec = $test->{test_spec};
-
-    delete($test->{group});
-    delete($test->{test_spec});
-
-    unless ($test_specs{$test_spec}) {
-       die("missing test spec: ".$test_spec);
-    }
-
-    unless ($groups{$group}) {
-       die("missing group: ".$group);
-    }
-
-    my %test_spec = %{ $test_specs{$test_spec} };
-    my %group = %{ $groups{$group} };
-
-    $test->{parameters} = \%test_spec;
-    $test->{members}    = \%group;
-
-    # In the .json, no_agents are specified at the group level.
-    if ($test->{no_agents}) {
-        $test->{members}->{no_agents} = $test->{no_agents};
-        delete($test->{no_agents});
-    }
-
-    push @tests, $test;
-}
-
-$json_configuration{tests} = \@tests;
 
 # Look through the hosts and fill-in measurement archives for any hosts
 # labelled "uses_default_toolkit_archives"
@@ -164,7 +168,7 @@ __fill_toolkit_archives(\%json_configuration);
 
 # Validate the mesh by outputing a temporary file, and loading the mesh as
 # normal.
-unless ($SKIP_VALIDATION) {
+if ($RESOLVE_INCLUDES or not $SKIP_VALIDATION) {
     my ($fh, $tmp_json) = tempfile();
 
     print { $fh } JSON->new->pretty(1)->encode(\%json_configuration);
@@ -175,20 +179,31 @@ unless ($SKIP_VALIDATION) {
 
     unlink($tmp_json);
 
-    if ($status == 0) {
-        eval {
-            # Parse the resulting hash to  make sure it's correct. We use strict checking
-            $res->validate_mesh();
-        };
-        if ($@) {
-            $status = -1;
-            $res    = $@;
+    unless ($SKIP_VALIDATION) {
+        if ($status == 0) {
+            eval {
+                # Parse the resulting hash to  make sure it's correct. We use strict checking
+                $res->validate_mesh();
+            };
+            if ($@) {
+                $status = -1;
+                $res    = $@;
+            }
+        }
+
+        unless ($status == 0) {
+            print "Resulting mesh is invalid: $res\n";
+            exit(-1);
         }
     }
 
-    unless ($status == 0) {
-        print "Resulting mesh is invalid: $res\n";
-        exit(-1);
+    if ($RESOLVE_INCLUDES) {
+        unless ($status == 0) {
+            print "Problem resolving includes: $res\n";
+            exit(-1);
+        }
+
+        %json_configuration = %{ $res->unparse() };
     }
 }
 
