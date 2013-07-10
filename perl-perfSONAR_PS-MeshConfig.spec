@@ -3,7 +3,7 @@
 %define crontab_1 cron-mesh_config_agent
 %define crontab_2 cron-mesh_config_gui_agent
 
-%define relnum 7 
+%define relnum 8
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-MeshConfig
@@ -77,6 +77,15 @@ The perfSONAR-PS Mesh Configuration Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate configuration
 for the various services.
 
+%package JSONBuilder
+Summary:		perfSONAR_PS Mesh Configuration JSON Builder
+Group:			Applications/Communications
+Requires:		perl-perfSONAR_PS-MeshConfig-Shared
+%description JSONBuilder
+The perfSONAR-PS Mesh Configuration JSON Builder is used to convert the Mesh
+.conf file format into a properly formed JSON file for agents to consume.
+
+
 %package GUIAgent
 Summary:		perfSONAR_PS Mesh Configuration GUI Agent
 Group:			Applications/Communications
@@ -86,11 +95,7 @@ Requires:		maddash-server
 The perfSONAR-PS Mesh Configuration Agent downloads a centralized JSON file
 describing the tests a mesh is running, and generates a MaDDash configuration.
 
-%pre Agent
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-
-%pre GUIAgent
+%pre Shared
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
@@ -123,10 +128,14 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %{install_base}/lib/perfSONAR_PS/XML
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/Base.pm
 
+%files JSONBuilder
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_json
+%doc %{install_base}/doc/example.conf
+
 %files Agent
 %defattr(0644,perfsonar,perfsonar,0755)
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/generate_configuration
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
 %config(noreplace) %{install_base}/etc/agent_configuration.conf
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Agent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARBUOY.pm
@@ -135,7 +144,6 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %{install_base}/lib/OWP/*
 %{install_base}/scripts/cron-mesh_config_agent
 %doc %{install_base}/doc/INSTALL
-%doc %{install_base}/doc/example.conf
 %doc %{install_base}/doc/cron-restart_services
 %attr(0644,root,root) /etc/cron.d/%{crontab_1}
 

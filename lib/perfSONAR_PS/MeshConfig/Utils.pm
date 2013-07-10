@@ -86,6 +86,7 @@ sub __process_include_directives {
 
     if ($hash->{include}) {
         foreach my $url (@{ $hash->{include} }) {
+            $logger->debug("Loading $url");
             my ($status, $res) = __load_json({ url                  => $url,
                                                validate_certificate => $validate_certificate,
                                                ca_certificate_file  => $ca_certificate_file,

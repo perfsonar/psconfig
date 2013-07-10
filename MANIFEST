@@ -3,6 +3,7 @@ Makefile
 bin/build_json
 bin/generate_configuration
 bin/generate_gui_configuration
+bin/validate_json
 doc/INSTALL
 doc/cron-restart_gui_services
 doc/cron-restart_services
