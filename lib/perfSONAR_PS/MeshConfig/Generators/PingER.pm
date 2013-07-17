@@ -11,6 +11,8 @@ use Data::Validate::IP qw(is_ipv4);
 use Net::IP;
 use XML::LibXML;
 
+use utf8;
+
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
 use perfSONAR_PS::XML::Document;
 
@@ -195,7 +197,9 @@ sub get_pinger_landmarks {
 
     __end_topology($self->pinger_landmarks);
 
-    return $self->pinger_landmarks->getValue;
+    my $landmarks = $self->pinger_landmarks->getValue;
+    utf8::encode($landmarks);
+    return $landmarks;
 }
 
 sub __parse_pinger_landmarks {
