@@ -447,22 +447,30 @@ sub __owmesh_conf_generic_add_mesh_tests {
             }
 
             if ($host_addresses{$sender->{address}}) {
-                # We're the sender. We send only if the far side has no_agent
-                # set (i.e. we're responsible for handling the send side).
+                # We're the sender. We send in 3 cases:
+                #   1) we're traceroute (there is no 'reverse' traceroute test)
+                #   2) the far side is no_agent and won't be performing this test.
+                #   3) the force_bidirectional flag is set so we perform both send and receive
                 $centers{$sender->{address}} = {} unless ($centers{$sender->{address}});
                 $centers{$sender->{address}}->{$receiver->{address}} = {} unless ($centers{$sender->{address}}->{$receiver->{address}});
 
                 if ($receiver->{no_agent} or 
+                    $test->parameters->type eq "traceroute" or
                     ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional)) {
                     $centers{$sender->{address}}->{$receiver->{address}}->{send_to} = 1;
                 }
             }
             else {
-                # we're the receiver. receiver always receives.
-                $centers{$receiver->{address}} = {} unless ($centers{$receiver->{address}});
-                $centers{$receiver->{address}}->{$sender->{address}} = {} unless ($centers{$receiver->{address}}->{$sender->{address}});
+                # we're the receiver. receiver always receives. Except traceroute, where we can't.
+                if ($test->parameters->type eq "traceroute") {
+                    $logger->warn("Listed as a receiver for a test, but not capable");
+                }
+                else {
+                    $centers{$receiver->{address}} = {} unless ($centers{$receiver->{address}});
+                    $centers{$receiver->{address}}->{$sender->{address}} = {} unless ($centers{$receiver->{address}}->{$sender->{address}});
 
-                $centers{$receiver->{address}}->{$sender->{address}}->{receive_from} = 1;
+                    $centers{$receiver->{address}}->{$sender->{address}}->{receive_from} = 1;
+                }
             }
         }
 
