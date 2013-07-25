@@ -463,7 +463,9 @@ sub __owmesh_conf_generic_add_mesh_tests {
             else {
                 # we're the receiver. receiver always receives. Except traceroute, where we can't.
                 if ($test->parameters->type eq "traceroute") {
-                    $logger->warn("Listed as a receiver for a test, but not capable");
+                    if ($sender->{no_agent}) {
+                        $logger->warn("Listed as a receiver for a test, but the far side isn't running an agent.");
+                    }
                 }
                 else {
                     $centers{$receiver->{address}} = {} unless ($centers{$receiver->{address}});
