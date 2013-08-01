@@ -612,6 +612,8 @@ sub __build_test_spec {
             'first_ttl'       => 'FIRSTTTL',
             'max_ttl'         => 'MAXTTL',
             'pause'           => 'PAUSE',
+            'ipv4_only'       => 'IPV4ONLY',
+            'ipv6_only'       => 'IPV6ONLY',
         },
     );
 
