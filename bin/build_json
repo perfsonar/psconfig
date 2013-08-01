@@ -147,6 +147,13 @@ if ($configuration{"test"}) {
         my %test_spec = %{ $test_specs{$test_spec} };
         my %group = %{ $groups{$group} };
 
+	# Fill in any parameters that override parameters from the test spec
+        if ($test->{parameters}) {
+            for my $param (keys %{ $test->{parameters} }) {
+                $test_spec{$param} = $test->{parameters}->{$param};
+            }
+        }
+
         $test->{parameters} = \%test_spec;
         $test->{members}    = \%group;
 
