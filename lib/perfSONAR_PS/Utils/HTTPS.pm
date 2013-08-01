@@ -20,9 +20,10 @@ the certificate.
 
 use base 'Exporter';
 use Params::Validate qw(:all);
-use IO::Socket::SSL;
-use URI::Split qw(uri_split);
-use HTTP::Response;
+use Net::SSL;
+use LWP::UserAgent;
+use LWP::Protocol::https;
+use HTTP::Request;
 use Log::Log4perl qw(get_logger);
 
 our @EXPORT_OK = qw( https_get );
@@ -48,102 +49,49 @@ sub https_get {
     my $ca_certificate_file = $parameters->{ca_certificate_file};
     my $max_redirects = $parameters->{max_redirects};
 
-    my $curr_url = $url;
-
-RETRY:
-    my $uri = URI->new($curr_url);
-
+    my $uri = URI->new($url);
     unless ($uri->scheme) {
-        return (-1, "Invalid url: $curr_url");
+        return (-1, "Invalid url: $url");
     }
 
-    my $client;
-    if ($uri->scheme eq "https") {
+    my %existing_env = %ENV;
 
-        $logger->debug("Connecting to: ".$uri->host.": ".$uri->port);
-        $client = IO::Socket::SSL->new(PeerAddr => $uri->host,
-                                          PeerPort => $uri->port,
-                                          SSL_ca_file => $ca_certificate_file,
-                                          SSL_ca_path => $ca_certificate_path,
-                                          SSL_verify_mode => $verify_certificate?0x01:0x00,
-                                         );
+    if (lc($uri->scheme) eq "https") {
+        $ENV{HTTPS_DEBUG} = 1;
 
-        if ($client and $verify_hostname) {
-            $logger->debug("Verifying hostname");
-            my $subject = $client->peer_certificate("owner");
-            my @fields = split('/', $subject);
+        $ENV{PERL_NET_HTTPS_SSL_SOCKET_CLASS} = "Net::SSL";
+        $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 1;
 
-            my $matches = 0;
-            my $failed_match;
-            foreach my $field (@fields) {
-                my ($key, $value) = split("=", $field, 2);
-
-                next unless ($key eq "CN");
-
-                $logger->debug("CN is '$value' looking for '".$uri->host."'");
-
-                if ($value ne $uri->host) {
-                    $matches = 0;
-                    $failed_match = $value;
-                    last;
-                }
-                else {
-                    $matches = 1;
-                }
+        if ($verify_certificate) {
+            unless ($ENV{HTTPS_CA_FILE} or $ca_certificate_file or $ca_certificate_path) {
+                $ca_certificate_file = "/etc/pki/tls/bundle.crt";
             }
-
-            unless ($matches) {
-                my $msg = "Hostname verification failed: ".$failed_match." != ".$uri->host;
-                $logger->debug($msg);
-                return (-1, $msg);
-            }
-        }
-    }
-    elsif ($uri->scheme eq "http") {
-        if ($verify_certificate or $verify_hostname) {
-            my $msg = "No way to verify $curr_url. Must use HTTPS urls";
-            $logger->debug($msg);
-            return (-1, $msg);
+            $ENV{HTTPS_CA_FILE} = $ca_certificate_file if $ca_certificate_file;;
+            $ENV{HTTPS_CA_DIR}  = $ca_certificate_path if $ca_certificate_path;
         }
 
-        $client = IO::Socket::INET->new(PeerAddr => $uri->host,
-                                          PeerPort => $uri->port,
-                                         );
-    }
-
-    unless (defined $client) {
-        my $msg = "Problem retrieving $curr_url: ".IO::Socket::SSL::errstr();
-        $logger->debug($msg);
-        return (-1, $msg);
-    }
-
-    print $client "GET ".$uri->path." HTTP/1.0\r\n\r\n";
-    my $results = "";
-    while (<$client>) {
-        $results .= $_;
-    }
-    close $client;
-
-    my $response = HTTP::Response->parse( $results );
-    if ($response->is_redirect) {
-        if ($max_redirects) {
-            $curr_url = $response->header("Location");
-
-            goto RETRY;
-        }
-        else {
-            my $msg = "Problem retrieving $url: Too many redirects";
-            $logger->debug($msg);
-            return (-1, $msg);
+        if ($ENV{HTTPS_PROXY}) {
+            $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
         }
     }
-    elsif ($response->is_success) {
-        $results = $response->decoded_content?$response->decoded_content:$response->content;
+
+    my $ua = LWP::UserAgent->new(env_proxy => 1, timeout => 10, max_redirects => $max_redirects);
+    if ($verify_hostname) {
+        $ua->default_header("If-SSL-Cert-Subject"=>"CN=".$uri->host);
+    }
+
+    my $req = HTTP::Request->new(GET => $url);
+    my $response = $ua->request($req);
+
+    %ENV = %existing_env;
+
+    if ($response->is_success) {
+        my $results = $response->decoded_content?$response->decoded_content:$response->content;
 
         return (0, $results);
     }
     else {
-        my $msg = "Problem retrieving $curr_url: ".$response->status_line;
+        my $msg = "Problem retrieving $url: ".$response->status_line;
         $logger->debug($msg);
         return (-1, $msg);
     }

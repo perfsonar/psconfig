@@ -259,6 +259,12 @@ sub __configure_host {
         return;
     }
 
+    # The $dont_change variable lets us know at the end whether or not we
+    # should go through with writing the files, and restarting the daemons. If
+    # a user has specified that a mesh must exist, or no updates occur, we
+    # don't change anything.
+    my $dont_change = 0;
+
     foreach my $mesh_params (@{ $self->meshes }) {
         # Grab the mesh from the server
         my ($status, $res) = load_mesh({
@@ -268,6 +274,10 @@ sub __configure_host {
                                       ca_certificate_path => $mesh_params->{ca_certificate_path},
                                    });
         if ($status != 0) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Problem with mesh configuration: ".$res;
             $logger->error($msg);
             $self->__add_error({ error_msg => $msg });
@@ -281,6 +291,10 @@ sub __configure_host {
             $mesh->validate_mesh();
         };
         if ($@) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Invalid mesh configuration: ".$@;
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, error_msg => $msg });
@@ -290,6 +304,10 @@ sub __configure_host {
         # Find the host block associated with this machine
         my $hosts = $mesh->lookup_hosts({ addresses => $self->addresses });
         unless ($hosts->[0]) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Can't find any host blocks associated with the addresses on this machine: ".join(", ", @{ $self->addresses });
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, error_msg => $msg });
@@ -297,6 +315,10 @@ sub __configure_host {
         }
 
         if (scalar(@$hosts) > 1) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Multiple 'host' elements associated with the addresses on this machine: ".join(", ", @{ $self->addresses });
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, error_msg => $msg });
@@ -308,6 +330,10 @@ sub __configure_host {
         # Find the tests that this machine is expected to run
         my $tests = $mesh->lookup_tests_by_addresses({ addresses => $host->addresses });
         if (scalar(@$tests) == 0) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "No tests for this host to run: ".join(", ", @{ $self->addresses });
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, host => $host, error_msg => $msg });
@@ -322,6 +348,10 @@ sub __configure_host {
                                              });
         };
         if ($@) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Problem adding PingER tests: $@";
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, host => $host, error_msg => $msg });
@@ -335,6 +365,10 @@ sub __configure_host {
                                                     });
         };
         if ($@) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Problem adding perfSONARBUOY tests: $@";
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, host => $host, error_msg => $msg });
@@ -348,10 +382,21 @@ sub __configure_host {
                                                         });
         };
         if ($@) {
+            if ($mesh_params->{required}) {
+                $dont_change = 1;
+            }
+
             my $msg = "Problem adding Traceroute tests: $@";
             $logger->error($msg);
             $self->__add_error({ mesh => $mesh, host => $host, error_msg => $msg });
         }
+    }
+
+    if ($dont_change) {
+        my $msg = "Problem with required meshes, not changing configuration";
+        $logger->error($msg);
+        $self->__add_error({ error_msg => $msg });
+        return;
     }
 
     my $pinger_landmarks       = $pinger_generator->get_pinger_landmarks();
