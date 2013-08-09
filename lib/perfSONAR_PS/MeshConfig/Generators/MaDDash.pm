@@ -423,17 +423,17 @@ sub __build_check {
     $check->{excludeChecks}   = $exclude_checks;
     $check->{params}          = {};
     $check->{params}->{maUrl} = $ma_map;
-    $check->{checkInterval}   = __get_check_option({ option => "check_interval", test_type => $type, maddash_options => $maddash_options });
+    $check->{checkInterval}   = __get_check_option({ option => "check_interval", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
 
-    my $nagios_cmd    = __get_check_option({ option => "check_command", test_type => $type, maddash_options => $maddash_options });
-    my $check_time_range = __get_check_option({ option => "check_time_range", test_type => $type, maddash_options => $maddash_options });
+    my $nagios_cmd    = __get_check_option({ option => "check_command", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+    my $check_time_range = __get_check_option({ option => "check_time_range", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
 
     my $host = $maddash_options->{external_address};
     $host = "localhost" unless $host;
 
     if ($type eq "perfsonarbuoy/bwctl") {
-        my $ok_throughput = __get_check_option({ option => "acceptable_throughput", test_type => $type, maddash_options => $maddash_options });
-        my $critical_throughput = __get_check_option({ option => "critical_throughput", test_type => $type, maddash_options => $maddash_options });
+        my $ok_throughput = __get_check_option({ option => "acceptable_throughput", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+        my $critical_throughput = __get_check_option({ option => "critical_throughput", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
         $check->{ok_description} = "Throughput >= ".$ok_throughput."Mbps";
         $check->{warning_description} = "Throughput < ".$ok_throughput."Mbps";
         $check->{critical_description} = "Throughput <= ".$critical_throughput."Mbps";
@@ -457,8 +457,8 @@ sub __build_check {
         }
     }
     else {
-        my $ok_loss = __get_check_option({ option => "acceptable_loss_rate", test_type => $type, maddash_options => $maddash_options });
-        my $critical_loss = __get_check_option({ option => "critical_loss_rate", test_type => $type, maddash_options => $maddash_options });
+        my $ok_loss = __get_check_option({ option => "acceptable_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+        my $critical_loss = __get_check_option({ option => "critical_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
 
         $check->{ok_description}  = "Loss rate is <= ".$ok_loss;
         $check->{warning_description}  = "Loss rate is >= ".$ok_loss;
@@ -485,13 +485,41 @@ sub __build_check {
 }
 
 sub __get_check_option {
-    my $parameters = validate( @_, { option => 1, test_type => 1, maddash_options => 1 } );
+    my $parameters = validate( @_, { option => 1, test_type => 1, grid_name => 1, maddash_options => 1 } );
     my $option = $parameters->{option};
     my $test_type  = $parameters->{test_type};
     my $maddash_options = $parameters->{maddash_options};
-
-    if (defined $maddash_options->{$test_type}->{$option}) {
-        return $maddash_options->{$test_type}->{$option};
+    my $grid_name = $parameters->{grid_name};
+    
+    #find check parameters that match grid
+    my $check_description = {};
+    if (ref $maddash_options->{$test_type} eq 'ARRAY' ){
+        foreach my $maddash_opt_check(@{$maddash_options->{$test_type}}){
+            my %grid_name_map = ();
+            if(!$maddash_opt_check->{grid_name}){
+                #default definition if no grid_name
+                $check_description = $maddash_opt_check;
+                next;
+            }elsif(ref $maddash_opt_check->{grid_name} eq 'ARRAY'){
+                #grid_name list provided
+                %grid_name_map = map { $_ => 1 } @{ $maddash_opt_check->{grid_name} };
+            }else{
+                #just one grid_name provided
+                $grid_name_map{$maddash_opt_check->{grid_name}} = 1;
+            }
+            
+            #we have a list of grids, check if any match
+            if($grid_name_map{$grid_name}){
+                $check_description = $maddash_opt_check;
+                last;
+            }
+        }
+    }else{
+        $check_description = $maddash_options->{$test_type};
+    }
+    
+    if (defined  $check_description->{$option}) {
+        return $check_description->{$option};
     }
 
     return $maddash_default_check_options{$test_type}->{$option};
