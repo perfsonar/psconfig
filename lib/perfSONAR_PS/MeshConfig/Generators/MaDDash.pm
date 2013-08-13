@@ -122,6 +122,7 @@ sub generate_maddash_config {
             next unless $host->addresses;
 
             foreach my $address (@{ $host->addresses }) {
+                $address = __normalize_addr($address);
                 my $description = $host->description?$host->description:$address;
 
                 my $member_params = { 
@@ -164,8 +165,9 @@ sub generate_maddash_config {
             
             my $columnAlgorithm = "all";
             if ($test->members->type eq "star") {
+                $test->members->center_address = __normalize_addr($test->members->center_address);
                 push @row_members, $test->members->center_address;
-                foreach my $member (@{ $test->members->members }) {
+                foreach my $member (@{__normalize_addrs($test->members->members)}) {
                     push @column_members, $member unless $member eq $test->members->center_address;
                 }
 
@@ -173,10 +175,10 @@ sub generate_maddash_config {
                 $row_id = __generate_yaml_key($grid_name)."-row";
             }
             elsif ($test->members->type eq "disjoint") {
-                foreach my $a_member (@{ $test->members->a_members }) {
+                foreach my $a_member (@{__normalize_addrs($test->members->a_members)}) {
                     push @row_members, $a_member;
                 }
-                foreach my $b_member (@{ $test->members->b_members }) {
+                foreach my $b_member (@{__normalize_addrs($test->members->b_members)}) {
                     push @column_members, $b_member;
                 }
                 $column_id = __generate_yaml_key($grid_name)."-column";
@@ -184,7 +186,7 @@ sub generate_maddash_config {
             
             }
             elsif ($test->members->type eq "ordered_mesh") {
-                foreach my $member (@{ $test->members->members }) {
+                foreach my $member (@{__normalize_addrs($test->members->members)}) {
                     push @row_members, $member;
                     push @column_members, $member;
                 }
@@ -220,7 +222,13 @@ sub generate_maddash_config {
                     $reverse_exclude_checks{$row}->{$column} = 1;
                 }
             }
-
+            
+            #remove port specifications from pairs
+             foreach my $pair( @{ $test->members->source_destination_pairs }) {
+                $pair->{source}->{address} = __normalize_addr($pair->{source}->{address});
+                $pair->{destination}->{address} = __normalize_addr($pair->{destination}->{address});
+            }
+            
             foreach my $pair (@{ $test->members->source_destination_pairs }) {
                 next if ($pair->{source}->{no_agent} and $pair->{destination}->{no_agent});
     
@@ -573,6 +581,26 @@ sub __simplify_map {
     return;
 }
 
+sub __normalize_addr {
+    my ($address) = @_;
+    
+    #strip port specification
+    $address =~ s/\[//g; #remove starting square bracket
+    $address =~ s/\](:\d+)?//g; #remove closing square bracket and optional port
+    $address =~ s/^([^:]+):\d+$/$1/g; #remove port if no brackets and not IPv6
+    
+    return $address;            
+}
+
+sub __normalize_addrs {
+    my ($addresses) = @_;
+    
+    for(my $i = 0; $i < @{$addresses}; $i++){
+        $addresses->[$i] = __normalize_addr($addresses->[$i]);
+    }
+    
+    return $addresses;            
+}
 1;
 
 __END__
