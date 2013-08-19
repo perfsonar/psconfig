@@ -10,6 +10,7 @@ use Data::Validate::Domain qw(is_hostname);
 use Data::Validate::IP qw(is_ipv4);
 use Net::IP;
 use XML::LibXML;
+use Encode qw(encode);
 
 use utf8;
 
@@ -198,7 +199,7 @@ sub get_pinger_landmarks {
     __end_topology($self->pinger_landmarks);
 
     my $landmarks = $self->pinger_landmarks->getValue;
-    utf8::encode($landmarks);
+    $landmarks = encode('ascii', $landmarks);
     return $landmarks;
 }
 

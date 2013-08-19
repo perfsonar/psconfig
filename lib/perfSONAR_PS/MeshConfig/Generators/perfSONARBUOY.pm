@@ -10,6 +10,7 @@ use Data::Validate::Domain qw(is_hostname);
 use Data::Validate::IP qw(is_ipv4);
 use Net::IP;
 use File::Basename;
+use Encode qw(encode);
 
 use OWP::Conf;
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
@@ -160,8 +161,12 @@ sub get_owmesh_conf {
             $node->{OWPTESTPORTS} = $owp_test_ports;
         }
     }
+   
+    my $owmesh_conf = __build_owmesh_conf($self->owmesh_conf);
 
-    return __build_owmesh_conf($self->owmesh_conf);
+    $owmesh_conf = encode('ascii', $owmesh_conf);
+
+    return $owmesh_conf;
 }
 
 sub __parse_owmesh_conf {
