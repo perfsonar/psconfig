@@ -18,6 +18,8 @@ perfSONAR_PS::MeshConfig::Config::Base;
 
 =cut
 
+has 'cache'                => (is => 'rw', isa => 'HashRef');
+
 sub parse {
     my ($class, $description, $strict) = @_;
 
@@ -98,7 +100,7 @@ sub unparse {
         my $reader   = $attribute->get_read_method;
         my $value    = $self->$reader;
 
-        next if ($variable eq "parent");
+        next if ($variable eq "parent" or $variable eq "cache");
 
         next unless (defined $value);
 

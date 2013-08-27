@@ -92,6 +92,14 @@ sub lookup_hosts {
     my $parameters = validate( @args, { addresses => 1 } );
     my $addresses    = $parameters->{addresses};
 
+    $self->cache({}) unless $self->cache;
+
+    my $key = "lookup_hosts-".join("|", @$addresses);
+
+    if ($self->cache->{$key}) {
+        return $self->cache->{$key};
+    }
+
     my @hosts = ();
 
     # Lookup all the matching 'host' elements that are direct descendents of the mesh
@@ -106,6 +114,8 @@ sub lookup_hosts {
             push @hosts, $self->__find_matching_hosts({ element => $site, addresses => $addresses });
         }
     }
+
+    $self->cache->{$key} = \@hosts;
 
     return \@hosts;
 }
