@@ -445,7 +445,7 @@ sub __build_check {
         $check->{ok_description} = "Throughput >= ".$ok_throughput."Mbps";
         $check->{warning_description} = "Throughput < ".$ok_throughput."Mbps";
         $check->{critical_description} = "Throughput <= ".$critical_throughput."Mbps";
-        $check->{params}->{graphUrl} = 'http://'.$host.'/serviceTest/bandwidthGraph.cgi?url=%maUrl&key=%maKeyF&keyR=%maKeyR&dstIP=%dstIP&srcIP=%srcIP&dst=%dstName&src=%srcName&type=TCP&length=2592000';
+        $check->{params}->{graphUrl} = 'http://'.$host.'/serviceTest/bandwidthGraph.cgi?url=%maUrl&dst=%col&src=%row&length=2592000';
 
         # convert to Gbps used in the nagios plugin
         $ok_throughput       /= 1000;
@@ -454,13 +454,11 @@ sub __build_check {
         if ($direction eq "reverse") {
             $check->{name} = 'Throughput Reverse';
             $check->{description} = 'Throughput from %col to %row';
-            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.iperf&srcRaw=%col&dstRaw=%row&protocol=TCP&timeDuration=0';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_throughput.': -c '.$critical_throughput.': -r '.$check_time_range.' -s %col -d %row';
         }
         else {
             $check->{name} = 'Throughput';
             $check->{description} = 'Throughput from %row to %col';
-            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.iperf&srcRaw=%row&dstRaw=%col&protocol=TCP&timeDuration=0';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_throughput.': -c '.$critical_throughput.': -r '.$check_time_range.' -s %row -d %col';
         }
     }
@@ -472,17 +470,15 @@ sub __build_check {
         $check->{warning_description}  = "Loss rate is >= ".$ok_loss;
         $check->{critical_description}  = "Loss rate is >= ".$critical_loss;
 
-        $check->{params}->{graphUrl} = 'http://'.$host.'/serviceTest/delayGraph.cgi?url=%maUrl&key=%maKeyF&keyR=%maKeyR&dstIP=%dstIP&srcIP=%srcIP&dst=%dstName&src=%srcName&type=TCP&length=14400';
+        $check->{params}->{graphUrl} = 'http://'.$host.'/serviceTest/delayGraph.cgi?url=%maUrl&dst=%col&src=%row&length=14400';
         if ($direction eq "reverse") {
             $check->{name} = 'Loss Reverse';
             $check->{description} = 'Loss from %col to %row';
-            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.delayBuckets&srcRaw=%col&dstRaw=%row&count=0&bucket_width=0';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %col -d %row';
         }
         else {
             $check->{name} = 'Loss';
             $check->{description} = 'Loss from %row to %col';
-            $check->{params}->{metaDataKeyLookup} = 'http://'.$host.'/serviceTest/metaKeyReq.cgi?ma_url=%maUrl&eventType=%event.delayBuckets&srcRaw=%row&dstRaw=%col&count=0&bucket_width=0';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %row -d %col';
         }
     }
