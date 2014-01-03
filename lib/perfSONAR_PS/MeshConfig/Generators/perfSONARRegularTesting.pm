@@ -153,10 +153,8 @@ sub add_mesh_tests {
                     #   3) the force_bidirectional flag is set so we perform both send and receive
                     if ($receiver->{no_agent} or
                         $test->parameters->type eq "traceroute" or
-                        $test->parameters->type eq "ping" or
+                        $test->parameters->type eq "pinger" or
                         ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional)) {
-
-                        $logger->debug("We're receiving: ".$receiver->{no_agent}." and ".$test->parameters->type." and ".$test->parameters->force_bidirectional);
 
                         $receiver_targets{$sender->{address}} = [] unless $receiver_targets{$sender->{address}};
                         push @{ $receiver_targets{$sender->{address}} }, $receiver->{address};
@@ -164,7 +162,7 @@ sub add_mesh_tests {
                 }
                 else {
                     # we're the receiver. receiver always receives. Except traceroute, where we can't.
-                    if ($test->parameters->type eq "traceroute" or $test->parameters->type eq "ping") {
+                    if ($test->parameters->type eq "traceroute" or $test->parameters->type eq "pinger") {
                         if ($sender->{no_agent}) {
                             $logger->warn("Listed as a receiver for a test, but the far side isn't running an agent.");
                         }
