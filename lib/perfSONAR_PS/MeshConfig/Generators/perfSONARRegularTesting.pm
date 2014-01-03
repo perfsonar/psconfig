@@ -6,12 +6,13 @@ our $VERSION = 3.1;
 
 use Params::Validate qw(:all);
 use Log::Log4perl qw(get_logger);
-use Config::General;
 use Encode qw(encode);
 
 use utf8;
 
 use perfSONAR_PS::MeshConfig::Generators::Base;
+
+use perfSONAR_PS::RegularTesting::Utils::ConfigFile qw( parse_file save_string );
 
 use perfSONAR_PS::RegularTesting::Config;
 use perfSONAR_PS::RegularTesting::Test;
@@ -26,7 +27,7 @@ use Moose;
 
 extends 'perfSONAR_PS::MeshConfig::Generators::Base';
 
-has 'regular_testing_conf'   => (is => 'rw', isa => 'HashRef');
+has 'regular_testing_conf'   => (is => 'rw', isa => 'perfSONAR_PS::RegularTesting::Config');
 
 =head1 NAME
 
@@ -54,10 +55,15 @@ sub init {
 
     my $config;
     eval {
-        my $conf = Config::General->new(-ConfigFile => $self->config_file);
-        my %conf = $conf->getall();
+        my ($status, $res) = parse_file(file => $config_file);
+        if ($status != 0) {
+            $logger->error("Problem parsing configuration file: $res");
+            exit(-1);
+        }
 
-        $config = perfSONAR_PS::RegularTesting::Config->parse(\%conf);
+        my $conf = $res;
+
+        $config = perfSONAR_PS::RegularTesting::Config->parse($res);
 
         # Remove the existing tests that were added by the mesh configuration
         my @new_tests = ();
@@ -197,7 +203,7 @@ sub add_mesh_tests {
         }
     }
 
-    push @{ $self->regular_testing_conf->{test} }, @tests;
+    push @{ $self->regular_testing_conf->tests }, @tests;
 
     return;
 }
@@ -233,7 +239,7 @@ sub __build_tests {
             $parameters->packet_count($test->parameters->packet_count) if $test->parameters->packet_count;
             $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
             $parameters->packet_ttl($test->parameters->packet_ttl) if $test->parameters->packet_ttl;
-            $parameters->inter_packet_time($test->parameters->inter_packet_time) if $test->parameters->inter_packet_time;;
+            $parameters->inter_packet_time($test->parameters->packet_interval) if $test->parameters->packet_interval;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
@@ -241,11 +247,11 @@ sub __build_tests {
             $schedule->interval($test->parameters->test_interval);
         }
         elsif ($test->parameters->type eq "traceroute") {
-            $parameters = perfSONAR_PS::RegularInterval::Tests::Bwtraceroute->new();
+            $parameters = perfSONAR_PS::RegularTesting::Tests::Bwtraceroute->new();
 
             $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
             $parameters->packet_first_ttl($test->parameters->first_ttl) if $test->parameters->first_ttl;
-            $parameters->packet_last_ttl($test->parameters->max_ttl) if $test->parameters->max_ttl;
+            $parameters->packet_max_ttl($test->parameters->max_ttl) if $test->parameters->max_ttl;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
@@ -263,7 +269,7 @@ sub __build_tests {
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
-            $schedule->interval($test->parameters->test_interval) if $test->parameters->test_interval;
+            $schedule->interval($test->parameters->interval) if $test->parameters->interval;
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
             $parameters = perfSONAR_PS::RegularTesting::Tests::Powstream->new();
@@ -272,7 +278,7 @@ sub __build_tests {
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
-            $schedule = perfSONAR_PS::RegularInterval::Schedulers::Streaming->new();
+            $schedule = perfSONAR_PS::RegularTesting::Schedulers::Streaming->new();
         }
 
         if ($target_sends and not $target_receives) {
@@ -292,13 +298,14 @@ sub __build_tests {
     return (0, \@tests);
 }
 
-sub get_regular_testing_conf {
+sub get_config {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { });
 
-    my $output;
+    # Generate a Config::General version
+    my ($status, $res) = save_string(config => $self->regular_testing_conf->unparse());
 
-    return $self->__generate_config_general(undef, $self->regular_testing_conf, 0);
+    return $res;
 }
 
 1;

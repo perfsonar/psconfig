@@ -83,6 +83,7 @@ lib/perfSONAR_PS/RegularTesting/Tests/BwpingOwamp.pm
 lib/perfSONAR_PS/RegularTesting/Tests/Bwtraceroute.pm
 lib/perfSONAR_PS/RegularTesting/Tests/Powstream.pm
 lib/perfSONAR_PS/RegularTesting/Utils.pm
+lib/perfSONAR_PS/RegularTesting/Utils/ConfigFile.pm
 lib/perfSONAR_PS/RegularTesting/Utils/SerializableObject.pm
 lib/perfSONAR_PS/Utils/DNS.pm
 lib/perfSONAR_PS/Utils/HTTPS.pm
