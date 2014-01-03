@@ -13,6 +13,15 @@ use utf8;
 
 use perfSONAR_PS::MeshConfig::Generators::Base;
 
+use perfSONAR_PS::RegularTesting::Config;
+use perfSONAR_PS::RegularTesting::Test;
+use perfSONAR_PS::RegularTesting::Schedulers::Streaming;
+use perfSONAR_PS::RegularTesting::Tests::Powstream;
+use perfSONAR_PS::RegularTesting::Schedulers::RegularInterval;
+use perfSONAR_PS::RegularTesting::Tests::Bwctl;
+use perfSONAR_PS::RegularTesting::Tests::Bwtraceroute;
+use perfSONAR_PS::RegularTesting::Tests::Bwping;
+
 use Moose;
 
 extends 'perfSONAR_PS::MeshConfig::Generators::Base';
@@ -45,10 +54,20 @@ sub init {
 
     my $config;
     eval {
-        my $conf_general = Config::General->new(-ConfigFile => $self->config_file);
-        my %conf_general = $conf_general->getall();
+        my $conf = Config::General->new(-ConfigFile => $self->config_file);
+        my %conf = $conf->getall();
 
-        $config = $self->__parse_regular_testing({ existing_configuration => \%conf_general });
+        $config = perfSONAR_PS::RegularTesting::Config->parse(\%conf);
+
+        # Remove the existing tests that were added by the mesh configuration
+        my @new_tests = ();
+        foreach my $test (@{ $config->tests }) {
+            next if ($test->added_by_mesh);
+
+            push @new_tests, $test;
+        }
+
+        $config->tests(\@new_tests);
     };
     if ($@) {
         my $msg = "Problem initializing pinger landmarks: ".$@;
@@ -132,19 +151,45 @@ sub add_mesh_tests {
                 }
             }
 
-            my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, is_sender => 1 });
-            if ($status != 0) {
-                die("Problem creating tests: ".$res);
+            # Produce a nicer looking config file if the sender and receiver set are the same
+            my $same_targets = 1;
+            foreach my $target (keys %receiver_targets) {
+                next if $sender_targets{$target};
+
+                $same_targets = 0;
+                last;
             }
 
-            push @tests, @$res;
+            foreach my $target (keys %sender_targets) {
+                next if $receiver_targets{$target};
 
-            ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets,   is_sender => 0 });
-            if ($status != 0) {
-                die("Problem creating tests: ".$res);
+                $same_targets = 0;
+                last;
             }
 
-            push @tests, @$res;
+            if ($same_targets) {
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1 });
+                if ($status != 0) {
+                    die("Problem creating tests: ".$res);
+                }
+
+                push @tests, @$res;
+            }
+            else {
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1 });
+                if ($status != 0) {
+                    die("Problem creating tests: ".$res);
+                }
+
+                push @tests, @$res;
+
+                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1 });
+                if ($status != 0) {
+                    die("Problem creating tests: ".$res);
+                }
+    
+                push @tests, @$res;
+            }
 
         };
         if ($@) {
@@ -159,80 +204,90 @@ sub add_mesh_tests {
 
 sub __build_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { test => 1, targets => 1, is_sender => 1 });
+    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0 });
     my $test = $parameters->{test};
     my $targets = $parameters->{targets};
-    my $is_sender = $parameters->{is_sender};
+    my $target_sends = $parameters->{target_sends};
+    my $target_receives = $parameters->{target_receives};
 
     my @tests = ();
     foreach my $local_address (keys %{ $targets }) {
-        my %test = ();
-        $test{added_by_mesh} = 1;
-        $test{description} = $test->description;
-        $test{local_address} = $local_address;
-        $test{target} = $targets->{$local_address};
+        my $test_obj = perfSONAR_PS::RegularTesting::Test->new();
+        $test_obj->added_by_mesh(1);
+        $test_obj->description($test->description) if $test->description;
+        $test_obj->local_address($local_address);
 
-        $test{parameters} = {};
-        $test{schedule}   = {};
+        my @targets = ();
+        foreach my $target (@{ $targets->{$local_address} }) {
+            my $target_obj = perfSONAR_PS::RegularTesting::Target->new();
+            $target_obj->address($target);
+            push @targets, $target_obj;
+        }
+        $test_obj->targets(\@targets);
+
+        my ($schedule, $parameters);
 
         if ($test->parameters->type eq "pinger") {
-            $test{parameters}->{type} = "bwping";
-            $test{parameters}->{packet_count} = $test->parameters->packet_count;
-            $test{parameters}->{packet_length} = $test->parameters->packet_size;
-            $test{parameters}->{packet_ttl} = $test->parameters->packet_ttl;
-            $test{parameters}->{inter_packet_time} = $test->parameters->inter_packet_time;
-            $test{parameters}->{force_ipv4} = $test->parameters->ipv4_only;
-            $test{parameters}->{force_ipv6} = $test->parameters->ipv6_only;
+            $parameters = perfSONAR_PS::RegularTesting::Tests::Bwping->new();
 
-            $test{schedule}->{type} = "regular_intervals";
-            $test{schedule}->{interval} = $test->parameters->test_interval;
+            $parameters->packet_count($test->parameters->packet_count) if $test->parameters->packet_count;
+            $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
+            $parameters->packet_ttl($test->parameters->packet_ttl) if $test->parameters->packet_ttl;
+            $parameters->inter_packet_time($test->parameters->inter_packet_time) if $test->parameters->inter_packet_time;;
+            $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
+            $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
+
+            $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
+            $schedule->interval($test->parameters->test_interval);
         }
         elsif ($test->parameters->type eq "traceroute") {
-            $test{parameters}->{type} = "bwtraceroute";
-            $test{parameters}->{packet_length} = $test->parameters->packet_size;
-            $test{parameters}->{packet_first_ttl} = $test->parameters->first_ttl;
-            $test{parameters}->{packet_last_ttl} = $test->parameters->max_ttl;
-            $test{parameters}->{force_ipv4} = $test->parameters->ipv4_only;
-            $test{parameters}->{force_ipv6} = $test->parameters->ipv6_only;
+            $parameters = perfSONAR_PS::RegularInterval::Tests::Bwtraceroute->new();
 
-            $test{schedule}->{type} = "regular_intervals";
-            $test{schedule}->{interval} = $test->parameters->test_interval;
+            $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
+            $parameters->packet_first_ttl($test->parameters->first_ttl) if $test->parameters->first_ttl;
+            $parameters->packet_last_ttl($test->parameters->max_ttl) if $test->parameters->max_ttl;
+            $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
+            $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
+
+            $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
+            $schedule->interval($test->parameters->test_interval) if $test->parameters->test_interval;
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/bwctl") {
-            $test{parameters}->{type} = "bwctl";
-            $test{parameters}->{use_udp} = $test->parameters->protocol eq "udp"?1:0;
+            $parameters = perfSONAR_PS::RegularTesting::Tests::Bwctl->new();
+            $parameters->use_udp($test->parameters->protocol eq "udp"?1:0);
             # $test{parameters}->{streams}  = $test->parameters->streams; # XXX: needs to support streams
-            $test{parameters}->{duration} = $test->parameters->duration;
-            $test{parameters}->{udp_bandwidth} = $test->parameters->udp_bandwidth;
-            $test{parameters}->{buffer_length} = $test->parameters->buffer_length;
-            $test{parameters}->{force_ipv4} = $test->parameters->ipv4_only;
-            $test{parameters}->{force_ipv6} = $test->parameters->ipv6_only;
+            $parameters->duration($test->parameters->duration) if $test->parameters->duration;
+            $parameters->udp_bandwidth($test->parameters->udp_bandwidth) if $test->parameters->udp_bandwidth;
+            $parameters->buffer_length($test->parameters->buffer_length) if $test->parameters->buffer_length;
+            $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
+            $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
-            $test{schedule}->{type} = "regular_intervals";
-            $test{schedule}->{interval} = $test->parameters->test_interval;
+            $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
+            $schedule->interval($test->parameters->test_interval) if $test->parameters->test_interval;
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
-            $test{parameters}->{type} = "powstream";
-            $test{parameters}->{resolution} = $test->parameters->sample_count * $test->parameters->packet_interval;
-            $test{parameters}->{inter_packet_time} = $test->parameters->packet_interval;
-            $test{parameters}->{force_ipv4} = $test->parameters->ipv4_only;
-            $test{parameters}->{force_ipv6} = $test->parameters->ipv6_only;
+            $parameters = perfSONAR_PS::RegularTesting::Tests::Powstream->new();
+            $parameters->resolution($test->parameters->sample_count * $test->parameters->packet_interval) if $test->parameters->sample_count * $test->parameters->packet_interval;
+            $parameters->inter_packet_time($test->parameters->packet_interval) if $test->parameters->packet_interval;
+            $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
+            $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
-            $test{schedule}->{type} = "streaming";
+            $schedule = perfSONAR_PS::RegularInterval::Schedulers::Streaming->new();
         }
 
-        if ($is_sender) {
-            $test{parameters}->{send_only} = 1;
-        }
-        else {
-            $test{parameters}->{receiver_only} = 1;
+        if ($target_sends and not $target_receives) {
+            $parameters->receive_only(1);
         }
 
-        push @tests, \%test;
+        if ($target_receives and not $target_sends) {
+            $parameters->send_only(1);
+        }
+
+        $test_obj->parameters($parameters);
+        $test_obj->schedule($schedule);
+
+        push @tests, $test_obj;
     }
-
-    use Data::Dumper;
-    print STDERR "Running: ".Dumper(\@tests)."\n";
 
     return (0, \@tests);
 }
@@ -244,77 +299,6 @@ sub get_regular_testing_conf {
     my $output;
 
     return $self->__generate_config_general(undef, $self->regular_testing_conf, 0);
-}
-
-sub __generate_config_general {
-   my ($self, $key, $value, $depth) = @_;
-
-   return unless defined $value;
-
-   my $output = "";
-
-   my $spacer = "";
-   for(my $i = 0; $i < $depth; $i++) {
-       $spacer .= "\t"
-   }
-
-   if (ref($value) eq "HASH") {
-       $output .= $spacer."<".$key.">\n" if ($key);
-       foreach my $hash_key (keys %$value) {
-           my $res = $self->__generate_config_general($hash_key, $value->{$hash_key}, $depth + 1);
-           $output .= $res if $res;
-       }
-       $output .= $spacer."</".$key.">\n" if ($key);
-   }
-   elsif (ref($value) eq "ARRAY") {
-       foreach my $array_elm (@$value) {
-           $output .= $self->__generate_config_general($key, $array_elm, $depth);
-       }
-   }
-   else {
-       $output .= $spacer."$key\t\t$value\n";
-   }
-
-   return $output;
-}
-
-sub __parse_regular_testing {
-    my ($self, @args) = @_;
-    my $parameters = validate( @args, { existing_configuration => 1 });
-    my $existing_configuration = $parameters->{existing_configuration};
-
-    return $self->__strip_added_by_mesh({ value => $existing_configuration });
-}
-
-sub __strip_added_by_mesh {
-    my ($self, @args) = @_;
-    my $parameters = validate( @args, { value => 1 });
-    my $value = $parameters->{value};
-
-    if (ref($value) eq "HASH") {
-        my %new_hash = ();
-
-        return if ($value->{added_by_mesh});
-
-        foreach my $key (keys %$value) {
-            my $hash_value = $value->{$key};
-
-            $new_hash{$key} = $self->__strip_added_by_mesh({ value => $hash_value });
-        }
-
-        return \%new_hash;
-    }
-    elsif (ref($value) eq "ARRAY") {
-        my @new_array = ();
-        foreach my $array_elm (@$value) {
-            my $new_value = $self->__strip_added_by_mesh({ value => $array_elm });
-            push @new_array, $new_value if defined $new_value;
-        }
-        return \@new_array;
-    }
-    else {
-        return $value;
-    }
 }
 
 1;
