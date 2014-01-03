@@ -146,17 +146,36 @@ sub add_mesh_tests {
                     }
                 }
 
-                if ($host_addresses{$pair->{source}->{address}}) {
-                    $receiver_targets{$pair->{source}->{address}} = [] unless $receiver_targets{$pair->{source}->{address}};
-                    push @{ $receiver_targets{$pair->{source}->{address}} }, $pair->{destination}->{address};
-                }
+                if ($host_addresses{$sender->{address}}) {
+                    # We're the sender. We send in 3 cases:
+                    #   1) we're ping/traceroute, and there is no 'reverse' ping/traceroute test
+                    #   2) the far side is no_agent and won't be performing this test.
+                    #   3) the force_bidirectional flag is set so we perform both send and receive
+                    if ($receiver->{no_agent} or
+                        $test->parameters->type eq "traceroute" or
+                        $test->parameters->type eq "ping" or
+                        ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional)) {
 
-                if ($host_addresses{$pair->{destination}->{address}}) {
-                    $sender_targets{$pair->{destination}->{address}} = [] unless $receiver_targets{$pair->{destination}->{address}};
-                    push @{ $sender_targets{$pair->{destination}->{address}} }, $pair->{source}->{address};
+                        $logger->debug("We're receiving: ".$receiver->{no_agent}." and ".$test->parameters->type." and ".$test->parameters->force_bidirectional);
+
+                        $receiver_targets{$sender->{address}} = [] unless $receiver_targets{$sender->{address}};
+                        push @{ $receiver_targets{$sender->{address}} }, $receiver->{address};
+                    }
+                }
+                else {
+                    # we're the receiver. receiver always receives. Except traceroute, where we can't.
+                    if ($test->parameters->type eq "traceroute" or $test->parameters->type eq "ping") {
+                        if ($sender->{no_agent}) {
+                            $logger->warn("Listed as a receiver for a test, but the far side isn't running an agent.");
+                        }
+                    }
+                    else {
+                        $sender_targets{$receiver->{address}} = [] unless $sender_targets{$receiver->{address}};
+                        push @{ $sender_targets{$receiver->{address}} }, $sender->{address};
+                    }
                 }
             }
-
+    
             # Produce a nicer looking config file if the sender and receiver set are the same
             my $same_targets = 1;
             foreach my $target (keys %receiver_targets) {
