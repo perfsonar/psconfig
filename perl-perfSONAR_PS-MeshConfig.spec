@@ -139,7 +139,9 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARBUOY.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/PingER.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/TracerouteMaster.pm
+%{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 %{install_base}/lib/OWP/*
+%{install_base}/lib/perfSONAR_PS/RegularTesting
 %{install_base}/scripts/cron-mesh_config_agent
 %doc %{install_base}/doc/INSTALL
 %doc %{install_base}/doc/cron-restart_services
