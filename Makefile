@@ -1,7 +1,7 @@
 PACKAGE=perfSONAR_PS-MeshConfig
 ROOTPATH=/opt/perfsonar_ps/mesh_config
-VERSION=3.3.1
-RELEASE=3
+VERSION=3.4
+RELEASE=1
 
 default:
 	@echo No need to build the package. Just run \"make install\"
