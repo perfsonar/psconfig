@@ -299,11 +299,11 @@ sub __build_tests {
         }
 
         if ($target_sends and not $target_receives) {
-            $parameters->receive_only(1);
+            $parameters->send_only(1);
         }
 
         if ($target_receives and not $target_sends) {
-            $parameters->send_only(1);
+            $parameters->receive_only(1);
         }
 
         $test_obj->parameters($parameters);
