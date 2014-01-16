@@ -122,6 +122,8 @@ sub add_mesh_tests {
         eval {
             my $domain_id = "urn:ogf:network:domain=mesh_agent_".$mesh_id."-".$i;
 
+            my %hosts = ();
+
             foreach my $pair (@{ $test->members->source_destination_pairs }) {
                 next unless ($host_addresses{$pair->{source}->{address}});
 
@@ -136,6 +138,9 @@ sub add_mesh_tests {
                 unless ($address and $hostname) {
                     die("Problem looking up address: ".$pair->{destination}->{address});
                 }
+
+                $hosts{$address}  = { address => $address, hostname => $hostname };
+                $hosts{$hostname} = { address => $address, hostname => $hostname };
             }
 
             __start_domain($self->pinger_landmarks, $domain_id);
@@ -146,7 +151,9 @@ sub add_mesh_tests {
 
                   my $matching_hosts = $mesh->lookup_hosts({ addresses => [ $pair->{destination}->{address} ] });
                   my $host_properties = $matching_hosts->[0];
-                  my ($hostname, $address) = __lookup_host($pair->{destination}->{address});
+
+                  my $hostname = $hosts{$pair->{destination}->{address}}->{hostname};
+                  my $address  = $hosts{$pair->{destination}->{address}}->{address};
 
                   if ($self->skip_duplicates) {
                       # Check if a specific test (i.e. same
