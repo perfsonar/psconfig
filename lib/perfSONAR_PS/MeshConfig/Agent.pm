@@ -35,7 +35,7 @@ use Moose;
 has 'use_toolkit'            => (is => 'rw', isa => 'Bool');
 has 'restart_services'       => (is => 'rw', isa => 'Bool');
 
-has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]');
+has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { [] });
 
 has 'traceroute_master_conf' => (is => 'rw', isa => 'Str');
 has 'owmesh_conf'            => (is => 'rw', isa => 'Str');
