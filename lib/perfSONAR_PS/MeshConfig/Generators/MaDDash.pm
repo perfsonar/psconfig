@@ -9,6 +9,7 @@ use Log::Log4perl qw(get_logger);
 
 use JSON;
 use YAML qw(Dump);
+use Encode qw(encode);
 
 use base 'Exporter';
 
@@ -376,7 +377,7 @@ sub generate_maddash_config {
 
     my $ret = Dump($existing_maddash_yaml);
     $ret = __quote_ipv6_address(maddash_yaml => $ret);
-    return $ret;
+    return encode('ascii', $ret);
 }
 
 sub __quote_ipv6_address {
