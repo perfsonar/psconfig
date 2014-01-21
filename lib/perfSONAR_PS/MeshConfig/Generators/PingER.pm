@@ -233,24 +233,29 @@ sub __parse_pinger_landmarks {
 sub __lookup_host {
     my ($address) = @_;
 
-    if ( is_ipv4( $address ) or 
-         &Net::IP::ip_is_ipv6( $address ) ) {
-        my $hostname = reverse_dns($address);
+    my ($new_hostname, $new_address);
 
-        $hostname = $address unless $hostname;
+    for(my $i = 0; $i < 5; $i++) {
+        if ( is_ipv4( $address ) or 
+             &Net::IP::ip_is_ipv6( $address ) ) {
 
-        return ($hostname, $address);
+            $new_hostname = reverse_dns($address);
+            $new_address  = $address;
+        }
+        elsif ( is_hostname( $address ) ) {
+            my @addresses = resolve_address($address);
+
+            $new_hostname = $address;
+            $new_address  = $addresses[0];
+        }
+        else {
+            die("Unknown address type: ".$address);
+        }
+
+        last if ($new_address and $new_hostname);
     }
-    elsif ( is_hostname( $address ) ) {
-        my $hostname = $address;
 
-        my @addresses = resolve_address($hostname);
-
-        return ($hostname, $addresses[0]);
-    }
-    else {
-        die("Unknown address type: ".$address);
-    }
+    return ($new_hostname, $new_address);
 }
 
 sub __start_topology {
