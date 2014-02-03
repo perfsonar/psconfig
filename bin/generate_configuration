@@ -83,8 +83,10 @@ if ($conf{admin_email}) {
     }
 }
 
-unless (ref($conf{mesh}) eq "ARRAY") {
-    $conf{mesh} = [ $conf{mesh} ];
+if ($conf{mesh}) {
+    unless (ref($conf{mesh}) eq "ARRAY") {
+        $conf{mesh} = [ $conf{mesh} ];
+    }
 }
 
 my $agent = perfSONAR_PS::MeshConfig::Agent->new();
