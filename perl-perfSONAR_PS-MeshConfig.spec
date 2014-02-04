@@ -3,11 +3,11 @@
 %define crontab_1 cron-mesh_config_agent
 %define crontab_2 cron-mesh_config_gui_agent
 
-%define relnum 3 
+%define relnum 1
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-MeshConfig
-Version:		3.3.2
+Version:		3.4
 Release:		%{relnum}.%{disttag}
 Summary:		perfSONAR_PS Mesh Configuration Agent
 License:		Distributable, see LICENSE
@@ -139,7 +139,9 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARBUOY.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/PingER.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/TracerouteMaster.pm
+%{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 %{install_base}/lib/OWP/*
+%{install_base}/lib/perfSONAR_PS/RegularTesting
 %{install_base}/scripts/cron-mesh_config_agent
 %doc %{install_base}/doc/INSTALL
 %doc %{install_base}/doc/cron-restart_services

@@ -91,17 +91,22 @@ if ($conf{mesh}) {
 
 my $agent = perfSONAR_PS::MeshConfig::Agent->new();
 $agent->init({
-        meshes => $conf{mesh},
-        addresses => $addresses,
-        traceroute_master_conf => $conf{traceroute_master_conf},
-        owmesh_conf => $conf{owmesh_conf},
-        pinger_landmarks => $conf{pinger_landmarks},
-        restart_services => $conf{restart_services},
-        use_toolkit      => $conf{use_toolkit},
-        send_error_emails => $conf{send_error_emails},
-        from_address     => $conf{email_from_address},
-        administrator_emails => $conf{admin_email},
-        skip_redundant_tests => $conf{skip_redundant_tests},
+                 meshes => $conf{mesh},
+                 use_toolkit => $conf{use_toolkit},
+                 restart_services => $conf{restart_services},
+                 validate_certificate => $conf{validate_certificate},
+                 ca_certificate_file => $conf{ca_certificate_file},
+                 ca_certificate_path => $conf{ca_certificate_path},
+                 use_regular_testing => $conf{use_regular_testing},
+                 regular_testing_conf => $conf{regular_testing_conf},
+                 traceroute_master_conf => $conf{traceroute_master_conf},
+                 owmesh_conf => $conf{owmesh_conf},
+                 pinger_landmarks => $conf{pinger_landmarks},
+                 skip_redundant_tests => $conf{skip_redundant_tests},
+                 addresses => $addresses,
+                 from_address => $conf{from_address},
+                 administrator_emails => $conf{administrator_emails},
+                 send_error_emails    => $conf{send_error_emails},
 });
 
 $agent->run();
