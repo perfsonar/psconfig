@@ -1,0 +1,64 @@
+Mesh:
+ - description: string
+ - administrators: array(Administrator)
+ - organizations: array(Organization)
+ - tests: array(Test)
+ - measurement_archives: array(MeasurementArchive)
+
+Administrator*
+ - name: string
+ - email: string
+
+Organization: *
+ - description: string
+ - street address: string
+ - state/province: string
+ - country: string
+ - latitude: float
+ - longitude: float
+ - administrators: array(Administrator)
+ - measurement_archives: array(MeasurementArchive)
+ - sites: array(Site)
+
+Site: *
+ - description: string
+ - street address: string
+ - state/province: string
+ - country: string
+ - latitude: float
+ - longitude: float
+ - administrators: array(Administrator)
+ - hosts: array(Host)
+
+Host: *
+ - description: string
+ - street address: string
+ - state/province: string
+ - country: string
+ - latitude: float
+ - longitude: float
+ - administrators: array(Administrator)
+ - addresses: array(string)
+ - measurement_archives: array(MeasurementArchive)
+
+MeasurementArchive:*
+ - type: string
+ - read_url: string
+ - write_url: string
+
+Test:
+ - description: string
+ - type: string
+ - members: Group
+ - parameters: TestSpec
+
+Group:
+ - type: mesh
+ - addresses: array(string)
+ - no_agents: array(string)
+
+Group:
+ - type: star
+ - center_address: string
+ - addresses: array(string)
+ - no_agents: array(string)

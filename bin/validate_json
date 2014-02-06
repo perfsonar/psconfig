@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use FindBin qw($RealBin);
+use lib "$RealBin/../lib";
+
+use Config::General;
+use Getopt::Long;
+use Log::Log4perl qw(:easy);
+
+use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
+
+Log::Log4perl->easy_init($DEBUG);
+
+my $CONFIG_URL;
+my $OUTPUT_FILE;
+my $VERBOSE;
+my $HELP;
+
+my ( $status, $res );
+
+$status = GetOptions(
+    'config_url=s'  => \$CONFIG_URL,
+    'output_file=s'  => \$OUTPUT_FILE,
+    'verbose'       => \$VERBOSE,
+    'help'          => \$HELP
+);
+
+sub usage {
+    print "$0: Validates the specified JSON\n";
+    print "  Options:\n";
+    print "   --config_url: The URL of the JSON file. [required]\n";
+    print "   --output_file: A filename to save the resulting JSON (with parsed includes). [optional]\n";
+    print "   --verbose: Show more debug information about what the script is doing. [optional]\n";
+}
+
+my $output_level = $INFO;
+if ( $VERBOSE ) {
+    $output_level = $DEBUG;
+}
+
+my %logger_opts = (
+    level  => $output_level,
+    layout => '%d (%P) %p> %F{1}:%L %M - %m%n',
+);
+
+Log::Log4perl->easy_init( \%logger_opts );
+
+my $logger = get_logger( "perfSONAR_PS" );
+
+unless ($CONFIG_URL) {
+    print "Need to specify a url to load the mesh to test from\n";
+    exit (-1);
+}
+
+($status, $res) = load_mesh({ configuration_url => $CONFIG_URL });
+if ($status == 0) {
+    eval {
+        # Parse the resulting hash to  make sure it's correct. We use strict checking
+        $res->validate_mesh();
+    };
+    if ($@) {
+        $status = -1;
+        $res    = $@;
+    }
+}
+
+unless ($status == 0) {
+    print "Mesh is invalid: $res\n";
+    exit(-1);
+}
+
+my $mesh = $res;
+
+if ($OUTPUT_FILE) {
+    unless (open(OUTPUT_FILE, ">$OUTPUT_FILE")) {
+        print "Couldn't open $OUTPUT_FILE to save\n";
+        exit (-2);
+    }
+
+    print OUTPUT_FILE JSON->new->pretty(1)->encode($mesh->unparse());
+    close(OUTPUT_FILE);
+}
+
+exit (0);
