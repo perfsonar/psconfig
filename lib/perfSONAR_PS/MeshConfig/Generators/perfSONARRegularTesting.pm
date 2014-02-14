@@ -280,6 +280,7 @@ sub __build_tests {
             $parameters->use_udp($test->parameters->protocol eq "udp"?1:0);
             # $test{parameters}->{streams}  = $test->parameters->streams; # XXX: needs to support streams
             $parameters->duration($test->parameters->duration) if $test->parameters->duration;
+            $parameters->omit_interval($test->parameters->omit_interval) if $test->parameters->omit_interval;
             $parameters->udp_bandwidth($test->parameters->udp_bandwidth) if $test->parameters->udp_bandwidth;
             $parameters->buffer_length($test->parameters->buffer_length) if $test->parameters->buffer_length;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
