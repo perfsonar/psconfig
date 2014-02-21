@@ -1,0 +1,334 @@
+{
+   "administrators" : [
+      {
+         "email" : "aaron@internet2.edu",
+         "name" : "Aaron Brown"
+      },
+      {
+         "email" : "andy@es.net",
+         "name" : "Andy Lake"
+      }
+   ],
+   "organizations" : [
+      {
+         "sites" : [
+            {
+               "hosts" : [
+                  {
+                     "addresses" : [
+                        "perfsonar.newy.net.internet2.edu"
+                     ],
+                     "measurement_archives" : [
+                        {
+                           "read_url" : "http://perfsonar.newy.net.internet2.edu:8086/perfSONAR_PS/services/traceroute_ma",
+                           "write_url" : "http://perfsonar.newy.net.internet2.edu:8086/perfSONAR_PS/services/tracerouteCollector",
+                           "type" : "traceroute"
+                        },
+                        {
+                           "read_url" : "http://perfsonar.newy.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.newy.net.internet2.edu:8570",
+                           "type" : "perfsonarbuoy/owamp"
+                        },
+                        {
+                           "read_url" : "http://perfsonar.newy.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.newy.net.internet2.edu:8569",
+                           "type" : "perfsonarbuoy/bwctl"
+                        },
+                        {
+                           "read_url" : "http://perfsonar.newy.internet2.edu:8075/perfSONAR_PS/services/pinger/ma",
+                           "type" : "pinger"
+                        }
+                     ],
+                     "description" : "perfSONAR Host in New York"
+                  }
+               ],
+               "administrators" : [
+                  {
+                     "email" : "matt@internet2.edu",
+                     "name" : "Matt Zekauskas"
+                  }
+               ],
+               "location" : {
+                  "city" : "New York",
+                  "longitude" : "-74.005",
+                  "latitude" : "40.720",
+                  "state" : "NY"
+               }
+            },
+            {
+               "hosts" : [
+                  {
+                     "addresses" : [
+                        "perfsonar.salt.net.internet2.edu"
+                     ],
+                     "measurement_archives" : [
+                        {
+                           "read_url" : "http://perfsonar.salt.net.internet2.edu:8086/perfSONAR_PS/services/traceroute_ma",
+                           "write_url" : "http://perfsonar.salt.net.internet2.edu:8086/perfSONAR_PS/services/tracerouteCollector",
+                           "type" : "traceroute"
+                        },
+                        {
+                           "read_url" : "http://perfsonar.salt.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.salt.net.internet2.edu:8570",
+                           "type" : "perfsonarbuoy/owamp"
+                        },
+                        {
+                           "read_url" : "http://perfsonar.salt.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.salt.net.internet2.edu:8569",
+                           "type" : "perfsonarbuoy/bwctl"
+                        },
+                        {
+                           "read_url" : "http://perfsonar.salt.internet2.edu:8075/perfSONAR_PS/services/pinger/ma",
+                           "type" : "pinger"
+                        }
+                     ],
+                     "description" : "perfSONAR Host in Salt Lake City"
+                  }
+               ],
+               "location" : {
+                  "city" : "Salt Lake City",
+                  "longitude" : "-111.953",
+                  "latitude" : "40.757",
+                  "state" : "UT"
+               }
+            }
+         ],
+         "administrators" : [
+            {
+               "email" : "aaron@internet2.edu",
+               "name" : "Aaron Brown"
+            }
+         ],
+         "description" : "Internet2"
+      },
+      {
+         "sites" : [
+            {
+               "hosts" : [
+                  {
+                     "addresses" : [
+                        "newy-pt1.es.net"
+                     ]
+                  },
+                  {
+                     "addresses" : [
+                        "newy-owamp.es.net"
+                     ],
+                     "measurement_archives" : [
+                        {
+                           "read_url" : "http://newy-owamp.es.net:8075/perfSONAR_PS/services/pinger/ma",
+                           "type" : "pinger"
+                        }
+                     ]
+                  }
+               ],
+               "location" : {
+                  "city" : "New York",
+                  "longitude" : "-74.005",
+                  "latitude" : "40.720",
+                  "state" : "NY"
+               }
+            },
+            {
+               "hosts" : [
+                  {
+                     "addresses" : [
+                        "chic-pt1.es.net"
+                     ]
+                  },
+                  {
+                     "addresses" : [
+                        "chic-owamp.es.net"
+                     ],
+                     "measurement_archives" : [
+                        {
+                           "read_url" : "http://chic-owamp.es.net:8075/perfSONAR_PS/services/pinger/ma",
+                           "type" : "pinger"
+                        }
+                     ]
+                  }
+               ],
+               "location" : {
+                  "city" : "Chicago",
+                  "longitude" : "-87.643",
+                  "latitude" : "41.896",
+                  "state" : "IL"
+               }
+            }
+         ],
+         "administrators" : [
+            {
+               "email" : "andy@es.net",
+               "name" : "Andy Lake"
+            },
+            {
+               "email" : "bltierney@es.net",
+               "name" : "Brian Tierney"
+            }
+         ],
+         "measurement_archives" : [
+            {
+               "read_url" : "http://ps-db.es.net:8086/perfSONAR_PS/services/traceroute_ma",
+               "write_url" : "http://ps-db.es.net:8086/perfSONAR_PS/services/tracerouteCollector",
+               "type" : "traceroute"
+            },
+            {
+               "read_url" : "http://ps-db.es.net:8085/perfSONAR_PS/services/pSB",
+               "write_url" : "ps-db.es.net:8570",
+               "type" : "perfsonarbuoy/owamp"
+            },
+            {
+               "read_url" : "http://ps-db.es.net:8085/perfSONAR_PS/services/pSB",
+               "write_url" : "ps-db.es.net:8569",
+               "type" : "perfsonarbuoy/bwctl"
+            }
+         ],
+         "description" : "ESnet"
+      },
+      {
+         "hosts" : [
+            {
+               "addresses" : [
+                  "dice-tester.example.edu"
+               ]
+            }
+         ],
+         "location" : {
+            "longitude" : "-87.643",
+            "latitude" : "41.896"
+         },
+         "include" : [
+            "http://example.edu/example_organization.json"
+         ],
+         "description" : "DICE View Of example.edu"
+      }
+   ],
+   "tests" : [
+      {
+         "members" : {
+            "members" : [
+               "perfsonar.newy.net.internet2.edu",
+               "perfsonar.salt.net.internet2.edu",
+               "newy-owamp.es.net",
+               "chic-owamp.es.net"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "protocol" : "udp",
+            "max_ttl" : "64",
+            "waittime" : "5",
+            "pause" : "0",
+            "first_ttl" : "0",
+            "timeout" : "30",
+            "type" : "traceroute",
+            "packet_size" : "40",
+            "test_interval" : "600"
+         },
+         "description" : "Traceroute Test Between DICE Latency Hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "perfsonar.newy.net.internet2.edu",
+               "perfsonar.salt.net.internet2.edu",
+               "newy-pt1.es.net",
+               "chic-pt1.es.net"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "protocol" : "tcp",
+            "tool" : "bwctl/iperf",
+            "duration" : "20",
+            "type" : "perfsonarbuoy/bwctl",
+            "interval" : "14400"
+         },
+         "description" : "TCP BWCTL Test Between DICE Bandwidth Hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "perfsonar.newy.net.internet2.edu",
+               "perfsonar.salt.net.internet2.edu",
+               "newy-pt1.es.net",
+               "chic-pt1.es.net"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "protocol" : "udp",
+            "udp_bandwidth" : "50000000",
+            "tool" : "bwctl/iperf",
+            "duration" : "10",
+            "type" : "perfsonarbuoy/bwctl",
+            "interval" : "86400"
+         },
+         "description" : "UDP BWCTL Test Between DICE Bandwidth Hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "perfsonar.newy.net.internet2.edu",
+               "perfsonar.salt.net.internet2.edu",
+               "newy-owamp.es.net",
+               "chic-owamp.es.net"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "loss_threshold" : "10",
+            "bucket_width" : "0.001",
+            "packet_padding" : "0",
+            "sample_count" : "300",
+            "packet_interval" : "0.01",
+            "type" : "perfsonarbuoy/owamp",
+            "session_count" : "18000"
+         },
+         "description" : "OWAMP Test Between DICE Latency Hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "perfsonar.newy.net.internet2.edu",
+               "perfsonar.salt.net.internet2.edu",
+               "newy-owamp.es.net",
+               "chic-owamp.es.net"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "packet_interval" : "1",
+            "type" : "pinger",
+            "packet_size" : "1000",
+            "test_interval" : "300",
+            "packet_count" : "10"
+         },
+         "description" : "Ping Test Between DICE Latency Hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "perfsonar.newy.net.internet2.edu",
+               "perfsonar.salt.net.internet2.edu",
+               "newy-pt1.es.net",
+               "chic-pt1.es.net"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "protocol" : "udp",
+            "max_ttl" : "64",
+            "waittime" : "5",
+            "pause" : "0",
+            "first_ttl" : "0",
+            "timeout" : "30",
+            "type" : "traceroute",
+            "packet_size" : "40",
+            "test_interval" : "600"
+         },
+         "description" : "Traceroute Test Between DICE Bandwidth Hosts"
+      }
+   ],
+   "description" : "DICE Mesh"
+}

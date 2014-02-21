@@ -130,6 +130,7 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_json
 %doc %{install_base}/doc/example.conf
+%doc %{install_base}/doc/example.json
 
 %files Agent
 %defattr(0644,perfsonar,perfsonar,0755)
