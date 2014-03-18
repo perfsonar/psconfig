@@ -283,6 +283,7 @@ sub __build_tests {
             $parameters->omit_interval($test->parameters->omit_interval) if $test->parameters->omit_interval;
             $parameters->udp_bandwidth($test->parameters->udp_bandwidth) if $test->parameters->udp_bandwidth;
             $parameters->buffer_length($test->parameters->buffer_length) if $test->parameters->buffer_length;
+            $parameters->packet_tos_bits($test->parameters->tos_bits) if $test->parameters->tos_bits;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
