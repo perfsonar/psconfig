@@ -52,6 +52,10 @@ lib/perfSONAR_PS/NPToolkit/ConfigManager/ConfigClient.pm
 lib/perfSONAR_PS/NPToolkit/ConfigManager/Utils.pm
 lib/perfSONAR_PS/RegularTesting/Config.pm
 lib/perfSONAR_PS/RegularTesting/MeasurementArchives/Base.pm
+lib/perfSONAR_PS/RegularTesting/MeasurementArchives/EsmondBase.pm
+lib/perfSONAR_PS/RegularTesting/MeasurementArchives/EsmondLatency.pm
+lib/perfSONAR_PS/RegularTesting/MeasurementArchives/EsmondThroughput.pm
+lib/perfSONAR_PS/RegularTesting/MeasurementArchives/EsmondTraceroute.pm
 lib/perfSONAR_PS/RegularTesting/MeasurementArchives/Null.pm
 lib/perfSONAR_PS/RegularTesting/MeasurementArchives/PingER.pm
 lib/perfSONAR_PS/RegularTesting/MeasurementArchives/TracerouteMA.pm
