@@ -272,6 +272,8 @@ sub __build_tests {
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
+            $parameters->tool($test->parameters->tool) if $test->parameters->tool;
+
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->test_interval) if $test->parameters->test_interval;
         }

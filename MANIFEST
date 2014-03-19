@@ -67,12 +67,15 @@ lib/perfSONAR_PS/RegularTesting/Parsers/Iperf.pm
 lib/perfSONAR_PS/RegularTesting/Parsers/Iperf3.pm
 lib/perfSONAR_PS/RegularTesting/Parsers/Owamp.pm
 lib/perfSONAR_PS/RegularTesting/Parsers/Ping.pm
+lib/perfSONAR_PS/RegularTesting/Parsers/Tracepath.pm
 lib/perfSONAR_PS/RegularTesting/Parsers/Traceroute.pm
 lib/perfSONAR_PS/RegularTesting/Results/Base.pm
 lib/perfSONAR_PS/RegularTesting/Results/Endpoint.pm
 lib/perfSONAR_PS/RegularTesting/Results/LatencyTest.pm
 lib/perfSONAR_PS/RegularTesting/Results/LatencyTestDatum.pm
 lib/perfSONAR_PS/RegularTesting/Results/ThroughputTest.pm
+lib/perfSONAR_PS/RegularTesting/Results/ThroughputTestInterval.pm
+lib/perfSONAR_PS/RegularTesting/Results/ThroughputTestResults.pm
 lib/perfSONAR_PS/RegularTesting/Results/TracerouteTest.pm
 lib/perfSONAR_PS/RegularTesting/Results/TracerouteTestHop.pm
 lib/perfSONAR_PS/RegularTesting/Schedulers/Base.pm
