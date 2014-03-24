@@ -279,6 +279,11 @@ sub __build_tests {
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/bwctl") {
             $parameters = perfSONAR_PS::RegularTesting::Tests::Bwctl->new();
+            if($test->parameters->tool){
+                my $tool = $test->parameters->tool;
+                $tool =~ s/^bwctl\///;
+                $parameters->tool($tool) ;
+            }
             $parameters->use_udp($test->parameters->protocol eq "udp"?1:0);
             # $test{parameters}->{streams}  = $test->parameters->streams; # XXX: needs to support streams
             $parameters->duration($test->parameters->duration) if $test->parameters->duration;
