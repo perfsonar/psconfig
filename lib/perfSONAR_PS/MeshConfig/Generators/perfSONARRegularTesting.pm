@@ -291,6 +291,8 @@ sub __build_tests {
             $parameters->udp_bandwidth($test->parameters->udp_bandwidth) if $test->parameters->udp_bandwidth;
             $parameters->buffer_length($test->parameters->buffer_length) if $test->parameters->buffer_length;
             $parameters->packet_tos_bits($test->parameters->tos_bits) if $test->parameters->tos_bits;
+            $parameters->streams($test->parameters->streams) if $test->parameters->streams;
+            $parameters->window_size($test->parameters->window_size) if $test->parameters->window_size;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
