@@ -28,6 +28,7 @@ use Moose;
 extends 'perfSONAR_PS::MeshConfig::Generators::Base';
 
 has 'regular_testing_conf'   => (is => 'rw', isa => 'perfSONAR_PS::RegularTesting::Config');
+has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool');
 
 =head1 NAME
 
@@ -46,10 +47,12 @@ sub init {
     my $parameters = validate( @args, { 
                                          config_file     => 1,
                                          skip_duplicates => 1,
+                                         force_bwctl_owamp => 0,
                                       });
 
-    my $config_file     = $parameters->{config_file};
-    my $skip_duplicates = $parameters->{skip_duplicates};
+    my $config_file       = $parameters->{config_file};
+    my $skip_duplicates   = $parameters->{skip_duplicates};
+    my $force_bwctl_owamp = $parameters->{force_bwctl_owamp};
 
     $self->SUPER::init({ config_file => $config_file, skip_duplicates => $skip_duplicates });
 
@@ -82,6 +85,7 @@ sub init {
     }
 
     $self->regular_testing_conf($config);
+    $self->force_bwctl_owamp($force_bwctl_owamp) if defined $force_bwctl_owamp;
 
     return (0, "");
 }
@@ -290,9 +294,18 @@ sub __build_tests {
             $schedule->interval($test->parameters->interval) if $test->parameters->interval;
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
-            $parameters = perfSONAR_PS::RegularTesting::Tests::Powstream->new();
-            $parameters->resolution($test->parameters->sample_count * $test->parameters->packet_interval) if $test->parameters->sample_count * $test->parameters->packet_interval;
-            $parameters->inter_packet_time($test->parameters->packet_interval) if $test->parameters->packet_interval;
+            if ($self->force_bwctl_owamp) {
+                $parameters = perfSONAR_PS::RegularTesting::Tests::BwpingOwamp->new();
+                # Default to 25 second tests (could use sample_count, but the
+                # 300 number might push those into the deny category)
+                $parameters->packet_count(25/$test->parameters->packet_interval);
+            }
+            else {
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Powstream->new();
+                $parameters->resolution($test->parameters->sample_count * $test->parameters->packet_interval) if $test->parameters->sample_count * $test->parameters->packet_interval;
+            }
+            $parameters->inter_packet_time($test->parameters->packet_interval);
+            $parameters->packet_length($test->parameters->packet_padding);
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
