@@ -81,6 +81,7 @@ lib/perfSONAR_PS/RegularTesting/Results/TracerouteTestHop.pm
 lib/perfSONAR_PS/RegularTesting/Schedulers/Base.pm
 lib/perfSONAR_PS/RegularTesting/Schedulers/RegularInterval.pm
 lib/perfSONAR_PS/RegularTesting/Schedulers/Streaming.pm
+lib/perfSONAR_PS/RegularTesting/Schedulers/TimeBasedSchedule.pm
 lib/perfSONAR_PS/RegularTesting/Target.pm
 lib/perfSONAR_PS/RegularTesting/Test.pm
 lib/perfSONAR_PS/RegularTesting/Tests/Base.pm
