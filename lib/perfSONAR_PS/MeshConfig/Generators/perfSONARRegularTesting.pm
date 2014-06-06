@@ -113,14 +113,19 @@ sub add_mesh_tests {
 
         $logger->debug("Adding: ".$test->description);
 
+        if ($test->has_unknown_attributes) {
+            die("Test '".$test->description."' has unknown attributes: ".join(", ", keys %{ $test->get_unknown_attributes }));
+        }
+
+        if ($test->parameters->has_unknown_attributes) {
+            die("Test '".$test->description."' has unknown test parameters: ".join(", ", keys %{ $test->parameters->get_unknown_attributes }));
+        }
+
         eval {
             my %sender_targets = ();
             my %receiver_targets = ();
 
             foreach my $pair (@{ $test->members->source_destination_pairs }) {
-                my $matching_hosts = $mesh->lookup_hosts({ addresses => [ $pair->{destination}->{address} ] });
-                my $host_properties = $matching_hosts->[0];
-
                 my $sender = $pair->{"source"};
                 my $receiver = $pair->{"destination"};
 
