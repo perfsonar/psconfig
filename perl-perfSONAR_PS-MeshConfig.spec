@@ -129,7 +129,7 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %files JSONBuilder
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_json
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/bin/validate_configuration
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_configuration
 %doc %{install_base}/doc/example.conf
 %doc %{install_base}/doc/example.json
 
