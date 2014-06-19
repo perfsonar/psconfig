@@ -3,7 +3,7 @@
 %define crontab_1 cron-mesh_config_agent
 %define crontab_2 cron-mesh_config_gui_agent
 
-%define relnum 4
+%define relnum 5 
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-MeshConfig
@@ -129,6 +129,7 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %files JSONBuilder
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_json
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/bin/validate_configuration
 %doc %{install_base}/doc/example.conf
 %doc %{install_base}/doc/example.json
 
@@ -159,6 +160,9 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %attr(0644,root,root) /etc/cron.d/%{crontab_2}
 
 %changelog
+* Thu Jun 19 2014 andy@es.net 3.4-5
+- Support for regular testing and esmond MA added
+
 * Wed Feb 20 2013 aaron@internet2.edu 3.3-3
 - Provide an 'include' mechanism that allows meshes to include the contents of different JSON files
 

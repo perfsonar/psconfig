@@ -3,6 +3,7 @@ Makefile
 bin/build_json
 bin/generate_configuration
 bin/generate_gui_configuration
+bin/validate_configuration
 bin/validate_json
 doc/INSTALL
 doc/cron-restart_gui_services
@@ -19,8 +20,6 @@ lib/perfSONAR_PS/MeshConfig/Config/Base.pm
 lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults.pm
 lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults/PerfSONARBUOYBwctl.pm
 lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults/PerfSONARBUOYOwamp.pm
-lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults/PingER.pm
-lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults/Traceroute.pm
 lib/perfSONAR_PS/MeshConfig/Config/Group.pm
 lib/perfSONAR_PS/MeshConfig/Config/Group/Disjoint.pm
 lib/perfSONAR_PS/MeshConfig/Config/Group/Mesh.pm
