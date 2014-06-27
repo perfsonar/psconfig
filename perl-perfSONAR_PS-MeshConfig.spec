@@ -3,7 +3,7 @@
 %define crontab_1 cron-mesh_config_agent
 %define crontab_2 cron-mesh_config_gui_agent
 
-%define relnum 5 
+%define relnum 6 
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-MeshConfig
@@ -67,9 +67,6 @@ Configuration agents.
 Summary:		perfSONAR_PS Mesh Configuration Agent
 Group:			Applications/Communications
 Requires:		perl-perfSONAR_PS-MeshConfig-Shared
-Requires:		perl-perfSONAR_PS-perfSONARBUOY-client
-Requires:		perl-perfSONAR_PS-TracerouteMA-client
-Requires:		perl-perfSONAR_PS-PingER-server
 %description Agent
 The perfSONAR-PS Mesh Configuration Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate configuration
