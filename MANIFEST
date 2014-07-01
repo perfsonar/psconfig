@@ -12,6 +12,7 @@ doc/example.conf
 doc/example.json
 etc/agent_configuration.conf
 etc/gui_agent_configuration.conf
+lib/Net/NTP.pm
 lib/OWP/Conf.pm
 lib/OWP/Helper.pm
 lib/perfSONAR_PS/MeshConfig/Agent.pm
