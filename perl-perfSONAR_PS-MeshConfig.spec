@@ -122,6 +122,7 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %{install_base}/lib/perfSONAR_PS/Utils
 %{install_base}/lib/perfSONAR_PS/XML
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/Base.pm
+%{install_base}/lib/Net/NTP.pm
 
 %files JSONBuilder
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
