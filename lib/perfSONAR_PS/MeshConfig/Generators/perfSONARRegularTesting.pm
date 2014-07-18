@@ -292,7 +292,7 @@ sub __build_tests {
             $parameters->packet_tos_bits($test->parameters->tos_bits) if $test->parameters->tos_bits;
             $parameters->streams($test->parameters->streams) if $test->parameters->streams;
             $parameters->window_size($test->parameters->window_size) if $test->parameters->window_size;
-            $parameters->latest_time($test->parameters->latest_time) if $test->parameters->last_time;
+            $parameters->latest_time($test->parameters->latest_time) if $test->parameters->latest_time;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
