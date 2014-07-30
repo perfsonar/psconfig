@@ -36,7 +36,7 @@ my $logger;
 unless ( $LOGGER_CONF ) {
     use Log::Log4perl qw(:easy);
 
-    my $output_level = $ERROR;
+    my $output_level = $WARN;
     if ( $DEBUGFLAG ) {
         $output_level = $DEBUG;
     }
