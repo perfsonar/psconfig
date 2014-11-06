@@ -56,10 +56,14 @@ unless ($CONFIG_URL) {
 }
 
 ($status, $res) = load_mesh({ configuration_url => $CONFIG_URL });
+my $meshes = $res;
+
 if ($status == 0) {
     eval {
-        # Parse the resulting hash to  make sure it's correct. We use strict checking
-        $res->validate_mesh();
+        foreach my $mesh (@$meshes) {
+            # Parse the resulting hash to  make sure it's correct. We use strict checking
+            $mesh->validate_mesh();
+        }
     };
     if ($@) {
         $status = -1;
@@ -72,15 +76,17 @@ unless ($status == 0) {
     exit(-1);
 }
 
-my $mesh = $res;
-
 if ($OUTPUT_FILE) {
     unless (open(OUTPUT_FILE, ">$OUTPUT_FILE")) {
         print "Couldn't open $OUTPUT_FILE to save\n";
         exit (-2);
     }
 
-    print OUTPUT_FILE JSON->new->pretty(1)->encode($mesh->unparse());
+    my @unparsed_meshes = ();
+    foreach my $mesh (@$meshes) {
+        push @unparsed_meshes, $mesh->unparse();
+    }
+    print OUTPUT_FILE JSON->new->pretty(1)->encode(\@unparsed_meshes);
     close(OUTPUT_FILE);
 }
 
