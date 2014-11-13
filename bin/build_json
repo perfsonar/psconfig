@@ -99,7 +99,7 @@ my %array_variables = (
                 );
 
 # Parse everything except the 'test', 'group' and 'test_spec' elements.
-my %json_configuration = %{ __parse_hash(\%configuration, [ "test", "group", "test_spec" ]) };
+my $json_configuration = __parse_hash(\%configuration, [ "test", "group", "test_spec" ]);
 
 # Go through and parse all the test specs, keeping track of their id.
 my %test_specs = ();
@@ -166,19 +166,19 @@ if ($configuration{"test"}) {
         push @tests, $test;
     }
 
-    $json_configuration{tests} = \@tests;
+    $json_configuration->{tests} = \@tests;
 }
 
 # Look through the hosts and fill-in measurement archives for any hosts
 # labelled "uses_default_toolkit_archives"
-__fill_toolkit_archives(\%json_configuration);
+__fill_toolkit_archives($json_configuration);
 
 # Validate the mesh by outputing a temporary file, and loading the mesh as
 # normal.
 if ($RESOLVE_INCLUDES or not $SKIP_VALIDATION) {
     my ($fh, $tmp_json) = tempfile();
 
-    print { $fh } JSON->new->pretty(1)->encode(\%json_configuration);
+    print { $fh } JSON->new->pretty(1)->encode($json_configuration);
 
     close $fh;
 
@@ -186,11 +186,16 @@ if ($RESOLVE_INCLUDES or not $SKIP_VALIDATION) {
 
     unlink($tmp_json);
 
+    my $meshes = $res;
+
     unless ($SKIP_VALIDATION) {
         if ($status == 0) {
             eval {
                 # Parse the resulting hash to  make sure it's correct. We use strict checking
-                $res->validate_mesh();
+                foreach my $mesh (@$meshes) {
+                    # Parse the resulting hash to  make sure it's correct. We use strict checking
+                    $mesh->validate_mesh();
+                }
             };
             if ($@) {
                 $status = -1;
@@ -210,16 +215,28 @@ if ($RESOLVE_INCLUDES or not $SKIP_VALIDATION) {
             exit(-1);
         }
 
-        %json_configuration = %{ $res->unparse() };
+        my $json_configuration;
+
+        if (length($meshes) == 1) {
+            my @unparsed_meshes = ();
+            foreach my $mesh (@$meshes) {
+                push @unparsed_meshes, $mesh->unparse();
+            }
+
+            $json_configuration = \@unparsed_meshes;
+        }
+        else {
+            $json_configuration = $res->unparse();
+        }
     }
 }
 
 if ($OUTPUT eq "-") {
-    print JSON->new->pretty(1)->encode(\%json_configuration);
+    print JSON->new->pretty(1)->encode($json_configuration);
 }
 else {
     open(OUTPUT, ">$OUTPUT");
-    print OUTPUT JSON->new->pretty(1)->encode(\%json_configuration);
+    print OUTPUT JSON->new->pretty(1)->encode($json_configuration);
     close(OUTPUT);
 }
 

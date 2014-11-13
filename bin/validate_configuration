@@ -58,5 +58,12 @@ unless ($CONFIG_URL) {
     exit (-1);
 }
 
-my $mesh = load_mesh({ configuration_url => $CONFIG_URL });
-$mesh->validate_mesh();
+($status, $res) = load_mesh({ configuration_url => $CONFIG_URL });
+if ($status != 0) {
+    print "Problem loading configuration: $res\n";
+    exit (-1);
+}
+
+foreach my $mesh (@$res) {
+    $mesh->validate_mesh();
+}

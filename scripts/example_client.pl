@@ -24,7 +24,8 @@ my ($status, $res) = load_mesh({ configuration_url => $url });
 
 die($res) if ($status != 0);
 
-my $mesh = $res;
+# Grab the first mesh if there are multiple at a given URL
+my $mesh = $res->[0];
 
 $mesh->validate_mesh();
 
