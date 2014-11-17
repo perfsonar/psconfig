@@ -1,11 +1,11 @@
 {
    "administrators" : [
       {
-         "email" : "aaron@internet2.edu",
+         "email" : "aaron@example.internet2.edu",
          "name" : "Aaron Brown"
       },
       {
-         "email" : "andy@es.net",
+         "email" : "andy@example.es.net",
          "name" : "Andy Lake"
       }
    ],
@@ -16,26 +16,26 @@
                "hosts" : [
                   {
                      "addresses" : [
-                        "perfsonar.newy.net.internet2.edu"
+                        "perfsonar.newy.example.internet2.edu"
                      ],
                      "measurement_archives" : [
                         {
-                           "read_url" : "http://perfsonar.newy.net.internet2.edu:8086/perfSONAR_PS/services/traceroute_ma",
-                           "write_url" : "http://perfsonar.newy.net.internet2.edu:8086/perfSONAR_PS/services/tracerouteCollector",
+                           "read_url" : "http://perfsonar.newy.example.internet2.edu:8086/perfSONAR_PS/services/traceroute_ma",
+                           "write_url" : "http://perfsonar.newy.example.internet2.edu:8086/perfSONAR_PS/services/tracerouteCollector",
                            "type" : "traceroute"
                         },
                         {
-                           "read_url" : "http://perfsonar.newy.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
-                           "write_url" : "perfsonar.newy.net.internet2.edu:8570",
+                           "read_url" : "http://perfsonar.newy.example.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.newy.example.internet2.edu:8570",
                            "type" : "perfsonarbuoy/owamp"
                         },
                         {
-                           "read_url" : "http://perfsonar.newy.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
-                           "write_url" : "perfsonar.newy.net.internet2.edu:8569",
+                           "read_url" : "http://perfsonar.newy.example.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.newy.example.internet2.edu:8569",
                            "type" : "perfsonarbuoy/bwctl"
                         },
                         {
-                           "read_url" : "http://perfsonar.newy.internet2.edu:8075/perfSONAR_PS/services/pinger/ma",
+                           "read_url" : "http://perfsonar.newy.example.internet2.edu:8075/perfSONAR_PS/services/pinger/ma",
                            "type" : "pinger"
                         }
                      ],
@@ -44,7 +44,7 @@
                ],
                "administrators" : [
                   {
-                     "email" : "matt@internet2.edu",
+                     "email" : "matt@example.internet2.edu",
                      "name" : "Matt Zekauskas"
                   }
                ],
@@ -59,26 +59,26 @@
                "hosts" : [
                   {
                      "addresses" : [
-                        "perfsonar.salt.net.internet2.edu"
+                        "perfsonar.salt.example.internet2.edu"
                      ],
                      "measurement_archives" : [
                         {
-                           "read_url" : "http://perfsonar.salt.net.internet2.edu:8086/perfSONAR_PS/services/traceroute_ma",
-                           "write_url" : "http://perfsonar.salt.net.internet2.edu:8086/perfSONAR_PS/services/tracerouteCollector",
+                           "read_url" : "http://perfsonar.salt.example.internet2.edu:8086/perfSONAR_PS/services/traceroute_ma",
+                           "write_url" : "http://perfsonar.salt.example.internet2.edu:8086/perfSONAR_PS/services/tracerouteCollector",
                            "type" : "traceroute"
                         },
                         {
-                           "read_url" : "http://perfsonar.salt.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
-                           "write_url" : "perfsonar.salt.net.internet2.edu:8570",
+                           "read_url" : "http://perfsonar.salt.example.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.salt.example.internet2.edu:8570",
                            "type" : "perfsonarbuoy/owamp"
                         },
                         {
-                           "read_url" : "http://perfsonar.salt.net.internet2.edu:8085/perfSONAR_PS/services/pSB",
-                           "write_url" : "perfsonar.salt.net.internet2.edu:8569",
+                           "read_url" : "http://perfsonar.salt.example.internet2.edu:8085/perfSONAR_PS/services/pSB",
+                           "write_url" : "perfsonar.salt.example.internet2.edu:8569",
                            "type" : "perfsonarbuoy/bwctl"
                         },
                         {
-                           "read_url" : "http://perfsonar.salt.internet2.edu:8075/perfSONAR_PS/services/pinger/ma",
+                           "read_url" : "http://perfsonar.salt.example.internet2.edu:8075/perfSONAR_PS/services/pinger/ma",
                            "type" : "pinger"
                         }
                      ],
@@ -95,7 +95,7 @@
          ],
          "administrators" : [
             {
-               "email" : "aaron@internet2.edu",
+               "email" : "aaron@example.internet2.edu",
                "name" : "Aaron Brown"
             }
          ],
@@ -107,16 +107,16 @@
                "hosts" : [
                   {
                      "addresses" : [
-                        "newy-pt1.es.net"
+                        "newy-pt1.example.es.net"
                      ]
                   },
                   {
                      "addresses" : [
-                        "newy-owamp.es.net"
+                        "newy-owamp.example.es.net"
                      ],
                      "measurement_archives" : [
                         {
-                           "read_url" : "http://newy-owamp.es.net:8075/perfSONAR_PS/services/pinger/ma",
+                           "read_url" : "http://newy-owamp.example.es.net:8075/perfSONAR_PS/services/pinger/ma",
                            "type" : "pinger"
                         }
                      ]
@@ -133,16 +133,16 @@
                "hosts" : [
                   {
                      "addresses" : [
-                        "chic-pt1.es.net"
+                        "chic-pt1.example.es.net"
                      ]
                   },
                   {
                      "addresses" : [
-                        "chic-owamp.es.net"
+                        "chic-owamp.example.es.net"
                      ],
                      "measurement_archives" : [
                         {
-                           "read_url" : "http://chic-owamp.es.net:8075/perfSONAR_PS/services/pinger/ma",
+                           "read_url" : "http://chic-owamp.example.es.net:8075/perfSONAR_PS/services/pinger/ma",
                            "type" : "pinger"
                         }
                      ]
@@ -158,28 +158,28 @@
          ],
          "administrators" : [
             {
-               "email" : "andy@es.net",
+               "email" : "andy@example.es.net",
                "name" : "Andy Lake"
             },
             {
-               "email" : "bltierney@es.net",
+               "email" : "bltierney@example.es.net",
                "name" : "Brian Tierney"
             }
          ],
          "measurement_archives" : [
             {
-               "read_url" : "http://ps-db.es.net:8086/perfSONAR_PS/services/traceroute_ma",
-               "write_url" : "http://ps-db.es.net:8086/perfSONAR_PS/services/tracerouteCollector",
+               "read_url" : "http://ps-db.example.es.net:8086/perfSONAR_PS/services/traceroute_ma",
+               "write_url" : "http://ps-db.example.es.net:8086/perfSONAR_PS/services/tracerouteCollector",
                "type" : "traceroute"
             },
             {
-               "read_url" : "http://ps-db.es.net:8085/perfSONAR_PS/services/pSB",
-               "write_url" : "ps-db.es.net:8570",
+               "read_url" : "http://ps-db.example.es.net:8085/perfSONAR_PS/services/pSB",
+               "write_url" : "ps-db.example.es.net:8570",
                "type" : "perfsonarbuoy/owamp"
             },
             {
-               "read_url" : "http://ps-db.es.net:8085/perfSONAR_PS/services/pSB",
-               "write_url" : "ps-db.es.net:8569",
+               "read_url" : "http://ps-db.example.es.net:8085/perfSONAR_PS/services/pSB",
+               "write_url" : "ps-db.example.es.net:8569",
                "type" : "perfsonarbuoy/bwctl"
             }
          ],
@@ -207,10 +207,10 @@
       {
          "members" : {
             "members" : [
-               "perfsonar.newy.net.internet2.edu",
-               "perfsonar.salt.net.internet2.edu",
-               "newy-owamp.es.net",
-               "chic-owamp.es.net"
+               "perfsonar.newy.example.internet2.edu",
+               "perfsonar.salt.example.internet2.edu",
+               "newy-owamp.example.es.net",
+               "chic-owamp.example.es.net"
             ],
             "type" : "mesh"
          },
@@ -230,10 +230,10 @@
       {
          "members" : {
             "members" : [
-               "perfsonar.newy.net.internet2.edu",
-               "perfsonar.salt.net.internet2.edu",
-               "newy-pt1.es.net",
-               "chic-pt1.es.net"
+               "perfsonar.newy.example.internet2.edu",
+               "perfsonar.salt.example.internet2.edu",
+               "newy-pt1.example.es.net",
+               "chic-pt1.example.es.net"
             ],
             "type" : "mesh"
          },
@@ -249,10 +249,10 @@
       {
          "members" : {
             "members" : [
-               "perfsonar.newy.net.internet2.edu",
-               "perfsonar.salt.net.internet2.edu",
-               "newy-pt1.es.net",
-               "chic-pt1.es.net"
+               "perfsonar.newy.example.internet2.edu",
+               "perfsonar.salt.example.internet2.edu",
+               "newy-pt1.example.es.net",
+               "chic-pt1.example.es.net"
             ],
             "type" : "mesh"
          },
@@ -269,10 +269,10 @@
       {
          "members" : {
             "members" : [
-               "perfsonar.newy.net.internet2.edu",
-               "perfsonar.salt.net.internet2.edu",
-               "newy-owamp.es.net",
-               "chic-owamp.es.net"
+               "perfsonar.newy.example.internet2.edu",
+               "perfsonar.salt.example.internet2.edu",
+               "newy-owamp.example.es.net",
+               "chic-owamp.example.es.net"
             ],
             "type" : "mesh"
          },
@@ -290,10 +290,10 @@
       {
          "members" : {
             "members" : [
-               "perfsonar.newy.net.internet2.edu",
-               "perfsonar.salt.net.internet2.edu",
-               "newy-owamp.es.net",
-               "chic-owamp.es.net"
+               "perfsonar.newy.example.internet2.edu",
+               "perfsonar.salt.example.internet2.edu",
+               "newy-owamp.example.es.net",
+               "chic-owamp.example.es.net"
             ],
             "type" : "mesh"
          },
@@ -309,10 +309,10 @@
       {
          "members" : {
             "members" : [
-               "perfsonar.newy.net.internet2.edu",
-               "perfsonar.salt.net.internet2.edu",
-               "newy-pt1.es.net",
-               "chic-pt1.es.net"
+               "perfsonar.newy.example.internet2.edu",
+               "perfsonar.salt.example.internet2.edu",
+               "newy-pt1.example.es.net",
+               "chic-pt1.example.es.net"
             ],
             "type" : "mesh"
          },
