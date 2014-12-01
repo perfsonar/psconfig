@@ -13,8 +13,6 @@ doc/example.json
 etc/agent_configuration.conf
 etc/gui_agent_configuration.conf
 lib/Net/NTP.pm
-lib/OWP/Conf.pm
-lib/OWP/Helper.pm
 lib/perfSONAR_PS/MeshConfig/Agent.pm
 lib/perfSONAR_PS/MeshConfig/Config/Administrator.pm
 lib/perfSONAR_PS/MeshConfig/Config/Base.pm
@@ -116,6 +114,5 @@ lib/perfSONAR_PS/Utils/HTTPS.pm
 lib/perfSONAR_PS/Utils/Host.pm
 lib/perfSONAR_PS/Utils/NetLogger.pm
 lib/perfSONAR_PS/Utils/ParameterValidation.pm
-lib/perfSONAR_PS/XML/Document.pm
 scripts/cron-mesh_config_agent
 scripts/cron-mesh_config_gui_agent

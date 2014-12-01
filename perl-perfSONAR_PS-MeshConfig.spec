@@ -120,7 +120,6 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Config
 %{install_base}/lib/perfSONAR_PS/NPToolkit
 %{install_base}/lib/perfSONAR_PS/Utils
-%{install_base}/lib/perfSONAR_PS/XML
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/Base.pm
 %{install_base}/lib/Net/NTP.pm
 
@@ -137,7 +136,6 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %config(noreplace) %{install_base}/etc/agent_configuration.conf
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Agent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
-%{install_base}/lib/OWP/*
 %{install_base}/lib/perfSONAR_PS/RegularTesting
 %{install_base}/scripts/cron-mesh_config_agent
 %doc %{install_base}/doc/INSTALL
