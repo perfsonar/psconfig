@@ -41,9 +41,6 @@ lib/perfSONAR_PS/MeshConfig/Config/TestParameters/Traceroute.pm
 lib/perfSONAR_PS/MeshConfig/GUIAgent.pm
 lib/perfSONAR_PS/MeshConfig/Generators/Base.pm
 lib/perfSONAR_PS/MeshConfig/Generators/MaDDash.pm
-lib/perfSONAR_PS/MeshConfig/Generators/PingER.pm
-lib/perfSONAR_PS/MeshConfig/Generators/TracerouteMaster.pm
-lib/perfSONAR_PS/MeshConfig/Generators/perfSONARBUOY.pm
 lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 lib/perfSONAR_PS/MeshConfig/Utils.pm
 lib/perfSONAR_PS/NPToolkit/Config/Base.pm

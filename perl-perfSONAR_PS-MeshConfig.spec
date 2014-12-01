@@ -136,9 +136,6 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/generate_configuration
 %config(noreplace) %{install_base}/etc/agent_configuration.conf
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Agent.pm
-%{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARBUOY.pm
-%{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/PingER.pm
-%{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/TracerouteMaster.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 %{install_base}/lib/OWP/*
 %{install_base}/lib/perfSONAR_PS/RegularTesting
