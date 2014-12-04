@@ -131,7 +131,7 @@ sub __send_error_messages {
 
         my $full_error_msg = "Mesh Error:\n";
         $full_error_msg .= "  Mesh: ".($error->{mesh}?$error->{mesh}->description:"")."\n";
-        $full_error_msg .= "  Host: ".($error->{host}?$error->{host}->addresses->[0]:"")."\n";
+        $full_error_msg .= "  Host: ".($error->{host}?$error->{host}->addresses->[0]->address:"")."\n";
         $full_error_msg .= "  Error: ".$error->{error_msg}."\n\n";
 
         my $hash_key = join("|", @to_addresses);
@@ -322,8 +322,8 @@ sub __configure_host {
                     next;
                 }
 
-                foreach my $address (@{ $host->addresses }) {
-                    $addresses{$address} = 1;
+                foreach my $addr_obj (@{ $host->addresses }) {
+                    $addresses{$addr_obj->address} = 1;
                 }
             }
 

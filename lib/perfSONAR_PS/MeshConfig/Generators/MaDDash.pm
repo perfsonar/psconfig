@@ -119,7 +119,8 @@ sub generate_maddash_config {
             foreach my $site (@{ $organization->sites }) {
                 push @all_hosts, @{ $site->hosts };
                 foreach my $site_host (@{ $site->hosts }){
-                    foreach my $address (@{ $site_host->addresses }) {
+                    foreach my $addr_obj (@{ $site_host->addresses }) {
+                        my $address = $addr_obj->address;
                         $addr_site_map{$address} = $site->hosts;
                     }
                 }
@@ -129,8 +130,8 @@ sub generate_maddash_config {
         foreach my $host (@all_hosts) {
             next unless $host->addresses;
 
-            foreach my $address (@{ $host->addresses }) {
-                $address = __normalize_addr($address);
+            foreach my $addr_obj (@{ $host->addresses }) {
+                my $address = __normalize_addr($addr_obj->address);
                 my $description = $host->description?$host->description:$address;
 
                 my $member_params = { 

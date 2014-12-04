@@ -7,6 +7,7 @@ our $VERSION = 3.1;
 use Moose;
 use Params::Validate qw(:all);
 
+use perfSONAR_PS::MeshConfig::Config::Address;
 use perfSONAR_PS::MeshConfig::Config::Location;
 use perfSONAR_PS::MeshConfig::Config::Administrator;
 use perfSONAR_PS::MeshConfig::Config::MeasurementArchive;
@@ -31,7 +32,7 @@ has 'location'            => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Conf
 has 'no_agent'            => (is => 'rw', isa => 'Bool');
 
 has 'administrators'      => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Administrator]', default => sub { [] });
-has 'addresses'           => (is => 'rw', isa => 'ArrayRef[Str]');
+has 'addresses'           => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Address]');
 has 'measurement_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::MeasurementArchive]', default => sub { [] });
 
 has 'toolkit_url'         => (is => 'rw', isa => 'Str', default => sub { '' });

@@ -99,8 +99,8 @@ sub add_mesh_tests {
 
     my %host_addresses = ();
     foreach my $host (@$hosts) {
-        foreach my $address (@{ $host->addresses }) {
-            $host_addresses{$address} = 1;
+        foreach my $addr_obj (@{ $host->addresses }) {
+            $host_addresses{$addr_obj->address} = 1;
         }
     }
 

@@ -50,10 +50,10 @@ sub validate_mesh {
     }
 
     foreach my $host (@all_hosts) {
-        foreach my $address (@{ $host->addresses }) {
-            my $hosts = $self->lookup_hosts({ addresses => [ $address ] });
+        foreach my $addr_obj (@{ $host->addresses }) {
+            my $hosts = $self->lookup_hosts({ addresses => [ $addr_obj->address ] });
             if (scalar(@$hosts) > 1) {
-                die("Multiple hosts match $address");
+                die("Multiple hosts match ".$addr_obj->address);
             }
         }
     }
@@ -160,8 +160,8 @@ sub __find_matching_hosts {
         foreach my $host (@{ $element->hosts }) {
             my $found;
 
-            foreach my $host_address (@{ $host->addresses }) {
-                $host_address = lc($host_address);
+            foreach my $host_address_obj (@{ $host->addresses }) {
+                my $host_address = lc($host_address_obj->address);
 
                 next unless ($addresses{$host_address});
 

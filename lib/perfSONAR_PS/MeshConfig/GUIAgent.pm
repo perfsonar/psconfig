@@ -116,7 +116,7 @@ sub __send_error_messages {
 
         my $full_error_msg = "Mesh Error:\n";
         $full_error_msg .= "  Mesh: ".($error->{mesh}?$error->{mesh}->description:"")."\n";
-        $full_error_msg .= "  Host: ".($error->{host}?$error->{host}->addresses->[0]:"")."\n";
+        $full_error_msg .= "  Host: ".($error->{host}?$error->{host}->addresses->[0]->addresses:"")."\n";
         $full_error_msg .= "  Error: ".$error->{error_msg}."\n\n";
 
         my $hash_key = join("|", @to_addresses);
