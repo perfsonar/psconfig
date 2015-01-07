@@ -162,19 +162,28 @@ sub add_mesh_tests {
 
                 if ($host_addresses{$sender->{address}}) {
                     # We're the sender. We send in 3 cases:
-                    #   1) we're ping/traceroute, and there is no 'reverse' ping/traceroute test
+                    #   1) We're doing ping/traceroute (since the far side might not have bwctl running, we set those up sender-side)
                     #   2) the far side is no_agent and won't be performing this test.
                     #   3) the force_bidirectional flag is set so we perform both send and receive
                     if ($receiver->{no_agent} or
-                        ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional)) {
+                        ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional) or
+                        ($test->parameters->type eq "traceroute" or $test->parameters->type eq "ping")) {
 
                         $receiver_targets{$sender->{address}} = [] unless $receiver_targets{$sender->{address}};
                         push @{ $receiver_targets{$sender->{address}} }, $receiver->{address};
                     }
                 }
                 else {
-                    $sender_targets{$receiver->{address}} = [] unless $sender_targets{$receiver->{address}};
-                    push @{ $sender_targets{$receiver->{address}} }, $sender->{address};
+                    # We're the receiver. We receive in 3 cases:
+                    #   1) We're not doing ping/traceroute (since the far side might not have bwctl running, we set those up sender-side)
+                    #   2) the far side is no_agent and won't be performing this test.
+                    #   3) the force_bidirectional flag is set so we perform both send and receive
+                    if ($receiver->{no_agent} or
+                        ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional) or
+                        ($test->parameters->type ne "traceroute" or $test->parameters->type ne "ping")) {
+                            $sender_targets{$receiver->{address}} = [] unless $sender_targets{$receiver->{address}};
+                            push @{ $sender_targets{$receiver->{address}} }, $sender->{address};
+                    }
                 }
             }
     
