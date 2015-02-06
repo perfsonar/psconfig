@@ -14,6 +14,7 @@ etc/agent_configuration.conf
 etc/gui_agent_configuration.conf
 lib/Net/NTP.pm
 lib/perfSONAR_PS/MeshConfig/Agent.pm
+lib/perfSONAR_PS/MeshConfig/Config/Address.pm
 lib/perfSONAR_PS/MeshConfig/Config/Administrator.pm
 lib/perfSONAR_PS/MeshConfig/Config/Base.pm
 lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults.pm
