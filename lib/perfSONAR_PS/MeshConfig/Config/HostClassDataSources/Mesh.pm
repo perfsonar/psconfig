@@ -1,15 +1,14 @@
-package perfSONAR_PS::MeshConfig::Config::Address;
+package perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Mesh;
 use strict;
 use warnings;
 
 our $VERSION = 3.1;
 
 use Moose;
-use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::Host;
+perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute;
 
 =head1 DESCRIPTION
 
@@ -17,37 +16,14 @@ perfSONAR_PS::MeshConfig::Config::Host;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::Base';
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSource';
 
-has 'address'             => (is => 'rw', isa => 'Str');
-
-has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
-
-override 'parse' => sub {
-    my ($class, $description, $strict) = @_;
-
-    # For backwards compatibility, convert it to an object if it's just a
-    # string
-    unless (ref($description)) { 
-        $description = { address => $description };
-    }
-
-    return $class->SUPER::parse($description, $strict);
-};
-
-override 'unparse' => sub {
+sub BUILD {
     my ($self) = @_;
+    $self->type("mesh");
+}
 
-    my $object = super();
-
-   # For backwards compatibility, convert it from an object to a string if
-   # it doesn't use any of the properties of the object other than 'address'
-   if (scalar(keys %$object) == 1 and $object->{address}) {
-        $object = $object->{address};
-    }
-
-    return $object;
-};
+has 'mesh_url' => (is => 'rw', isa => 'Str');
 
 1;
 

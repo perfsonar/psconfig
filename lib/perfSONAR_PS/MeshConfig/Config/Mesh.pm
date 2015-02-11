@@ -12,6 +12,7 @@ use perfSONAR_PS::MeshConfig::Config::Administrator;
 use perfSONAR_PS::MeshConfig::Config::Organization;
 use perfSONAR_PS::MeshConfig::Config::MeasurementArchive;
 use perfSONAR_PS::MeshConfig::Config::Test;
+use perfSONAR_PS::MeshConfig::Config::HostClass;
 
 =head1 NAME
 
@@ -32,6 +33,7 @@ has 'organizations'        => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshCo
 has 'measurement_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::MeasurementArchive]', default => sub { [] });
 has 'tests'                => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Test]', default => sub { [] });
 has 'hosts'                => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Host]', default => sub { [] });
+has 'host_classes'         => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClass]', default => sub { [] });
 
 sub validate_mesh {
     my ($self) = @_;

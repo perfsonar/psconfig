@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::Address;
+package perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::Host;
+perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
 
 =head1 DESCRIPTION
 
@@ -17,37 +17,40 @@ perfSONAR_PS::MeshConfig::Config::Host;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::Base';
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSource';
 
-has 'address'             => (is => 'rw', isa => 'Str');
+sub BUILD {
+    my ($self) = @_;
+    $self->type("current_mesh");
+}
 
-has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
-
-override 'parse' => sub {
-    my ($class, $description, $strict) = @_;
-
-    # For backwards compatibility, convert it to an object if it's just a
-    # string
-    unless (ref($description)) { 
-        $description = { address => $description };
-    }
-
-    return $class->SUPER::parse($description, $strict);
-};
-
-override 'unparse' => sub {
+sub get_addresses {
     my ($self) = @_;
 
-    my $object = super();
+    my $host_class = $self->parent;
+    my $mesh = $host_class->parent;
 
-   # For backwards compatibility, convert it from an object to a string if
-   # it doesn't use any of the properties of the object other than 'address'
-   if (scalar(keys %$object) == 1 and $object->{address}) {
-        $object = $object->{address};
+    my @hosts = ();
+    push @hosts, @{ $mesh->hosts };
+
+    foreach my $organization (@{ $mesh->organizations }) {
+        push @hosts, @{ $organization->hosts };
+        foreach my $site (@{ $organization->sites }) {
+            push @hosts, @{ $site->hosts };
+        }
     }
 
-    return $object;
-};
+    my %addresses = ();
+    foreach my $host (@hosts) {
+        foreach my $addr (@{ $host->addresses }) {
+            $addresses{$addr->address} = $addr;
+        }
+    }
+
+    my @addresses = values %addresses;
+
+    return \@addresses;
+}
 
 1;
 
