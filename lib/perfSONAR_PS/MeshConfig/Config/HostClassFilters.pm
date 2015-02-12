@@ -12,8 +12,8 @@ use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Netmask;
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::OrganizationName;
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::HostClass;
 #use perfSONAR_PS::MeshConfig::Config::HostClassFilters::InterfaceSpeed;
-#use perfSONAR_PS::MeshConfig::Config::HostClassFilters::HostClass;
 
 =head1 NAME
 
