@@ -33,6 +33,8 @@ has 'administrators'       => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshCo
 has 'hosts'                => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Host]', default => sub { [] });
 has 'measurement_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::MeasurementArchive]', default => sub { [] });
 
+has 'tags'                => (is => 'rw', isa => 'ArrayRef[Str]', default => sub { [] });
+
 has 'parent'               => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Organization');
 
 sub lookup_administrators {

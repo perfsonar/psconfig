@@ -37,6 +37,8 @@ has 'measurement_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshCo
 
 has 'toolkit_url'         => (is => 'rw', isa => 'Str', default => sub { '' });
 
+has 'tags'                => (is => 'rw', isa => 'ArrayRef[Str]', default => sub { [] });
+
 has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Base'); # Any of "Site", "Organization" or "Mesh"
 
 sub lookup_administrators {

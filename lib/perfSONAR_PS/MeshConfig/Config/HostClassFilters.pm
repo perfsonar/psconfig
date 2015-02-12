@@ -13,11 +13,11 @@ use perfSONAR_PS::MeshConfig::Config::HostClassFilters::OrganizationName;
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::HostClass;
-#use perfSONAR_PS::MeshConfig::Config::HostClassFilters::InterfaceSpeed;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Tag;
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::TestParameters;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters;
 
 =head1 DESCRIPTION
 
@@ -32,9 +32,8 @@ has 'netmask_filters'          => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Me
 has 'organization_filters'     => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::OrganizationName]');
 has 'site_filters'             => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName]');
 has 'address_type_filters'     => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType]');
-has 'interface_speed_filters'  => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::InterfaceSpeed]');
-has 'interface_mtu_filters'    => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::InterfaceMTU]');
 has 'host_class_filters'       => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::HostClass]');
+has 'tag_filters'              => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::Tag]');
 
 has 'parent'                   => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::HostClass');
 
