@@ -32,7 +32,7 @@ has 'location'            => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Conf
 has 'no_agent'            => (is => 'rw', isa => 'Bool');
 
 has 'administrators'      => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Administrator]', default => sub { [] });
-has 'addresses'           => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Address]');
+has 'addresses'           => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Address]', default => sub { [] });
 has 'measurement_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::MeasurementArchive]', default => sub { [] });
 
 has 'toolkit_url'         => (is => 'rw', isa => 'Str', default => sub { '' });
@@ -69,7 +69,7 @@ sub lookup_measurement_archive {
         }
     }
 
-    if ($recursive) {
+    if ($recursive and $self->parent) {
         return $self->parent->lookup_measurement_archive({ type => $type });
     }
     else {

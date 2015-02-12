@@ -92,17 +92,12 @@ sub init {
 
 sub add_mesh_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { mesh => 1, tests => 1, hosts => 1 } );
+    my $parameters = validate( @args, { mesh => 1, tests => 1, addresses => 1 } );
     my $mesh   = $parameters->{mesh};
     my $tests  = $parameters->{tests};
-    my $hosts  = $parameters->{hosts};
+    my $addresses = $parameters->{addresses};
 
-    my %host_addresses = ();
-    foreach my $host (@$hosts) {
-        foreach my $addr_obj (@{ $host->addresses }) {
-            $host_addresses{$addr_obj->address} = 1;
-        }
-    }
+    my %host_addresses = map { $_ => 1 } @$addresses;
 
     my %addresses_added = ();
 

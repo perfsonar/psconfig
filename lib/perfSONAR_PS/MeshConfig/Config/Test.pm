@@ -88,6 +88,14 @@ sub lookup_measurement_archive {
     return;
 }
 
+sub lookup_address {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { address => 1 } );
+    my $address = $parameters->{address};
+
+    return $self->parent->lookup_address({ address => $address });
+}
+
 sub lookup_hosts {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { addresses => 1 } );

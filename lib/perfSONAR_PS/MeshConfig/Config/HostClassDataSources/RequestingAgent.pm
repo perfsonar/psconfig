@@ -31,24 +31,51 @@ sub get_addresses {
     my $parameters = validate( @args, { } );
 
     my $host_class = $self->parent;
+    my $mesh = $host_class->parent;
 
-    my $host;
+    my $host = perfSONAR_PS::MeshConfig::Config::Host->new();
+    my $host_parent;
+
+    my @local_ips = get_ips();
+
+    # Merge a matching host block
+    my $hosts = $mesh->lookup_hosts({ addresses => \@local_ips });
+    if ($hosts and scalar(@$hosts) > 0) {
+        if (scalar(@$hosts) > 1) {
+            die("Multiple definitions for host with addresses: ".join(", ", @local_ips));
+        }
+        $host_parent = $hosts->[0]->parent; # Save the existing host parent since it may get used later...
+
+        $host = $host->merge(other => $hosts->[0]);
+    }
 
     if ($host_class->host_properties) {
         # Duplicate the host properties
-        $host = perfSONAR_PS::MeshConfig::Config::Host->parse($host->unparse);
-    }
-    else {
-        $host = perfSONAR_PS::MeshConfig::Config::Host->new();
+        $host = $host->merge(other => $host_class->host_properties);
     }
 
-    # Fill in the local IPs on the host
+    # Reset the parent object if we found it in the "lookup_hosts" case. Since
+    # we're building a new host object based on the criteria here, this will be
+    # a one-way pointer...
+    $host->parent($host_parent) if $host_parent;
+
+    # Fill in any new local IPs for the host
+    my %existing_addresses = ();
+    foreach my $addr (@{ $host->addresses }) {
+        $existing_addresses{$addr->address} = $addr;
+    }
+
     my @addresses = ();
-    foreach my $ip (get_ips()) {
-        my $addr = perfSONAR_PS::MeshConfig::Config::Address->new();
-        $addr->address($ip);
-        $addr->parent($host);
-        push @addresses, $addr;
+    foreach my $ip (@local_ips) {
+        if ($existing_addresses{$ip}) {
+            push @addresses, $existing_addresses{$ip};
+        }
+        else {
+            my $addr = perfSONAR_PS::MeshConfig::Config::Address->new();
+            $addr->address($ip);
+            $addr->parent($host);
+            push @addresses, $addr;
+        }
     }
 
     $host->addresses(\@addresses);

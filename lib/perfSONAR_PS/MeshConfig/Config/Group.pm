@@ -7,7 +7,6 @@ our $VERSION = 3.1;
 use Moose;
 use Params::Validate qw(:all);
 
-use perfSONAR_PS::MeshConfig::Config::Group::Star;
 use perfSONAR_PS::MeshConfig::Config::Group::Mesh;
 use perfSONAR_PS::MeshConfig::Config::Group::Disjoint;
 use perfSONAR_PS::MeshConfig::Config::Group::OrderedMesh;
@@ -39,7 +38,13 @@ override 'parse' => sub {
             return perfSONAR_PS::MeshConfig::Config::Group::Mesh->parse($description, $strict);
         }
         elsif ($description->{type} eq "star") {
-            return perfSONAR_PS::MeshConfig::Config::Group::Star->parse($description, $strict);
+            # Backwards compatibility. Convert star -> disjoint.
+            $description->{a_members} = [ $description->{center_address} ];
+            $description->{b_members} = $description->{members};
+            delete($description->{center_address});
+            delete($description->{members});
+
+            return perfSONAR_PS::MeshConfig::Config::Group::Disjoint->parse($description, $strict);
         }
         elsif ($description->{type} eq "disjoint") {
             return perfSONAR_PS::MeshConfig::Config::Group::Disjoint->parse($description, $strict);
@@ -56,6 +61,25 @@ override 'parse' => sub {
     }
 };
 
+sub lookup_host_class {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { name => 1 } );
+    my $name = $parameters->{name};
+
+    my $test = $self->parent;
+    my $mesh = $test->parent;
+
+    return $mesh->lookup_host_class({ name => $name });
+}
+
+sub lookup_address {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { address => 1 } );
+    my $address = $parameters->{address};
+
+    return $self->parent->lookup_address({ address => $address });
+}
+
 sub lookup_hosts {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { addresses => 1 } );
@@ -64,7 +88,41 @@ sub lookup_hosts {
     return $self->parent->lookup_hosts({ addresses => $addresses });
 }
 
-sub __build_pair {
+sub resolve_addresses {
+    my ($self, $addresses) = @_;
+
+    my @addr_objs = ();
+
+    foreach my $addr (@$addresses) {
+        push @addr_objs, $self->resolve_address($addr);
+    }
+
+    return @addr_objs;
+}
+
+sub resolve_address {
+    my ($self, $address) = @_;
+
+    my @addresses = ();
+
+    if ($address =~ /host_class::(.*)/) {
+        my $class = $self->lookup_host_class(name => $1);
+        unless ($class) {
+            die("Invalid host class: $class");
+        }
+
+        push @addresses, @{ $class->get_addresses() };
+    }
+    else {
+        my $addr_obj = $self->lookup_address(address => $address);
+
+        push @addresses, $addr_obj if $addr_obj;
+    }
+
+    return @addresses;
+}
+
+sub __build_endpoint_pairs {
     my ($self, @args) = @_;
     my $parameters = validate( @args, {
                                         source_address  => 1,
@@ -78,23 +136,19 @@ sub __build_pair {
     my $destination_no_agent = $parameters->{destination_no_agent};
 
     my %pair = (
-                 source => { address => $source_address, no_agent => $source_no_agent },
-                 destination => { address => $destination_address, no_agent => $destination_no_agent },
+                 source => { address => $source_address->address, addr_obj => $source_address, no_agent => $source_no_agent },
+                 destination => { address => $destination_address->address, addr_obj => $destination_address, no_agent => $destination_no_agent },
                );
 
+    # Fill in the "no_agent" property based on the host if it's not
+    # already set.
     foreach my $side ("source", "destination") {
         next if (defined $pair{$side}->{no_agent});
 
-        my $hosts = $self->lookup_hosts({ addresses => [ $pair{$side}->{address} ] });
-        unless (scalar(@$hosts) > 0) {
-            my $msg = "Unknown host: ".$pair{$side}->{address};
-            die("Unknown host: ".$pair{$side}->{address});
-        }
-
-        $pair{$side}->{no_agent} = $hosts->[0]->no_agent;
+        $pair{$side}->{no_agent} = $pair{$side}->{addr_obj}->parent->no_agent;
     }
 
-    return \%pair;
+    return ( \%pair );
 }
 
 1;

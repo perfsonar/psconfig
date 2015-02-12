@@ -8,6 +8,8 @@ use Moose;
 
 use FreezeThaw qw(cmpStr);
 use Clone qw(clone);
+use Hash::Merge;
+use Params::Validate qw(:all);
 
 =head1 NAME
 
@@ -21,6 +23,44 @@ perfSONAR_PS::MeshConfig::Config::Base;
 
 has 'cache'                => (is => 'rw', isa => 'HashRef');
 has 'unknown_attributes'  => (is => 'rw', isa => 'HashRef', default => sub { {} });
+
+sub merge {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { other => 1 });
+    my $other = $parameters->{other};
+
+    my $self_description  = $self->unparse();
+    my $other_description = $other->unparse();
+
+    # Right Precedence, but don't merge arrays
+    my %merge_behavior = (
+        'SCALAR' => {
+            'SCALAR' => sub { $_[1] },
+            'ARRAY'  => sub { $_[1] },
+            'HASH'   => sub { $_[1] },
+        },
+        'ARRAY' => {
+            'SCALAR' => sub { $_[1] },
+            'ARRAY'  => sub { $_[1] },
+            'HASH'   => sub { $_[1] }, 
+        },
+        'HASH' => {
+            'SCALAR' => sub { $_[1] },
+            'ARRAY'  => sub { $_[1] },
+            'HASH'   => sub { Hash::Merge::_merge_hashes( $_[0], $_[1] ) }, 
+        },
+    );
+
+    my $merge = Hash::Merge->new();
+    $merge->specify_behavior(\%merge_behavior);
+    my $merged_description = $merge->merge($self_description, $other_description);
+
+    my $parent;
+    $parent = $self->parent;
+    $parent = $other->parent if not $parent;
+
+    return $self->blessed()->parse($merged_description, 1, $parent);
+}
 
 sub parse {
     my ($class, $description, $strict) = @_;

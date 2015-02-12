@@ -66,19 +66,26 @@ sub validate_mesh {
 
         foreach my $pair (@$pairs) {
             foreach my $direction ("source", "destination") {
-                my $hosts = $self->lookup_hosts({ addresses => [ $pair->{$direction}->{address} ] });
-                if (scalar(@$hosts) == 0) {
-                    die($pair->{$direction}->{address}." is not associated with a host");
-                }
-
-                foreach my $host (@$hosts) {
-                    $has_testing_agent = 1 unless ($host->no_agent);
-                }
+                $has_testing_agent = 1 unless ($pair->{$direction}->{addr_obj}->parent->no_agent);
             }
         }
 
         unless ($has_testing_agent and scalar(@$pairs) > 0) {
             die("Test '".$test->description."' does not have any hosts that can actually perform the test");
+        }
+    }
+
+    return;
+}
+
+sub lookup_host_class {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { name => 1 } );
+    my $name       = $parameters->{name};
+
+    foreach my $class (@{ $self->host_classes }) {
+        if ($class->name eq $name) {
+            return $class;
         }
     }
 
@@ -97,6 +104,42 @@ sub lookup_measurement_archive {
     }
 
     return;
+}
+
+sub lookup_address {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { address => 1 } );
+    my $address = $parameters->{address};
+
+    my $hosts = $self->lookup_hosts({ addresses => [ $address ] });
+    foreach my $curr_host (@$hosts) {
+        foreach my $curr_addr (@{ $curr_host->addresses }) {
+            return $curr_addr if ($curr_addr->address eq $address);
+        }
+    }
+
+    return;
+}
+
+sub lookup_host_classes_by_addresses {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { addresses => 1 } );
+    my $addresses    = $parameters->{addresses};
+
+    my %addresses = map { $_ => 1} @$addresses;
+
+    my @host_classes = ();
+
+    foreach my $host_class (@{ $self->host_classes }) {
+        foreach my $addr (@{ $host_class->get_addresses() }) {
+            if ($addresses{$addr->address}) {
+                push @host_classes, $host_class;
+                last;
+            }
+        }
+    }
+
+    return \@host_classes;
 }
 
 sub lookup_hosts {

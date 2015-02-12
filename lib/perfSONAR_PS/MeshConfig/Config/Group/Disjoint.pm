@@ -32,24 +32,21 @@ sub source_destination_pairs {
 
     my %no_agent_map = ();
     if ($self->no_agents) {
-        %no_agent_map = map { $_ => 1 } @{ $self->no_agents };
+        %no_agent_map = map { $_->address => 1 } $self->resolve_addresses($self->no_agents);
     }
 
     my @pairs = ();
-    foreach my $a_member (@{ $self->a_members }) {
-        foreach my $b_member (@{ $self->b_members }) {
-            my $pair = $self->__build_pair({
-                                            source_address => $a_member, source_no_agent => $no_agent_map{$a_member},
-                                            destination_address => $b_member, destination_no_agent => $no_agent_map{$b_member},
+    foreach my $a_member ($self->resolve_addresses($self->a_members)) {
+        foreach my $b_member ($self->resolve_addresses($self->b_members)) {
+            push @pairs, $self->__build_endpoint_pairs({
+                                            source_address => $a_member, source_no_agent => $no_agent_map{$a_member->address},
+                                            destination_address => $b_member, destination_no_agent => $no_agent_map{$b_member->address},
                                           });
-            push @pairs, $pair;
 
-            $pair = $self->__build_pair({
-                                            source_address => $b_member, source_no_agent => $no_agent_map{$b_member},
-                                            destination_address => $a_member, destination_no_agent => $no_agent_map{$a_member},
+            push @pairs, $self->__build_endpoint_pairs({
+                                            source_address => $b_member, source_no_agent => $no_agent_map{$b_member->address},
+                                            destination_address => $a_member, destination_no_agent => $no_agent_map{$a_member->address},
                                           });
-            push @pairs, $pair;
-
         }
     }
 
