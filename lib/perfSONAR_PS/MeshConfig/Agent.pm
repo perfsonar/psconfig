@@ -49,7 +49,7 @@ has 'send_error_emails'      => (is => 'rw', isa => 'Bool', default => 1);
 has 'from_address'           => (is => 'rw', isa => 'Str');
 has 'administrator_emails'   => (is => 'rw', isa => 'ArrayRef[Str]');
 
-has 'skip_redundant_tests'   => (is => 'rw', isa => 'Bool', default=>0);
+has 'skip_redundant_tests'   => (is => 'rw', isa => 'Bool', default=>1);
 
 has 'errors'                 => (is => 'rw', isa => 'ArrayRef[HashRef]');
 
