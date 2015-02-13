@@ -233,6 +233,19 @@ sub __configure_host {
     # don't change anything.
     my $dont_change = 0;
 
+    my $requesting_agent;
+    if ($self->addresses and scalar(@{ $self->addresses }) > 0) {
+        $requesting_agent = perfSONAR_PS::MeshConfig::Config::Host->new();
+        my @addr_objs = ();
+        foreach my $addr (@{ $self->addresses }) {
+            my $addr_obj = perfSONAR_PS::MeshConfig::Config::Address->new();
+            $addr_obj->address($addr);
+            $addr_obj->parent($requesting_agent);
+            push @addr_objs, $addr_obj;
+        }
+        $requesting_agent->addresses(\@addr_objs);
+    }
+
     foreach my $mesh_params (@{ $self->meshes }) {
         # Grab the mesh from the server
         my ($status, $res) = load_mesh({
@@ -240,6 +253,7 @@ sub __configure_host {
                                       validate_certificate => $mesh_params->{validate_certificate},
                                       ca_certificate_file => $mesh_params->{ca_certificate_file},
                                       ca_certificate_path => $mesh_params->{ca_certificate_path},
+                                      requesting_agent => $requesting_agent
                                    });
         if ($status != 0) {
             if ($mesh_params->{required}) {

@@ -27,12 +27,14 @@ sub load_mesh {
                                      ca_certificate_file => 0,
                                      ca_certificate_path => 0,
                                      relaxed_checking    => 0,
+                                     requesting_agent    => 0,
                                    });
     my $configuration_url      = $parameters->{configuration_url};
     my $validate_certificate   = $parameters->{validate_certificate};
     my $ca_certificate_file    = $parameters->{ca_certificate_file};
     my $ca_certificate_path    = $parameters->{ca_certificate_path};
     my $relaxed_checking       = $parameters->{relaxed_checking};
+    my $requesting_agent       = $parameters->{requesting_agent};
 
     my ($status, $res);
 
@@ -69,7 +71,7 @@ sub load_mesh {
         eval {
             my $strict = ($relaxed_checking?0:1);
 
-            $config = perfSONAR_PS::MeshConfig::Config::Mesh->parse($mesh_hash, $strict);
+            $config = perfSONAR_PS::MeshConfig::Config::Mesh->parse($mesh_hash, $strict, $requesting_agent);
         };
         if ($@) {
             my $msg = "Invalid mesh configuration: ".$@;

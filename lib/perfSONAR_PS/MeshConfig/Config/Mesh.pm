@@ -66,11 +66,14 @@ sub validate_mesh {
 
         foreach my $pair (@$pairs) {
             foreach my $direction ("source", "destination") {
-                $has_testing_agent = 1 unless ($pair->{$direction}->{addr_obj}->parent->no_agent);
+                unless ($pair->{$direction}->{addr_obj}->parent->no_agent) {
+                    $has_testing_agent = 1;
+                    last;
+                }
             }
         }
 
-        unless ($has_testing_agent and scalar(@$pairs) > 0) {
+        unless ($has_testing_agent or scalar(@$pairs) == 0) {
             die("Test '".$test->description."' does not have any hosts that can actually perform the test");
         }
     }

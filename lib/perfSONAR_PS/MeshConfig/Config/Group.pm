@@ -27,7 +27,7 @@ has 'type'      => (is => 'rw', isa => 'Str');
 has 'parent'    => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Test');
 
 override 'parse' => sub {
-    my ($class, $description, $strict) = @_;
+    my ($class, $description, $strict, $requesting_agent) = @_;
 
     if ($class eq __PACKAGE__) {
         unless ($description->{type}) {
@@ -35,7 +35,7 @@ override 'parse' => sub {
         }
 
         if ($description->{type} eq "mesh") {
-            return perfSONAR_PS::MeshConfig::Config::Group::Mesh->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::Group::Mesh->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "star") {
             # Backwards compatibility. Convert star -> disjoint.
@@ -44,13 +44,13 @@ override 'parse' => sub {
             delete($description->{center_address});
             delete($description->{members});
 
-            return perfSONAR_PS::MeshConfig::Config::Group::Disjoint->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::Group::Disjoint->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "disjoint") {
-            return perfSONAR_PS::MeshConfig::Config::Group::Disjoint->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::Group::Disjoint->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "ordered_mesh") {
-            return perfSONAR_PS::MeshConfig::Config::Group::OrderedMesh->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::Group::OrderedMesh->parse($description, $strict, $requesting_agent);
         }
         else {
             die("Unknown group type");
@@ -106,9 +106,10 @@ sub resolve_address {
     my @addresses = ();
 
     if ($address =~ /host_class::(.*)/) {
-        my $class = $self->lookup_host_class(name => $1);
+        my $class_name = $1;
+        my $class = $self->lookup_host_class(name => $class_name);
         unless ($class) {
-            die("Invalid host class: $class");
+            die("Invalid host class: $class_name");
         }
 
         push @addresses, @{ $class->get_addresses() };

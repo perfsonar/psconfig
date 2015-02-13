@@ -34,53 +34,63 @@ sub get_addresses {
     my $mesh = $host_class->parent;
 
     my $host = perfSONAR_PS::MeshConfig::Config::Host->new();
-    my $host_parent;
-
-    my @local_ips = get_ips();
-
-    # Merge a matching host block
-    my $hosts = $mesh->lookup_hosts({ addresses => \@local_ips });
-    if ($hosts and scalar(@$hosts) > 0) {
-        if (scalar(@$hosts) > 1) {
-            die("Multiple definitions for host with addresses: ".join(", ", @local_ips));
+    if ($self->requesting_agent) {
+        if ($host_class->host_properties) {
+            # Duplicate the host properties
+            $host = $host->merge(other => $host_class->host_properties);
         }
-        $host_parent = $hosts->[0]->parent; # Save the existing host parent since it may get used later...
 
-        $host = $host->merge(other => $hosts->[0]);
+        # Merge any properties configured by the user
+        $host = $host->merge(other => $self->requesting_agent);
     }
+    else {
+        my @local_ips = get_ips();
+        my $host_parent;
 
-    if ($host_class->host_properties) {
-        # Duplicate the host properties
-        $host = $host->merge(other => $host_class->host_properties);
-    }
+        # Merge a matching host block
+        my $hosts = $mesh->lookup_hosts({ addresses => \@local_ips });
+        if ($hosts and scalar(@$hosts) > 0) {
+            if (scalar(@$hosts) > 1) {
+                die("Multiple definitions for host with addresses: ".join(", ", @local_ips));
+            }
+            $host_parent = $hosts->[0]->parent; # Save the existing host parent since it may get used later...
 
-    # Reset the parent object if we found it in the "lookup_hosts" case. Since
-    # we're building a new host object based on the criteria here, this will be
-    # a one-way pointer...
-    $host->parent($host_parent) if $host_parent;
-
-    # Fill in any new local IPs for the host
-    my %existing_addresses = ();
-    foreach my $addr (@{ $host->addresses }) {
-        $existing_addresses{$addr->address} = $addr;
-    }
-
-    my @addresses = ();
-    foreach my $ip (@local_ips) {
-        if ($existing_addresses{$ip}) {
-            push @addresses, $existing_addresses{$ip};
+            $host = $host->merge(other => $hosts->[0]);
         }
-        else {
-            my $addr = perfSONAR_PS::MeshConfig::Config::Address->new();
-            $addr->address($ip);
-            $addr->parent($host);
-            push @addresses, $addr;
+
+        if ($host_class->host_properties) {
+            # Duplicate the host properties
+            $host = $host->merge(other => $host_class->host_properties);
         }
+
+        # Reset the parent object if we found it in the "lookup_hosts" case. Since
+        # we're building a new host object based on the criteria here, this will be
+        # a one-way pointer...
+        $host->parent($host_parent) if $host_parent;
+
+        # Fill in any new local IPs for the host
+        my %existing_addresses = ();
+        foreach my $addr (@{ $host->addresses }) {
+            $existing_addresses{$addr->address} = $addr;
+        }
+
+        my @addresses = ();
+        foreach my $ip (@local_ips) {
+            if ($existing_addresses{$ip}) {
+                push @addresses, $existing_addresses{$ip};
+            }
+            else {
+                my $addr = perfSONAR_PS::MeshConfig::Config::Address->new();
+                $addr->address($ip);
+                $addr->parent($host);
+                push @addresses, $addr;
+            }
+        }
+
+        $host->addresses(\@addresses);
     }
 
-    $host->addresses(\@addresses);
-
-    return \@addresses;
+    return $host->addresses;
 };
 
 1;

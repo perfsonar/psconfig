@@ -27,7 +27,7 @@ has 'type'                => (is => 'rw', isa => 'Str');
 has 'parent'                   => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::HostClass');
 
 override 'parse' => sub {
-    my ($class, $description, $strict) = @_;
+    my ($class, $description, $strict, $requesting_agent) = @_;
 
     if ($class eq __PACKAGE__) {
         unless ($description->{type}) {
@@ -35,13 +35,13 @@ override 'parse' => sub {
         }
 
         if ($description->{type} eq "mesh") {
-            return perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Mesh->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Mesh->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "current_mesh") {
-            return perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "requesting_agent") {
-            return perfSONAR_PS::MeshConfig::Config::HostClassDataSources::RequestingAgent->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::HostClassDataSources::RequestingAgent->parse($description, $strict, $requesting_agent);
         }
         else {
             die("Unknown host class data source type: ".$description->{type});

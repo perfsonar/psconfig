@@ -26,7 +26,7 @@ extends 'perfSONAR_PS::MeshConfig::Config::Base';
 has 'type'                => (is => 'rw', isa => 'Str');
 
 override 'parse' => sub {
-    my ($class, $description, $strict) = @_;
+    my ($class, $description, $strict, $requesting_agent) = @_;
 
     if ($class eq __PACKAGE__) {
         unless ($description->{type}) {
@@ -34,16 +34,16 @@ override 'parse' => sub {
         }
 
         if ($description->{type} eq "traceroute") {
-            return perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "perfsonarbuoy/owamp") {
-            return perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "perfsonarbuoy/bwctl") {
-            return perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYBwctl->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYBwctl->parse($description, $strict, $requesting_agent);
         }
         elsif ($description->{type} eq "pinger") {
-            return perfSONAR_PS::MeshConfig::Config::TestParameters::PingER->parse($description, $strict);
+            return perfSONAR_PS::MeshConfig::Config::TestParameters::PingER->parse($description, $strict, $requesting_agent);
         }
         else {
             die("Unknown test parameters type: ".$description->{type});
