@@ -143,11 +143,10 @@ sub add_mesh_tests {
                     # Check if a specific test (i.e. same
                     # source/destination/test parameters) has been added
                     # before, and if so, don't add it.
-                    my $already_added = $self->__add_test_if_not_added({ 
-                                                                         source             => $pair->{source}->{address},
-                                                                         destination        => $pair->{destination}->{address},
-                                                                         parameters         => $test->parameters->unparse(),
-                                                                     });
+                    my %duplicate_params = %{$test->parameters->unparse()};
+                    $duplicate_params{source} = $pair->{source}->{address};
+                    $duplicate_params{destination} = $pair->{destination}->{address};
+                    my $already_added = $self->__add_test_if_not_added(\%duplicate_params);
 
                     if ($already_added) {
                         $logger->debug("Test between ".$pair->{source}->{address}." to ".$pair->{destination}->{address}." already exists. Not re-adding");
