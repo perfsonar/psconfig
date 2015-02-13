@@ -146,7 +146,7 @@ sub add_mesh_tests {
                     my $already_added = $self->__add_test_if_not_added({ 
                                                                          source             => $pair->{source}->{address},
                                                                          destination        => $pair->{destination}->{address},
-                                                                         parameters         => $test->parameters,
+                                                                         parameters         => $test->parameters->unparse(),
                                                                      });
 
                     if ($already_added) {
