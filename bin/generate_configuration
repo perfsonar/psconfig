@@ -105,6 +105,7 @@ $agent->init({
                  pinger_landmarks => $conf{pinger_landmarks},
                  skip_redundant_tests => $conf{skip_redundant_tests},
                  addresses => $addresses,
+                 requesting_agent_config => $conf{local_host},
                  from_address => $conf{from_address},
                  administrator_emails => $conf{administrator_emails},
                  send_error_emails    => $conf{send_error_emails},
