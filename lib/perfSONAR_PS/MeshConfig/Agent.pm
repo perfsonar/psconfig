@@ -41,6 +41,8 @@ has 'regular_testing_conf'   => (is => 'rw', isa => 'Str', default => "/opt/perf
 has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool', default => 0);
 
 has 'addresses'              => (is => 'rw', isa => 'ArrayRef[Str]');
+has 'requesting_agent'       => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
+has 'requesting_agent_config' => (is => 'rw', isa => 'HashRef');
 
 has 'send_error_emails'      => (is => 'rw', isa => 'Bool', default => 1);
 
@@ -53,12 +55,77 @@ has 'errors'                 => (is => 'rw', isa => 'ArrayRef[HashRef]');
 
 my $logger = get_logger(__PACKAGE__);
 
+sub __build_requesting_agent {
+    my $parameters = validate( @_, { requesting_agent_config => 0, addresses => 0 });
+    my $requesting_agent_config = $parameters->{requesting_agent_config};
+    my $addresses = $parameters->{addresses};
+
+    $requesting_agent_config = {} unless $requesting_agent_config;
+
+    $requesting_agent_config = __map_arrays($requesting_agent_config);
+
+    if ($addresses and scalar(@$addresses) > 0) {
+        $requesting_agent_config->{addresses} = $addresses;
+    }
+    elsif (not $requesting_agent_config->{addresses}) {
+        my @addresses = get_ips();
+
+        $requesting_agent_config->{addresses} = \@addresses;
+    }
+
+    return perfSONAR_PS::MeshConfig::Config::Host->parse($requesting_agent_config, 1);
+}
+
+sub __map_arrays {
+    my ($hash, $outer_key) = @_;
+
+    my %array_mapping = (
+        'administrator' => { 'value' => 'administrators' }, 
+        'address'       => { value => 'addresses', except_in => 'addresses' }, 
+        'measurement_archive' => { 'value' => 'measurement_archives' },
+        'tag' => { 'value' => 'tags' }
+    );
+
+    use Data::Dumper;
+
+    my %ret_hash = ();
+
+    foreach my $key (keys %$hash) {
+        my $value = $hash->{$key};
+
+        if ($array_mapping{$key} and 
+            (not $array_mapping{$key}->{except_in} or
+             $array_mapping{$key}->{except_in} ne $outer_key)
+           ) {
+            $value = [ $value ] unless ref($value) eq "ARRAYREF";
+            $key = $array_mapping{$key}->{value};
+        }
+
+        if (ref($value) eq "ARRAY") {
+            my @new_values = ();
+            foreach my $sub_value (@$value) {
+                if (ref($sub_value) eq "HASH") {
+                    $sub_value = __map_arrays($sub_value, $key);
+                }
+                push @new_values, $sub_value;
+            }
+
+            $value = \@new_values;
+        }
+
+        $ret_hash{$key} = $value;
+    }
+
+    return \%ret_hash;
+}
+
 sub init {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { 
                                          meshes => 1,
                                          use_toolkit => 0,
                                          restart_services => 0,
+                                         requesting_agent_config => 0,
                                          validate_certificate => 0,
                                          ca_certificate_file => 0,
                                          ca_certificate_path => 0,
@@ -80,23 +147,16 @@ sub init {
         }
     }
 
+    my $requesting_agent = __build_requesting_agent(requesting_agent_config => $self->requesting_agent_config,
+                                                    addresses => $self->addresses);
+
+    $self->requesting_agent($requesting_agent) if $requesting_agent;
+
     return;
 }
 
 sub run {
     my ($self) = @_;
-
-    unless ($self->addresses) {
-        $self->addresses($self->__get_addresses());
-    }
-
-    if (scalar(@{ $self->addresses }) == 0) {
-        my $msg = "No addresses for this host";
-        $logger->error($msg);
-        $self->__add_error({ error_msg => $msg });
-        return;
-    }
-
 
     $self->__configure_host();
 
@@ -233,18 +293,7 @@ sub __configure_host {
     # don't change anything.
     my $dont_change = 0;
 
-    my $requesting_agent;
-    if ($self->addresses and scalar(@{ $self->addresses }) > 0) {
-        $requesting_agent = perfSONAR_PS::MeshConfig::Config::Host->new();
-        my @addr_objs = ();
-        foreach my $addr (@{ $self->addresses }) {
-            my $addr_obj = perfSONAR_PS::MeshConfig::Config::Address->new();
-            $addr_obj->address($addr);
-            $addr_obj->parent($requesting_agent);
-            push @addr_objs, $addr_obj;
-        }
-        $requesting_agent->addresses(\@addr_objs);
-    }
+    my @local_addresses = map { $_->address } @{ $self->requesting_agent->addresses };
 
     foreach my $mesh_params (@{ $self->meshes }) {
         # Grab the mesh from the server
@@ -253,7 +302,7 @@ sub __configure_host {
                                       validate_certificate => $mesh_params->{validate_certificate},
                                       ca_certificate_file => $mesh_params->{ca_certificate_file},
                                       ca_certificate_path => $mesh_params->{ca_certificate_path},
-                                      requesting_agent => $requesting_agent
+                                      requesting_agent => $self->requesting_agent
                                    });
         if ($status != 0) {
             if ($mesh_params->{required}) {
@@ -296,12 +345,12 @@ sub __configure_host {
             }
 
             # Find the host block associated with this machine
-            my $hosts = $mesh->lookup_hosts({ addresses => $self->addresses });
-            my $host_classes = $mesh->lookup_host_classes_by_addresses({ addresses => $self->addresses });
+            my $hosts = $mesh->lookup_hosts({ addresses => \@local_addresses });
+            my $host_classes = $mesh->lookup_host_classes_by_addresses({ addresses => \@local_addresses });
 
             unless ($hosts->[0] or $host_classes->[0]) {
                 if ($mesh_params->{permit_non_participation}) {
-                    my $msg = "This machine is not included in any tests for this mesh: ".join(", ", @{ $self->addresses });
+                    my $msg = "This machine is not included in any tests for this mesh: ".join(", ", @local_addresses);
                     $logger->info($msg);
                     next;
                 }
@@ -310,7 +359,7 @@ sub __configure_host {
                     $dont_change = 1;
                 }
 
-                my $msg = "Can't find any host blocks associated with the addresses on this machine: ".join(", ", @{ $self->addresses });
+                my $msg = "Can't find any host blocks associated with the addresses on this machine: ".join(", ", @local_addresses);
                 $logger->error($msg);
                 $self->__add_error({ mesh => $mesh, error_msg => $msg });
                 next;
@@ -321,16 +370,11 @@ sub __configure_host {
                     $dont_change = 1;
                 }
 
-                my $msg = "Multiple 'host' elements associated with the addresses on this machine: ".join(", ", @{ $self->addresses });
+                my $msg = "Multiple 'host' elements associated with the addresses on this machine: ".join(", ", @local_addresses);
                 $logger->warn($msg);
             }
 
-            my %addresses = ();
-
-            # Add any addresses pre-configured
-            foreach my $addr (@{ $self->addresses }) {
-                $addresses{$addr} = 1;
-            }
+            my %addresses = map { $_ => 1 } @local_addresses;
 
             # Add any addresses found in host blocks
             foreach my $host (@$hosts) {
@@ -350,17 +394,17 @@ sub __configure_host {
                 }
             }
 
-            my @addresses = keys %addresses;
+            @local_addresses = keys %addresses;
 
 	    # Find the tests that this machine is expected to run with all the
 	    # addresses obtained
-            my $tests = $mesh->lookup_tests_by_addresses({ addresses => \@addresses });
+            my $tests = $mesh->lookup_tests_by_addresses({ addresses => \@local_addresses });
             if (scalar(@$tests) == 0) {
                 if ($mesh_params->{required}) {
                     $dont_change = 1;
                 }
 
-                my $msg = "No tests for this host to run: ".join(", ", @{ $self->addresses });
+                my $msg = "No tests for this host to run: ".join(", ", @local_addresses);
                 $logger->error($msg);
                 $self->__add_error({ mesh => $mesh, host => $hosts->[0], error_msg => $msg });
                 next;
@@ -370,7 +414,7 @@ sub __configure_host {
             eval {
                 $generator->add_mesh_tests({ mesh => $mesh,
                                              tests => $tests,
-                                             addresses => \@addresses,
+                                             addresses => \@local_addresses,
                                            });
             };
             if ($@) {
