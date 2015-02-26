@@ -68,9 +68,7 @@ sub __build_requesting_agent {
         $requesting_agent_config->{addresses} = $addresses;
     }
     elsif (not $requesting_agent_config->{addresses}) {
-        my @addresses = get_ips();
-
-        $requesting_agent_config->{addresses} = \@addresses;
+        $requesting_agent_config->{addresses} = __get_addresses()
     }
 
     return perfSONAR_PS::MeshConfig::Config::Host->parse($requesting_agent_config, 1);
