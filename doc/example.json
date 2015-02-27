@@ -328,6 +328,59 @@
             "test_interval" : "600"
          },
          "description" : "Traceroute Test Between DICE Bandwidth Hosts"
+      },
+      {
+         "members" : {
+            "a_members" : [
+               "host_class::internet2"
+            ],
+            "b_members" : [
+               "host_class::esnet"
+            ],
+            "type" : "disjoint"
+         },
+         "parameters" : {
+            "protocol" : "udp",
+            "max_ttl" : "64",
+            "waittime" : "5",
+            "pause" : "0",
+            "first_ttl" : "0",
+            "timeout" : "30",
+            "type" : "traceroute",
+            "packet_size" : "40",
+            "test_interval" : "600"
+         },
+         "description" : "Inter-Organization Traceroute Tests Between Internet2 And ESnet Hosts"
+      }
+   ],
+   "host_classes" : [
+      {
+         "data_sources" : [
+            {
+               "type" : "current_mesh"
+            }
+         ],
+         "name" : "internet2",
+         "match_filters" : [
+            {
+               "type" : "organization",
+               "description" : "internet2"
+            }
+         ]
+      },
+      {
+         "data_sources" : [
+            {
+               "type" : "current_mesh"
+            }
+         ],
+         "name" : "esnet",
+         "match_filters" : [
+            {
+               "type" : "organization",
+               "description" : "esnet"
+            }
+         ]
       }
    ],
    "description" : "DICE Mesh"

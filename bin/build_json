@@ -96,6 +96,9 @@ my %array_variables = (
                     "organization" => { new_key => "organizations" },
                     "host" => { new_key => "hosts" },
                     "no_agent" => { except => [ "hosts" ], new_key => "no_agents" },
+                    "filter" => { new_key => "filters" },
+                    "data_source" => { new_key => "data_sources" },
+                    "host_class" => { new_key => "host_classes", except => [ "filter", "filters" ] },
                 );
 
 # Parse everything except the 'test', 'group' and 'test_spec' elements.
@@ -169,9 +172,33 @@ if ($configuration{"test"}) {
     $json_configuration->{tests} = \@tests;
 }
 
-# Look through the hosts and fill-in measurement archives for any hosts
-# labelled "uses_default_toolkit_archives"
-__fill_toolkit_archives($json_configuration);
+# Normalize the host class 'match' and 'exclude' blocks.
+# 
+# Instead of:
+#    <match>
+#       <filter>...</filter>
+#       <filter>...</filter>
+#       <filter>...</filter>
+#    </match>
+#
+# These are just an array of 'filter' objects named 'match_filters' or
+# 'exclude_filters'.
+if ($json_configuration->{"host_classes"}) {
+    foreach my $host_class (@{ $json_configuration->{"host_classes"} }) {
+        foreach my $type ("match", "exclude") {
+            next unless ($host_class->{$type});
+
+            my $filters = $host_class->{$type}->{filters};
+
+            delete($host_class->{$type});
+
+            next unless $filters;
+
+            $host_class->{$type."_filters"} = $filters;
+        }
+    }
+}
+
 
 # Validate the mesh by outputing a temporary file, and loading the mesh as
 # normal.
@@ -242,75 +269,12 @@ else {
 
 exit 0;
 
-sub __fill_toolkit_archives {
-    my ($element) = @_;
-
-    if ($element->{hosts}) {
-        foreach my $host (@{ $element->{hosts} }) {
-            if ($host->{uses_default_toolkit_archives}) {
-                delete($host->{uses_default_toolkit_archives});
-                __add_toolkit_archives($host);
-            }
-        }
-    }
-
-    foreach my $key ("organizations", "sites") {
-        if ($element->{$key}) {
-            foreach my $elm (@{ $element->{$key} }) {
-                __fill_toolkit_archives($elm);
-            }
-        }
-    }
-
-    return;
-}
-
-sub __add_toolkit_archives {
-    my ($host) = @_;
-
-    return unless $host->{addresses};
-
-    my $default_addr;
-
-    my @dns_names  = grep { is_domain($_) } @{ $host->{addresses} };
-    my @ipv4_addrs = grep { is_ipv4($_) } @{ $host->{addresses} };
-
-    if (scalar(@dns_names) > 0) {
-        $default_addr = $dns_names[0];
-    }
-
-    if (not $default_addr and scalar(@ipv4_addrs) > 0) {
-        $default_addr = $ipv4_addrs[0];
-    }
-
-    if (not $default_addr) {
-        $default_addr = $host->{addresses}->[0];
-    }
-
-    return unless $default_addr;
-
-    $host->{measurement_archives} = [
-        {
-            type      => "perfsonarbuoy/bwctl",
-            read_url  => "http://$default_addr:8085/perfSONAR_PS/services/pSB",
-            write_url => "$default_addr:8569"
-        },
-        {
-            type      => "perfsonarbuoy/owamp",
-            read_url => "http://$default_addr:8085/perfSONAR_PS/services/pSB",
-            write_url => "$default_addr:8570"
-        },
-        {
-            type      => "pinger",
-            read_url  => "http://$default_addr:8075/perfSONAR_PS/services/pinger/ma"
-        }
-    ];
-}
-
 # Go through the hash, and convert any 'array' variables into an array, and
 # rename their 'key'.
 sub __parse_hash {
     my ($hash, $skip, $in_key) = @_;
+
+    $in_key = "" unless $in_key;
 
     my %skip_map = map { $_ => 1 } @$skip;
 
