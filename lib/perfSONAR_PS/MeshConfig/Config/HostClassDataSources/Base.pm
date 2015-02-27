@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
+package perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Base;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base;
 
 =head1 DESCRIPTION
 
@@ -17,36 +17,19 @@ perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Base';
+extends 'perfSONAR_PS::MeshConfig::Config::Base';
 
-override 'type' => sub { "current_mesh" };
+has 'parent'                   => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::HostClass');
+
+sub type {
+    die("'type' needs to be overridden");
+}
 
 sub get_addresses {
-    my ($self) = @_;
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { } );
 
-    my $host_class = $self->parent;
-    my $mesh = $host_class->parent;
-
-    my @hosts = ();
-    push @hosts, @{ $mesh->hosts };
-
-    foreach my $organization (@{ $mesh->organizations }) {
-        push @hosts, @{ $organization->hosts };
-        foreach my $site (@{ $organization->sites }) {
-            push @hosts, @{ $site->hosts };
-        }
-    }
-
-    my %addresses = ();
-    foreach my $host (@hosts) {
-        foreach my $addr (@{ $host->addresses }) {
-            $addresses{$addr->address} = $addr;
-        }
-    }
-
-    my @addresses = values %addresses;
-
-    return \@addresses;
+    die("'get_addresses' needs to be overridden");
 }
 
 1;

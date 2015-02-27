@@ -16,12 +16,9 @@ perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::TestParameters';
+extends 'perfSONAR_PS::MeshConfig::Config::TestParameters::Base';
 
-sub BUILD {
-    my ($self) = @_;
-    $self->type("traceroute");
-}
+override 'type' => sub { "traceroute" };
 
 has 'test_interval' => (is => 'rw', isa => 'Int');
 has 'tool' => (is => 'rw', isa => 'Str');

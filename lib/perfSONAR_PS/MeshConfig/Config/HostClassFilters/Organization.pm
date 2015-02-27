@@ -19,8 +19,10 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::OrganizationName;
 
 extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
 
-has 'value'        => (is => 'rw', isa => 'Str');
-has 'exact'               => (is => 'rw', isa => 'Bool');
+override 'type' => sub { "organization" };
+
+has 'description'  => (is => 'rw', isa => 'Str');
+has 'exact'        => (is => 'rw', isa => 'Bool');
 
 sub check_address {
     my ($self, @args) = @_;
@@ -36,14 +38,14 @@ sub check_address {
     }
 
     if ($curr_obj) {
-        if ($curr_obj->description eq $self->value) {
+        if ($curr_obj->description eq $self->description) {
             $matches = 1;
         }
         elsif (not $self->exact) {
-            if (lc($curr_obj->description) eq lc($self->value)) {
+            if (lc($curr_obj->description) eq lc($self->description)) {
                 $matches = 1;
             }
-            elsif (index(lc($curr_obj->description), lc($self->value)) > -1) {
+            elsif (index(lc($curr_obj->description), lc($self->description)) > -1) {
                 $matches = 1;
             }
         }

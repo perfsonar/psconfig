@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
+package perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase;
 
 =head1 DESCRIPTION
 
@@ -17,37 +17,19 @@ perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Base';
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
 
-override 'type' => sub { "current_mesh" };
-
-sub get_addresses {
-    my ($self) = @_;
-
-    my $host_class = $self->parent;
-    my $mesh = $host_class->parent;
-
-    my @hosts = ();
-    push @hosts, @{ $mesh->hosts };
-
-    foreach my $organization (@{ $mesh->organizations }) {
-        push @hosts, @{ $organization->hosts };
-        foreach my $site (@{ $organization->sites }) {
-            push @hosts, @{ $site->hosts };
-        }
-    }
-
-    my %addresses = ();
-    foreach my $host (@hosts) {
-        foreach my $addr (@{ $host->addresses }) {
-            $addresses{$addr->address} = $addr;
-        }
-    }
-
-    my @addresses = values %addresses;
-
-    return \@addresses;
-}
+has 'filters'       => (is => 'rw',
+                        isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base]',
+                        default => sub { [] },
+                        trigger =>
+                            sub { 
+                                  my ($self) = @_;
+                                  if (scalar(@{ $self->filters }) == 0) {
+                                      die("You must specify at least 1 filter");
+                                  }
+                              }
+                        );
 
 1;
 

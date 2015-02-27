@@ -16,12 +16,9 @@ perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYBwctl;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::TestParameters';
+extends 'perfSONAR_PS::MeshConfig::Config::TestParameters::Base';
 
-sub BUILD {
-    my ($self) = @_;
-    $self->type("perfsonarbuoy/bwctl");
-}
+override 'type' => sub { "perfsonarbuoy/bwctl" };
 
 has 'tool',           => (is => 'rw', isa => 'Str');
 has 'duration'        => (is => 'rw', isa => 'Int');

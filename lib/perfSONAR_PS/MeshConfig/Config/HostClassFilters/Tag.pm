@@ -19,7 +19,9 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::OrganizationName;
 
 extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
 
-has 'value'        => (is => 'rw', isa => 'Str');
+override 'type' => sub { "tag" };
+
+has 'tag'          => (is => 'rw', isa => 'Str');
 has 'exact'        => (is => 'rw', isa => 'Bool');
 
 sub check_address {
@@ -34,8 +36,8 @@ sub check_address {
     while ($curr_obj and
            $curr_obj->can("tags")) {
             foreach my $tag (@{ $curr_obj->tags }) {
-                print "Checking: ".$tag."/".$self->value."\n";
-                if (_matches(str => $tag, pattern => $self->value, exact => $self->exact)) {
+                print "Checking: ".$tag."/".$self->tag."\n";
+                if (_matches(str => $tag, pattern => $self->tag, exact => $self->exact)) {
                     $matches = 1;
                     last;
                 }

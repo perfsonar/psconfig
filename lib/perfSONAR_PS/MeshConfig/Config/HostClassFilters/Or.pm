@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
+package perfSONAR_PS::MeshConfig::Config::HostClassFilters::Or;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::Or;
 
 =head1 DESCRIPTION
 
@@ -17,10 +17,11 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase;
 
-has 'value'        => (is => 'rw', isa => 'Str');
-has 'exact'               => (is => 'rw', isa => 'Bool');
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase';
+
+override 'type' => sub { "or" };
 
 sub check_address {
     my ($self, @args) = @_;
@@ -28,29 +29,18 @@ sub check_address {
     my $host_class = $parameters->{host_class};
     my $address    = $parameters->{address};
 
-    my $matches;
-    my $curr_obj = $address->parent;
-    while ($curr_obj and
-           not $curr_obj->isa("perfSONAR_PS::MeshConfig::Config::Site")) {
-            $curr_obj = $curr_obj->parent;
-    }
+    my $matches = 0;
 
-    if ($curr_obj) {
-        if ($curr_obj->description eq $self->value) {
+    foreach my $filter (@{ $self->filters }) {
+        if (not $filter->check_address(host_class => $host_class, address => $address)) {
             $matches = 1;
-        }
-        elsif (not $self->exact) {
-            if (lc($curr_obj->description) eq lc($self->value)) {
-                $matches = 1;
-            }
-            elsif (index(lc($curr_obj->description), lc($self->value)) > -1) {
-                $matches = 1;
-            }
+            last;
         }
     }
 
     return $matches;
 }
+
 
 1;
 

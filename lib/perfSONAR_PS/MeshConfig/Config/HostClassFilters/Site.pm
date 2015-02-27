@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+package perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
 use strict;
 use warnings;
 
@@ -6,14 +6,10 @@ our $VERSION = 3.1;
 
 use Moose;
 use Params::Validate qw(:all);
-use Net::IP;
-use Data::Validate::IP qw(is_ipv4);
-
-use perfSONAR_PS::Utils::DNS qw(resolve_address);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
 
 =head1 DESCRIPTION
 
@@ -23,10 +19,10 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
 
 extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
 
-override 'type' => sub { "address_type" };
+override 'type' => sub { "site" };
 
-has 'address_type' => (is => 'rw', isa => 'Str');
-                       #trigger => sub { die ("Invalid address type") unless $_->address_type eq "ipv4" or $_->address_type eq "ipv6" });
+has 'description'  => (is => 'rw', isa => 'Str');
+has 'exact'        => (is => 'rw', isa => 'Bool');
 
 sub check_address {
     my ($self, @args) = @_;
@@ -34,26 +30,24 @@ sub check_address {
     my $host_class = $parameters->{host_class};
     my $address    = $parameters->{address};
 
-    my @ip_addresses = ();
-
-    if (Net::IP::ip_is_ipv6( $address->address ) or
-        is_ipv4( $address->address )) {
-        push @ip_addresses, $address->address;
-    }
-    else {
-        push @ip_addresses, resolve_address($address->address);
-    }
-
     my $matches;
-    foreach my $ip (@ip_addresses) {
-        if ($self->address_type eq "ipv4" and is_ipv4($ip)) {
-            $matches = 1;
-            last;
-        }
+    my $curr_obj = $address->parent;
+    while ($curr_obj and
+           not $curr_obj->isa("perfSONAR_PS::MeshConfig::Config::Site")) {
+            $curr_obj = $curr_obj->parent;
+    }
 
-        if ($self->address_type eq "ipv6" and Net::IP::ip_is_ipv6($ip)) {
+    if ($curr_obj) {
+        if ($curr_obj->description eq $self->description) {
             $matches = 1;
-            last;
+        }
+        elsif (not $self->exact) {
+            if (lc($curr_obj->description) eq lc($self->description)) {
+                $matches = 1;
+            }
+            elsif (index(lc($curr_obj->description), lc($self->description)) > -1) {
+                $matches = 1;
+            }
         }
     }
 

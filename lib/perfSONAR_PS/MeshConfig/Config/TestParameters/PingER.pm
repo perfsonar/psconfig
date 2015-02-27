@@ -16,12 +16,9 @@ perfSONAR_PS::MeshConfig::Config::TestParameters::PingER;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::TestParameters';
+extends 'perfSONAR_PS::MeshConfig::Config::TestParameters::Base';
 
-sub BUILD {
-    my ($self) = @_;
-    $self->type("pinger");
-}
+override 'type' => sub { "pinger" };
 
 has 'packet_size'     => (is => 'rw', isa => 'Int');
 has 'packet_ttl'      => (is => 'rw', isa => 'Int');

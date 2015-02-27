@@ -9,10 +9,14 @@ use Params::Validate qw(:all);
 
 use perfSONAR_PS::MeshConfig::Config::Administrator;
 use perfSONAR_PS::MeshConfig::Config::Group;
-use perfSONAR_PS::MeshConfig::Config::TestParameters;
 use perfSONAR_PS::MeshConfig::Config::MeasurementArchive;
 use perfSONAR_PS::MeshConfig::Config::Mesh;
 use perfSONAR_PS::MeshConfig::Config::ExpectedTestResults;
+
+use perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYBwctl;
+use perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
+use perfSONAR_PS::MeshConfig::Config::TestParameters::PingER;
+use perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute;
 
 =head1 NAME
 
@@ -32,7 +36,7 @@ has 'disabled'            => (is => 'rw', isa => 'Bool');
 
 has 'administrators'      => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Administrator]', default => sub { [] });
 has 'members'             => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Group');
-has 'parameters'          => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::TestParameters');
+has 'parameters'          => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::TestParameters::Base');
 
 has 'expected_results'    => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::ExpectedTestResults]', default => sub { [] });
 

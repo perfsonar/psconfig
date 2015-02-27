@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+package perfSONAR_PS::MeshConfig::Config::HostClassFilters::Not;
 use strict;
 use warnings;
 
@@ -6,14 +6,10 @@ our $VERSION = 3.1;
 
 use Moose;
 use Params::Validate qw(:all);
-use Net::IP;
-use Data::Validate::IP qw(is_ipv4);
-
-use perfSONAR_PS::Utils::DNS qw(resolve_address);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::Not;
 
 =head1 DESCRIPTION
 
@@ -21,12 +17,11 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase;
 
-override 'type' => sub { "address_type" };
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase';
 
-has 'address_type' => (is => 'rw', isa => 'Str');
-                       #trigger => sub { die ("Invalid address type") unless $_->address_type eq "ipv4" or $_->address_type eq "ipv6" });
+override 'type' => sub { "not" };
 
 sub check_address {
     my ($self, @args) = @_;
@@ -34,31 +29,12 @@ sub check_address {
     my $host_class = $parameters->{host_class};
     my $address    = $parameters->{address};
 
-    my @ip_addresses = ();
+    # We're making use of the "check_filters" function in the host class to
+    # check our filters which is kind of hacky...
 
-    if (Net::IP::ip_is_ipv6( $address->address ) or
-        is_ipv4( $address->address )) {
-        push @ip_addresses, $address->address;
-    }
-    else {
-        push @ip_addresses, resolve_address($address->address);
-    }
-
-    my $matches;
-    foreach my $ip (@ip_addresses) {
-        if ($self->address_type eq "ipv4" and is_ipv4($ip)) {
-            $matches = 1;
-            last;
-        }
-
-        if ($self->address_type eq "ipv6" and Net::IP::ip_is_ipv6($ip)) {
-            $matches = 1;
-            last;
-        }
-    }
-
-    return $matches;
+    return not $host_class->check_filters(address => $address, filters => $self->filters);
 }
+
 
 1;
 

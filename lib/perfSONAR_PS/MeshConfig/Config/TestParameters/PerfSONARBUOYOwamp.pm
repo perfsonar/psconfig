@@ -16,12 +16,9 @@ perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::TestParameters';
+extends 'perfSONAR_PS::MeshConfig::Config::TestParameters::Base';
 
-sub BUILD {
-    my ($self) = @_;
-    $self->type("perfsonarbuoy/owamp");
-}
+override 'type' => sub { "perfsonarbuoy/owamp" };
 
 has 'bucket_width'    => (is => 'rw', isa => 'Num');
 has 'packet_interval' => (is => 'rw', isa => 'Num');

@@ -19,33 +19,16 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base;
 
 extends 'perfSONAR_PS::MeshConfig::Config::Base';
 
-has 'value'               => (is => 'rw', isa => 'Str');
+sub type {
+    die("'type' needs to be overridden");
+}
 
-override 'parse' => sub {
-    my ($class, $description, $strict) = @_;
+sub check_address {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { host_class => 1, address => 1 });
 
-    # For backwards compatibility, convert it to an object if it's just a
-    # string
-    unless (ref($description)) { 
-        $description = { value => $description };
-    }
-
-    return $class->SUPER::parse($description, $strict);
-};
-
-override 'unparse' => sub {
-    my ($self) = @_;
-
-    my $object = super();
-
-   # For backwards compatibility, convert it from an object to a string if
-   # it doesn't use any of the properties of the object other than 'value'
-   if (scalar(keys %$object) == 1 and $object->{value}) {
-        $object = $object->{value};
-    }
-
-    return $object;
-};
+    die("'check_address' needs to be overridden");
+}
 
 1;
 

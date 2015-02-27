@@ -17,16 +17,27 @@ perfSONAR_PS::MeshConfig::Config::HostClass;
 
 =cut
 
-use perfSONAR_PS::MeshConfig::Config::HostClassDataSource;
-use perfSONAR_PS::MeshConfig::Config::HostClassFilters;
+use perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
+use perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Mesh;
+use perfSONAR_PS::MeshConfig::Config::HostClassDataSources::RequestingAgent;
+
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::And;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::HostClass;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Netmask;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Not;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Organization;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Or;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Site;
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::Tag;
 
 extends 'perfSONAR_PS::MeshConfig::Config::Base';
 
 has 'name'                => (is => 'rw', isa => 'Str');
 
-has 'data_sources'        => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassDataSource]', default => sub { [] });
-has 'match_filters'       => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters]', default => sub { [] });
-has 'exclude_filters'     => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters]', default => sub { [] });
+has 'data_sources'        => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Base]', default => sub { [] });
+has 'match_filters'       => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base]', default => sub { [] });
+has 'exclude_filters'     => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base]', default => sub { [] });
 
 has 'host_properties'     => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
 
@@ -43,39 +54,69 @@ sub get_addresses {
 
     # Select only those addresses that match the match filters
     my @filtered_addresses = ();
-    foreach my $addr (@addresses) {
-        my $matches = 1;
+    foreach my $address (@addresses) {
+        my $matches = 0;
 
-        foreach my $filter (@{ $self->match_filters }) {
-            unless ($filter->check_address(address => $addr)) {
-                $matches = 0;
-                last;
-            }
+        # An empty match filters means match everything
+        if (scalar(@{ $self->match_filters }) == 0 or
+            $self->check_filters(address => $address, filters => $self->match_filters)) {
+            $matches = 1;
         }
 
-        push @filtered_addresses, $addr if $matches;
-    }
+        next unless $matches;
 
-    @addresses = @filtered_addresses;
-
-    # Remove any addresses that should be filtered
-    @filtered_addresses = ();
-    foreach my $addr (@addresses) {
-        my $excluded = 0;
-
-        foreach my $filter (@{ $self->exclude_filters }) {
-            if ($filter->check_address(address => $addr)) {
-                $excluded = 1;
-                last;
-            }
+        # An empty exclude filters means don't exclude anything
+        if (scalar(@{ $self->exclude_filters }) > 0 and
+            $self->check_filters(address => $address, filters => $self->exclude_filters)) {
+            $matches = 0;
         }
 
-        push @filtered_addresses, $addr unless $excluded;
+        push @filtered_addresses, $address if $matches;
     }
 
     @addresses = @filtered_addresses;
 
     return \@addresses;
+}
+
+sub check_filters {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { filters => 1, address => 1 });
+    my $filters = $parameters->{filters};
+    my $address = $parameters->{address};
+
+    my %filters_by_type = ();
+    foreach my $filter (@$filters) {
+        my $type = $filter->type;
+        $filters_by_type{$type} = [] unless ($filters_by_type{$type});
+
+        push @{ $filters_by_type{$type} }, $filter;
+    }
+
+    my @filter_sets = values %filters_by_type;
+
+    # The semantics we're going for are that it must match all the different
+    # types of filters, but may match any filter of each type. i.e. AND between
+    # different filter types, OR between different filters of the same type.
+    my $address_matches = 1;
+
+    foreach my $filter_set (@filter_sets) {
+        my $filter_set_matches;
+
+        foreach my $filter (@$filter_set) {
+            if ($filter->check_address(host_class => $self, address => $address)) {
+                $filter_set_matches = 1;
+                last;
+            }
+        }
+
+        unless ($filter_set_matches) {
+            $address_matches = 0;
+            last;
+        }
+    }
+
+    return $address_matches;
 }
 
 1;

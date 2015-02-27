@@ -8,7 +8,7 @@ use Moose;
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute;
+perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Mesh;
 
 =head1 DESCRIPTION
 
@@ -16,12 +16,9 @@ perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSource';
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Base';
 
-sub BUILD {
-    my ($self) = @_;
-    $self->type("mesh");
-}
+override 'type' => sub { "mesh" };
 
 has 'mesh_url' => (is => 'rw', isa => 'Str');
 

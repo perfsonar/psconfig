@@ -19,12 +19,9 @@ perfSONAR_PS::MeshConfig::Config::HostClassDataSources::RequestingAgent;
 
 use perfSONAR_PS::Utils::Host qw(get_ips);
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSource';
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Base';
 
-sub BUILD {
-    my ($self) = @_;
-    $self->type("requesting_agent");
-}
+override 'type' => sub { "requesting_agent" };
 
 sub get_addresses {
     my ($self, @args) = @_;

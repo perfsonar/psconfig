@@ -19,7 +19,9 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::HostClass;
 
 extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
 
-has 'value'        => (is => 'rw', isa => 'Str');
+override 'type' => sub { "host_class" };
+
+has 'class'        => (is => 'rw', isa => 'Str');
 
 sub check_address {
     my ($self, @args) = @_;
@@ -36,7 +38,7 @@ sub check_address {
         next if ($curr_class->name eq $host_class->name); 
 
         # Skip this host class if it's not the one we're checking
-        next if ($self->value ne "any" and $curr_class->name ne $self->value); 
+        next if ($self->class ne "any" and $curr_class->name ne $self->class); 
 
         foreach my $curr_addr (@{ $curr_class->get_addresses }) {
             if ($curr_addr->address eq $address->address) {

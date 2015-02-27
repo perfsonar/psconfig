@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+package perfSONAR_PS::MeshConfig::Config::HostClassFilters::And;
 use strict;
 use warnings;
 
@@ -6,14 +6,10 @@ our $VERSION = 3.1;
 
 use Moose;
 use Params::Validate qw(:all);
-use Net::IP;
-use Data::Validate::IP qw(is_ipv4);
-
-use perfSONAR_PS::Utils::DNS qw(resolve_address);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::And;
 
 =head1 DESCRIPTION
 
@@ -21,12 +17,11 @@ perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
 
 =cut
 
-extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
+use perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase;
 
-override 'type' => sub { "address_type" };
+extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::OperandBase';
 
-has 'address_type' => (is => 'rw', isa => 'Str');
-                       #trigger => sub { die ("Invalid address type") unless $_->address_type eq "ipv4" or $_->address_type eq "ipv6" });
+override 'type' => sub { "and" };
 
 sub check_address {
     my ($self, @args) = @_;
@@ -34,31 +29,18 @@ sub check_address {
     my $host_class = $parameters->{host_class};
     my $address    = $parameters->{address};
 
-    my @ip_addresses = ();
+    my $matches = 1;
 
-    if (Net::IP::ip_is_ipv6( $address->address ) or
-        is_ipv4( $address->address )) {
-        push @ip_addresses, $address->address;
-    }
-    else {
-        push @ip_addresses, resolve_address($address->address);
-    }
-
-    my $matches;
-    foreach my $ip (@ip_addresses) {
-        if ($self->address_type eq "ipv4" and is_ipv4($ip)) {
-            $matches = 1;
-            last;
-        }
-
-        if ($self->address_type eq "ipv6" and Net::IP::ip_is_ipv6($ip)) {
-            $matches = 1;
+    foreach my $filter (@{ $self->filters }) {
+        if (not $filter->check_address(host_class => $host_class, address => $address)) {
+            $matches = 0;
             last;
         }
     }
 
     return $matches;
 }
+
 
 1;
 

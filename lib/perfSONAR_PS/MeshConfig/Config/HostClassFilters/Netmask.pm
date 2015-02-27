@@ -26,7 +26,9 @@ perfSONAR_PS::MeshConfig::HostClassFilters::Netmask;
 
 extends 'perfSONAR_PS::MeshConfig::Config::HostClassFilters::Base';
 
-has 'value'             => (is => 'rw', isa => 'Str');
+override 'type' => sub { "netmask" };
+
+has 'netmask'      => (is => 'rw', isa => 'Str');
 
 sub check_address {
     my ($self, @args) = @_;
@@ -47,7 +49,7 @@ sub check_address {
     my $matches;
     foreach my $ip (@ip_addresses) {
         eval {
-            if (cidrlookup( $ip, $self->value )) {
+            if (cidrlookup( $ip, $self->netmask )) {
                 $matches = 1;
             }
         };
