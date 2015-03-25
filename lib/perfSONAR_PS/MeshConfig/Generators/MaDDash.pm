@@ -349,9 +349,9 @@ sub generate_maddash_config {
                             #go through all hosts
                             my %seen_src_ip = ();
                             foreach my $src_site_host_addr (@{ $src_site_host->{addresses} }) {
-                                my $src_ip = $src_site_host_addr;
-                                if(!is_ipv4($src_site_host_addr) && !is_ipv6($src_site_host_addr)){
-                                    $src_ip = __get_hostname_ip($src_site_host_addr, $test_type);
+                                my $src_ip = $src_site_host_addr->address;
+                                if(!is_ipv4($src_ip) && !is_ipv6($src_ip)){
+                                    $src_ip = __get_hostname_ip($src_ip, $test_type);
                                 }
                                 $src_ip = '' . Net::IP->new($src_ip)->ip() if($src_ip);#normalize ipv6
                                 next if($seen_src_ip{$src_ip});
@@ -359,9 +359,9 @@ sub generate_maddash_config {
                                 next if $test_type eq 'ipv6' && !is_ipv6($src_ip);
                                 my %seen_dst_ip = ();
                                 foreach my $dst_site_host_addr (@{ $dst_site_host->{addresses} }) {
-                                    my $dst_ip = $dst_site_host_addr;
-                                    if(!is_ipv4($dst_site_host_addr) && !is_ipv6($dst_site_host_addr)){
-                                        $dst_ip = __get_hostname_ip($dst_site_host_addr, $test_type);
+                                    my $dst_ip = $dst_site_host_addr->address;
+                                    if(!is_ipv4($dst_ip) && !is_ipv6($dst_ip)){
+                                        $dst_ip = __get_hostname_ip($dst_ip, $test_type);
                                     }
                                     $dst_ip = '' . Net::IP->new($dst_ip)->ip() if($dst_ip);#normalize ipv6
                                     next if($seen_dst_ip{$dst_ip});
