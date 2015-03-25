@@ -127,7 +127,6 @@ sub init {
                                          validate_certificate => 0,
                                          ca_certificate_file => 0,
                                          ca_certificate_path => 0,
-                                         use_regular_testing => 0,
                                          regular_testing_conf => 0,
                                          force_bwctl_owamp    => 0,
                                          traceroute_master_conf => 0,

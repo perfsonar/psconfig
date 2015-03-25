@@ -97,7 +97,6 @@ $agent->init({
                  validate_certificate => $conf{validate_certificate},
                  ca_certificate_file => $conf{ca_certificate_file},
                  ca_certificate_path => $conf{ca_certificate_path},
-                 use_regular_testing => $conf{use_regular_testing},
                  regular_testing_conf => $conf{regular_testing_conf},
                  force_bwctl_owamp    => $conf{force_bwctl_owamp},
                  traceroute_master_conf => $conf{traceroute_master_conf},
