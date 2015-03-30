@@ -1,0 +1,1 @@
+../../../shared/lib/SimpleLookupService/Client/Registration.pm
