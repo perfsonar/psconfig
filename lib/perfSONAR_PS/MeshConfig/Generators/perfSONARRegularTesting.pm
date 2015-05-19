@@ -269,6 +269,7 @@ sub __build_tests {
 
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->test_interval);
+            $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
         }
         elsif ($test->parameters->type eq "traceroute") {
             $parameters = perfSONAR_PS::RegularTesting::Tests::Bwtraceroute->new();
@@ -283,6 +284,7 @@ sub __build_tests {
 
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->test_interval) if $test->parameters->test_interval;
+            $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/bwctl") {
             $parameters = perfSONAR_PS::RegularTesting::Tests::Bwctl->new();
@@ -306,6 +308,7 @@ sub __build_tests {
 
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->interval) if $test->parameters->interval;
+            $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
             if ($self->force_bwctl_owamp) {
