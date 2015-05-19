@@ -332,6 +332,7 @@ sub generate_maddash_config {
                     }
                 }elsif($enable_combined_graphs){
                     #New MA so use new graphs that try to plot all latency and throughput data together
+                    #Note using combined graphs forgoes bwctl protocol filters, tool name, and custom filters due to complexity
                     my $is_source_ma = $tester eq $src_addr ? 1 : 0;
                     foreach my $src_site_host(@{$src_site_hosts}){
                         foreach my $dst_site_host(@{$dst_site_hosts}){
@@ -378,8 +379,54 @@ sub generate_maddash_config {
                         }
                     }
                 }else{
-                    $graph_url .= "url=%maUrl&source=%row&dest=%col";
-                    $rev_graph_url .= "url=%maUrl&source=%col&dest=%row";
+                    my $graph_options = "";
+                    my $graph_custom_filters = "";
+                    #Set IP version if needed
+                    if($test->parameters->ipv6_only){
+                        $graph_options .= "&ipversion=6";
+                    }elsif($test->parameters->ipv6_only){
+                        $graph_options .= "&ipversion=4";
+                    }
+                    #Set BWCTL options if needed
+                    if($test->parameters->type eq "perfsonarbuoy/bwctl"){
+                        $graph_options .= "&protocol=" . $test->parameters->protocol if($test->parameters->protocol);
+                        $graph_custom_filters .= "bw-target-bandwidth:" . $test->parameters->udp_bandwidth if($test->parameters->udp_bandwidth);
+                        my $filter_tool_name = __get_check_option({ option => "filter_tool_name", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
+                        if($filter_tool_name && $test->parameters->tool){
+                            $graph_options .= "&tool=" . $test->parameters->tool;
+                        }
+                    } 
+                    #set custom filters
+                    my $custom_ma_filters = __get_check_option({ option => "ma_filter", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
+                    if($custom_ma_filters){
+                        if(ref $custom_ma_filters ne 'ARRAY'){
+                            $custom_ma_filters = [ $custom_ma_filters ];
+                        }
+                        foreach my $custom_ma_filter(@{$custom_ma_filters}){
+                            unless ($custom_ma_filter->{'ma_filter_name'}){
+                                die "custom_ma_filter config missing ma_filter_name property";
+                            }
+                            unless ($custom_ma_filter->{'mesh_parameter_name'}){
+                                die "custom_ma_filter config missing mesh_parameter_name property";
+                            }
+                            unless(exists $test->parameters->{$custom_ma_filter->{'mesh_parameter_name'}} 
+                                    && defined $test->parameters->{$custom_ma_filter->{'mesh_parameter_name'}} ){
+                                next;
+                            }
+                           $graph_custom_filters .= ',' if($graph_custom_filters);
+                           $graph_custom_filters .= $custom_ma_filter->{'ma_filter_name'} . ':' . $test->parameters->{$custom_ma_filter->{'mesh_parameter_name'}}; 
+                        }
+                    }
+                    $graph_custom_filters = "&filter=$graph_custom_filters" if($graph_custom_filters);
+                    
+                    $graph_url .= "url=%maUrl&source=%row&dest=%col" . $graph_options . $graph_custom_filters;
+                    if($is_full_mesh){
+                        $graph_url .= "&agent=%row";
+                        $rev_graph_url .= "url=%maUrl&source=%row&dest=%col" . $graph_options . $graph_custom_filters;
+                        $rev_graph_url .= "&agent=%col";
+                    }else{
+                        $rev_graph_url .= "url=%maUrl&source=%col&dest=%row" . $graph_options . $graph_custom_filters ;
+                    }
                 } 
                 
                 if ($row_hosts{$src_addr}) {
@@ -433,8 +480,8 @@ sub generate_maddash_config {
             $groups->{$column_id} = \@column_members;
 
             # Build the checks
-            my $check = __build_check(grid_name => $grid_name, type => $test->parameters->type, ma_map => \%forward_ma_map, exclude_checks => \%forward_exclude_checks, direction => "forward", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%forward_graph_map);
-            my $rev_check = __build_check(grid_name => $grid_name, type => $test->parameters->type, ma_map => \%reverse_ma_map, exclude_checks => \%reverse_exclude_checks, direction => "reverse", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%reverse_graph_map);
+            my $check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%forward_ma_map, exclude_checks => \%forward_exclude_checks, direction => "forward", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%forward_graph_map);
+            my $rev_check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%reverse_ma_map, exclude_checks => \%reverse_exclude_checks, direction => "reverse", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%reverse_graph_map);
 
             # Add the checks
             if ($checks->{$check->{id}}) {
@@ -526,7 +573,9 @@ my %maddash_default_check_options = (
         acceptable_loss_rate => 0,
         critical_loss_rate => 0.01,
         enable_combined_graphs => 0,
-        graph_url => '/serviceTest/graphWidget.cgi'
+        filter_tool_name => 0,
+        graph_url => '/serviceTest/graphWidget.cgi',
+        ma_filter => []
     },
     "perfsonarbuoy/bwctl" => {
         check_command => "/opt/perfsonar_ps/nagios/bin/check_throughput.pl",
@@ -535,20 +584,25 @@ my %maddash_default_check_options = (
         acceptable_throughput => 900,
         critical_throughput => 500,
         enable_combined_graphs => 0,
-        graph_url => '/serviceTest/graphWidget.cgi'
+        filter_tool_name => 0,
+        graph_url => '/serviceTest/graphWidget.cgi',
+        ma_filter => []
     },
 );
 
 sub __build_check {
-    my $parameters = validate( @_, { grid_name => 1, type => 1, ma_map => 1, exclude_checks => 1, direction => 1, maddash_options => 1, is_full_mesh => 1, graph_map => 1 } );
+    my $parameters = validate( @_, { grid_name => 1, test_params => 1, ma_map => 1, exclude_checks => 1, direction => 1, maddash_options => 1, is_full_mesh => 1, graph_map => 1 } );
     my $grid_name = $parameters->{grid_name};
-    my $type  = $parameters->{type};
+    my $test_params  = $parameters->{test_params};
+    my $type  = $parameters->{test_params}->type;
     my $ma_map = $parameters->{ma_map};
     my $exclude_checks = $parameters->{exclude_checks};
     my $direction = $parameters->{direction};
     my $maddash_options = $parameters->{maddash_options};
     my $is_full_mesh = $parameters->{is_full_mesh};
     my $graph_map = $parameters->{graph_map};
+    my $filter_tool_name = __get_check_option({ option => "filter_tool_name", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+    my $custom_ma_filters = __get_check_option({ option => "ma_filter", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
     
     my $check = {};
     $check->{type} = "net.es.maddash.checks.PSNagiosCheck";
@@ -582,7 +636,12 @@ sub __build_check {
         if($is_full_mesh && $direction eq "reverse") {
             $check->{name} = 'Throughput Alternate MA';
             $check->{description} = 'Throughput from %row to %col';
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_throughput.': -c '.$critical_throughput.': -r '.$check_time_range.' -s %row -d %col';
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_throughput.': -c '.$critical_throughput.': -r '.$check_time_range.' -s %row -d %col -a %col';
+        }
+        elsif($is_full_mesh) {
+            $check->{name} = 'Throughput';
+            $check->{description} = 'Throughput from %row to %col';
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_throughput.': -c '.$critical_throughput.': -r '.$check_time_range.' -s %row -d %col -a %row';
         }
         elsif ($direction eq "reverse") {
             $check->{name} = 'Throughput Reverse';
@@ -594,6 +653,14 @@ sub __build_check {
             $check->{description} = 'Throughput from %row to %col';
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_throughput.': -c '.$critical_throughput.': -r '.$check_time_range.' -s %row -d %col';
         }
+        
+        #add additional filters
+        $check->{params}->{command} .= (' -p ' . $test_params->protocol ) if($test_params->protocol);
+        $check->{params}->{command} .= (' --udpbandwidth ' . $test_params->udp_bandwidth ) if($test_params->udp_bandwidth);
+        #set tool name if needed
+        if($filter_tool_name && $test_params->tool){
+            $check->{params}->{command} .= ' --tool "' . $test_params->tool . '"'; 
+        }
     }
     else {
         my $ok_loss = __get_check_option({ option => "acceptable_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
@@ -603,10 +670,15 @@ sub __build_check {
         $check->{warning_description}  = "Loss rate is >= ".$ok_loss;
         $check->{critical_description}  = "Loss rate is >= ".$critical_loss;
 
-       if ($is_full_mesh && $direction eq "reverse") {
+        if ($is_full_mesh && $direction eq "reverse") {
            $check->{name} = 'Loss Alternate MA';
            $check->{description} = 'Loss from %row to %col';
-           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %row -d %col';
+           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %row -d %col -a %col';
+        }
+        elsif ($is_full_mesh) {
+            $check->{name} = 'Loss';
+            $check->{description} = 'Loss from %row to %col';
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range.' -l -p -s %row -d %col -a %row';
         }
         elsif ($direction eq "reverse") {
             $check->{name} = 'Loss Reverse';
@@ -620,6 +692,33 @@ sub __build_check {
         }
     }
 
+    #set v4 only and v6 only
+    if($test_params->ipv6_only){
+        $check->{params}->{command} .= ' -6'
+    }elsif($test_params->ipv4_only){
+       $check->{params}->{command} .= ' -4'
+    }
+    
+    #set any custom filters
+    if($custom_ma_filters){
+        if(ref $custom_ma_filters ne 'ARRAY'){
+            $custom_ma_filters = [ $custom_ma_filters ];
+        }
+        foreach my $custom_ma_filter(@{$custom_ma_filters}){
+            unless ($custom_ma_filter->{'ma_filter_name'}){
+                die "custom_ma_filter config missing ma_filter_name property";
+            }
+            unless ($custom_ma_filter->{'mesh_parameter_name'}){
+                die "custom_ma_filter config missing mesh_parameter_name property";
+            }
+            unless(exists $test_params->{$custom_ma_filter->{'mesh_parameter_name'}} 
+                    && defined $test_params->{$custom_ma_filter->{'mesh_parameter_name'}} ){
+                next;
+            }
+            $check->{params}->{command} .= ' --filter "' . $custom_ma_filter->{'ma_filter_name'} . ':' . $test_params->{$custom_ma_filter->{'mesh_parameter_name'}} . '"'; 
+        }
+    }
+        
     $check->{id} = __generate_yaml_key($grid_name." - ".$check->{name});
 
     return $check;

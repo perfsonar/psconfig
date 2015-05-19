@@ -57,7 +57,7 @@ override 'parse' => sub {
         }
     }
     else {
-        return super($class, $description, $strict);
+        return super();
     }
 };
 
