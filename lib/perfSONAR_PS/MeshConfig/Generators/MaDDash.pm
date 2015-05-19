@@ -570,17 +570,23 @@ my %maddash_default_check_options = (
         check_command => "/opt/perfsonar_ps/nagios/bin/check_owdelay.pl",
         check_interval => 1800,
         check_time_range => 900,
+        retry_interval => 600,
+        retry_attempts => 3,
+        timeout => 60,
         acceptable_loss_rate => 0,
         critical_loss_rate => 0.01,
         enable_combined_graphs => 0,
         filter_tool_name => 0,
         graph_url => '/serviceTest/graphWidget.cgi',
-        ma_filter => []
+        ma_filter => [],
     },
     "perfsonarbuoy/bwctl" => {
         check_command => "/opt/perfsonar_ps/nagios/bin/check_throughput.pl",
         check_interval => 28800,
         check_time_range => 86400,
+        retry_interval => 600,
+        retry_attempts => 3,
+        timeout => 60,
         acceptable_throughput => 900,
         critical_throughput => 500,
         enable_combined_graphs => 0,
@@ -606,10 +612,9 @@ sub __build_check {
     
     my $check = {};
     $check->{type} = "net.es.maddash.checks.PSNagiosCheck";
-    $check->{retryInterval}   = 600;
-    $check->{retryAttempts}   = 3;
+    $check->{retryInterval}   = __get_check_option({ option => "retry_interval", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });;
+    $check->{retryAttempts}   = __get_check_option({ option => "retry_attempts", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });;
     $check->{timeout}         = __get_check_option({ option => "timeout", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
-    $check->{timeout}         = 60 unless(defined $check->{timeout});
     $check->{excludeChecks}   = $exclude_checks;
     $check->{params}          = {};
     $check->{params}->{maUrl} = $ma_map;
