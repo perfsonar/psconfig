@@ -99,6 +99,7 @@ $agent->init({
                  ca_certificate_path => $conf{ca_certificate_path},
                  regular_testing_conf => $conf{regular_testing_conf},
                  force_bwctl_owamp    => $conf{force_bwctl_owamp},
+                 use_bwctl2           => $conf{use_bwctl2},
                  skip_redundant_tests => $conf{skip_redundant_tests},
                  addresses => $addresses,
                  requesting_agent_config => $conf{local_host},

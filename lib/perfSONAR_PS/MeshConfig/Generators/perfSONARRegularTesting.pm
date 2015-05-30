@@ -20,8 +20,13 @@ use perfSONAR_PS::RegularTesting::Schedulers::Streaming;
 use perfSONAR_PS::RegularTesting::Tests::Powstream;
 use perfSONAR_PS::RegularTesting::Schedulers::RegularInterval;
 use perfSONAR_PS::RegularTesting::Tests::Bwctl;
+use perfSONAR_PS::RegularTesting::Tests::Bwctl2;
 use perfSONAR_PS::RegularTesting::Tests::Bwtraceroute;
+use perfSONAR_PS::RegularTesting::Tests::Bwtraceroute2;
 use perfSONAR_PS::RegularTesting::Tests::Bwping;
+use perfSONAR_PS::RegularTesting::Tests::Bwping2;
+use perfSONAR_PS::RegularTesting::Tests::BwpingOwamp;
+use perfSONAR_PS::RegularTesting::Tests::Bwping2Owamp;
 
 use Moose;
 
@@ -29,6 +34,7 @@ extends 'perfSONAR_PS::MeshConfig::Generators::Base';
 
 has 'regular_testing_conf'   => (is => 'rw', isa => 'perfSONAR_PS::RegularTesting::Config');
 has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool');
+has 'use_bwctl2'             => (is => 'rw', isa => 'Bool');
 
 =head1 NAME
 
@@ -48,12 +54,14 @@ sub init {
                                          config_file     => 1,
                                          skip_duplicates => 1,
                                          force_bwctl_owamp => 0,
+                                         use_bwctl2 => 0,
                                       });
 
     my $config_file       = $parameters->{config_file};
     my $skip_duplicates   = $parameters->{skip_duplicates};
     my $force_bwctl_owamp = $parameters->{force_bwctl_owamp};
-
+    my $use_bwctl2 = $parameters->{use_bwctl2};
+    
     $self->SUPER::init({ config_file => $config_file, skip_duplicates => $skip_duplicates });
 
     my $config;
@@ -86,7 +94,8 @@ sub init {
 
     $self->regular_testing_conf($config);
     $self->force_bwctl_owamp($force_bwctl_owamp) if defined $force_bwctl_owamp;
-
+    $self->use_bwctl2($use_bwctl2) if defined $use_bwctl2;
+    
     return (0, "");
 }
 
@@ -258,7 +267,11 @@ sub __build_tests {
         my ($schedule, $parameters);
 
         if ($test->parameters->type eq "pinger") {
-            $parameters = perfSONAR_PS::RegularTesting::Tests::Bwping->new();
+            if($self->use_bwctl2){
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Bwping2->new();
+            }else{
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Bwping->new();
+            }
 
             $parameters->packet_count($test->parameters->packet_count) if $test->parameters->packet_count;
             $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
@@ -272,7 +285,11 @@ sub __build_tests {
             $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
         }
         elsif ($test->parameters->type eq "traceroute") {
-            $parameters = perfSONAR_PS::RegularTesting::Tests::Bwtraceroute->new();
+            if($self->use_bwctl2){
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Bwtraceroute2->new();
+            }else{
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Bwtraceroute->new();
+            }
 
             $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
             $parameters->packet_first_ttl($test->parameters->first_ttl) if $test->parameters->first_ttl;
@@ -287,7 +304,12 @@ sub __build_tests {
             $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/bwctl") {
-            $parameters = perfSONAR_PS::RegularTesting::Tests::Bwctl->new();
+            if($self->use_bwctl2){
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Bwctl2->new();
+            }else{
+                $parameters = perfSONAR_PS::RegularTesting::Tests::Bwctl->new();
+            }
+            
             if($test->parameters->tool){
                 my $tool = $test->parameters->tool;
                 $tool =~ s/^bwctl\///;
@@ -312,7 +334,11 @@ sub __build_tests {
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
             if ($self->force_bwctl_owamp) {
-                $parameters = perfSONAR_PS::RegularTesting::Tests::BwpingOwamp->new();
+                if($self->use_bwctl2){
+                    $parameters = perfSONAR_PS::RegularTesting::Tests::BwpingOwamp2->new();
+                }else{
+                    $parameters = perfSONAR_PS::RegularTesting::Tests::BwpingOwamp->new();
+                }
                 # Default to 25 second tests (could use sample_count, but the
                 # 300 number might push those into the deny category)
                 $parameters->packet_count(25/$test->parameters->packet_interval);
