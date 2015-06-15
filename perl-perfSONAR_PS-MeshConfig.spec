@@ -3,11 +3,11 @@
 %define crontab_1 cron-mesh_config_agent
 %define crontab_2 cron-mesh_config_gui_agent
 
-%define relnum 5 
+%define relnum 0.0.a1 
 %define disttag pSPS
 
 Name:			perl-perfSONAR_PS-MeshConfig
-Version:		3.4.2
+Version:		3.5
 Release:		%{relnum}.%{disttag}
 Summary:		perfSONAR_PS Mesh Configuration Agent
 License:		Distributable, see LICENSE
