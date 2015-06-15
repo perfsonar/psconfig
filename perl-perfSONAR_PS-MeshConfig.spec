@@ -127,8 +127,13 @@ chown perfsonar:perfsonar /var/lib/perfsonar/mesh_config
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/build_json
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_json
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/validate_configuration
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/lookup_hosts
 %doc %{install_base}/doc/example.conf
 %doc %{install_base}/doc/example.json
+%{install_base}/etc/lookup_hosts.conf
+%{install_base}/lib/SimpleLookupService
+%{install_base}/lib/perfSONAR_PS/Client/LS
+
 
 %files Agent
 %defattr(0644,perfsonar,perfsonar,0755)
