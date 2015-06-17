@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
+package perfSONAR_PS::MeshConfig::Config::HostClassFilters::Site;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassFilters::SiteName;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::Site;
 
 =head1 DESCRIPTION
 

@@ -9,7 +9,7 @@ use Params::Validate qw(:all);
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::HostClassFilters::OrganizationName;
+perfSONAR_PS::MeshConfig::Config::HostClassFilters::Tag;
 
 =head1 DESCRIPTION
 
