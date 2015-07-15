@@ -40,6 +40,7 @@ has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default
 has 'regular_testing_conf'   => (is => 'rw', isa => 'Str', default => "/opt/perfsonar_ps/regular_testing/etc/regular_testing.conf");
 has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool', default => 0);
 has 'use_bwctl2'             => (is => 'rw', isa => 'Bool', default=>0);
+has 'configure_archives'     => (is => 'rw', isa => 'Bool', default=>0);
 
 has 'addresses'              => (is => 'rw', isa => 'ArrayRef[Str]');
 has 'requesting_agent'       => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
@@ -130,6 +131,7 @@ sub init {
                                          regular_testing_conf => 0,
                                          force_bwctl_owamp    => 0,
                                          use_bwctl2           => 0,
+                                         configure_archives   => 0,
                                          skip_redundant_tests => 0,
                                          addresses => 0,
                                          from_address => 0,
@@ -275,7 +277,8 @@ sub __configure_host {
     my ($status, $res) = $generator->init({ config_file => $self->regular_testing_conf,
                                             skip_duplicates => $self->skip_redundant_tests,
                                             force_bwctl_owamp => $self->force_bwctl_owamp,
-                                            use_bwctl2 => $self->use_bwctl2 });
+                                            use_bwctl2 => $self->use_bwctl2,
+                                            configure_archives => $self->configure_archives });
     if ($status != 0) {
         my $msg = "Problem initializing Regular Testing configuration: ".$res;
         $logger->error($msg);
@@ -411,6 +414,7 @@ sub __configure_host {
                 $generator->add_mesh_tests({ mesh => $mesh,
                                              tests => $tests,
                                              addresses => \@local_addresses,
+                                             local_host => $hosts->[0]
                                            });
             };
             if ($@) {
@@ -439,7 +443,7 @@ sub __configure_host {
     if ($status and $self->restart_services) {
         ($status, $res) = $self->__restart_service({ name => "regular_testing" });
         if ($status != 0) {
-            my $msg = "Problem restarting Revular Testing: ".$res;
+            my $msg = "Problem restarting Regular Testing: ".$res;
             $logger->error($msg);
             foreach my $mesh_params (@{ $self->meshes }) {
                 $self->__add_error({ mesh => $mesh_params->{mesh}, host => $mesh_params->{host}, error_msg => $msg });

@@ -15,6 +15,9 @@ use perfSONAR_PS::MeshConfig::Generators::Base;
 use perfSONAR_PS::RegularTesting::Utils::ConfigFile qw( parse_file save_string );
 
 use perfSONAR_PS::RegularTesting::Config;
+use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency;
+use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput;
+use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute;
 use perfSONAR_PS::RegularTesting::Test;
 use perfSONAR_PS::RegularTesting::Schedulers::Streaming;
 use perfSONAR_PS::RegularTesting::Tests::Powstream;
@@ -35,6 +38,7 @@ extends 'perfSONAR_PS::MeshConfig::Generators::Base';
 has 'regular_testing_conf'   => (is => 'rw', isa => 'perfSONAR_PS::RegularTesting::Config');
 has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool');
 has 'use_bwctl2'             => (is => 'rw', isa => 'Bool');
+has 'configure_archives'     => (is => 'rw', isa => 'Bool');
 
 =head1 NAME
 
@@ -47,6 +51,29 @@ perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting;
 =cut
 
 my $logger = get_logger(__PACKAGE__);
+my $default_summaries = {
+    "throughput" => [
+        {"event_type" => 'throughput', "summary_type" => 'average', "summary_window" => 86400},
+    ],
+    "latency" => [
+        {"event_type" => 'packet-loss-rate', "summary_type" => 'aggregation', "summary_window" => 300},
+        {"event_type" => 'histogram-owdelay', "summary_type" => 'aggregation', "summary_window" => 300},
+        {"event_type" => 'histogram-owdelay', "summary_type" => 'statistics', "summary_window" => 300},
+        {"event_type" => 'packet-loss-rate', "summary_type" => 'aggregation', "summary_window" => 3600},
+        {"event_type" => 'packet-loss-rate-bidir', "summary_type" => 'aggregation', "summary_window" => 3600},
+        {"event_type" => 'histogram-owdelay', "summary_type" => 'aggregation', "summary_window" => 3600},
+        {"event_type" => 'histogram-rtt', "summary_type" => 'aggregation', "summary_window" => 3600},
+        {"event_type" => 'histogram-owdelay', "summary_type" => 'statistics', "summary_window" => 3600},
+        {"event_type" => 'histogram-rtt', "summary_type" => 'statistics', "summary_window" => 3600},
+        {"event_type" => 'packet-loss-rate', "summary_type" => 'aggregation', "summary_window" => 86400},
+        {"event_type" => 'packet-loss-rate-bidir', "summary_type" => 'aggregation', "summary_window" => 86400},
+        {"event_type" => 'histogram-owdelay', "summary_type" => 'aggregation', "summary_window" => 86400},
+        {"event_type" => 'histogram-rtt', "summary_type" => 'aggregation', "summary_window" => 86400},
+        {"event_type" => 'histogram-owdelay', "summary_type" => 'statistics', "summary_window" => 86400},
+        {"event_type" => 'histogram-rtt', "summary_type" => 'statistics', "summary_window" => 86400},
+    ]
+};
+
 
 sub init {
     my ($self, @args) = @_;
@@ -55,12 +82,14 @@ sub init {
                                          skip_duplicates => 1,
                                          force_bwctl_owamp => 0,
                                          use_bwctl2 => 0,
+                                         configure_archives => 0,
                                       });
 
     my $config_file       = $parameters->{config_file};
     my $skip_duplicates   = $parameters->{skip_duplicates};
     my $force_bwctl_owamp = $parameters->{force_bwctl_owamp};
     my $use_bwctl2 = $parameters->{use_bwctl2};
+    my $configure_archives = $parameters->{configure_archives};
     
     $self->SUPER::init({ config_file => $config_file, skip_duplicates => $skip_duplicates });
 
@@ -85,6 +114,16 @@ sub init {
         }
 
         $config->tests(\@new_tests);
+        
+         # Remove the existing archives that were added by the mesh configuration
+        my @new_archives = ();
+        foreach my $archive (@{ $config->measurement_archives }) {
+            next if ($archive->added_by_mesh);
+
+            push @new_archives, $archive;
+        }
+
+        $config->measurement_archives(\@new_archives);
     };
     if ($@) {
         my $msg = "Problem initializing pinger landmarks: ".$@;
@@ -95,17 +134,19 @@ sub init {
     $self->regular_testing_conf($config);
     $self->force_bwctl_owamp($force_bwctl_owamp) if defined $force_bwctl_owamp;
     $self->use_bwctl2($use_bwctl2) if defined $use_bwctl2;
+    $self->configure_archives($configure_archives) if defined $configure_archives;
     
     return (0, "");
 }
 
 sub add_mesh_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { mesh => 1, tests => 1, addresses => 1 } );
+    my $parameters = validate( @args, { mesh => 1, tests => 1, addresses => 1, local_host => 1 } );
     my $mesh   = $parameters->{mesh};
     my $tests  = $parameters->{tests};
     my $addresses = $parameters->{addresses};
-
+    my $local_host = $parameters->{local_host};
+    
     my %host_addresses = map { $_ => 1 } @$addresses;
 
     my %addresses_added = ();
@@ -114,6 +155,7 @@ sub add_mesh_tests {
     $mesh_id =~ s/[^A-Za-z0-9_-]/_/g;
 
     my @tests = ();
+    my %test_types = ();
     foreach my $test (@$tests) {
         if ($test->disabled) {
             $logger->debug("Skipping disabled test: ".$test->description);
@@ -229,11 +271,45 @@ sub add_mesh_tests {
     
                 push @tests, @$res;
             }
+            
+            #track test types
+            $test_types{$test->parameters->type} = 1;
 
         };
         if ($@) {
             die("Problem adding test ".$test->description.": ".$@);
         }
+    }
+    
+    #add measurement archives
+    if($self->configure_archives()){
+        my $has_latency_ma = 0;
+        foreach my $test_type(keys %test_types){
+            my $archive = $local_host->lookup_measurement_archive({ type => $test_type, recursive => 1 });
+            if(!$archive){
+                die("Unable to find measurement archive of type $test_type");
+            }
+            my $archive_obj;
+            if ($test_type eq "pinger" || $test_type eq "perfsonarbuoy/owamp") {
+                next if $has_latency_ma;
+                $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency();
+                foreach my $summ(@{$default_summaries->{'latency'}}){
+                    push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+                }
+                $has_latency_ma = 1;
+            }elsif ($test_type eq "traceroute") {
+                $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute();
+            }elsif ($test_type eq "perfsonarbuoy/bwctl") {
+                $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput();
+                foreach my $summ(@{$default_summaries->{'throughput'}}){
+                    push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+                }
+            }
+            $archive_obj->database($archive->write_url());
+            $archive_obj->added_by_mesh(1);
+            push @{ $self->regular_testing_conf->measurement_archives }, $archive_obj;
+        }
+        
     }
 
     push @{ $self->regular_testing_conf->tests }, @tests;
