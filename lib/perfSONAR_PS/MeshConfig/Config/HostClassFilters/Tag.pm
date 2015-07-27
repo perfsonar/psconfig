@@ -67,10 +67,6 @@ sub _matches {
         return 1;
     }
 
-    if (index(lc($str), lc($pattern)) > -1) {
-        return 1;
-    }
-
     return 0;
 }
 
