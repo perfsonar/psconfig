@@ -94,9 +94,9 @@ sub __map_arrays {
 
         if ($array_mapping{$key} and 
             (not $array_mapping{$key}->{except_in} or
-             $array_mapping{$key}->{except_in} ne $outer_key)
+             (!$outer_key or $array_mapping{$key}->{except_in} ne $outer_key))
            ) {
-            $value = [ $value ] unless ref($value) eq "ARRAYREF";
+            $value = [ $value ] unless ref($value) eq "ARRAY";
             $key = $array_mapping{$key}->{value};
         }
 
