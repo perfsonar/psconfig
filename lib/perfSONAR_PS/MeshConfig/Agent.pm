@@ -414,7 +414,9 @@ sub __configure_host {
                 $generator->add_mesh_tests({ mesh => $mesh,
                                              tests => $tests,
                                              addresses => \@local_addresses,
-                                             local_host => $hosts->[0]
+                                             local_host => $hosts->[0],
+                                             host_classes => $host_classes,
+                                             requesting_agent => $self->requesting_agent
                                            });
             };
             if ($@) {

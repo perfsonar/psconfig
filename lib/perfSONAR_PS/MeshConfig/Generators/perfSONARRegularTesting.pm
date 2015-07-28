@@ -141,11 +141,13 @@ sub init {
 
 sub add_mesh_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { mesh => 1, tests => 1, addresses => 1, local_host => 1 } );
+    my $parameters = validate( @args, { mesh => 1, tests => 1, addresses => 1, local_host => 1, host_classes => 1, requesting_agent => 1 } );
     my $mesh   = $parameters->{mesh};
     my $tests  = $parameters->{tests};
     my $addresses = $parameters->{addresses};
     my $local_host = $parameters->{local_host};
+    my $host_classes = $parameters->{host_classes};
+    my $requesting_agent = $parameters->{requesting_agent};
     
     my %host_addresses = map { $_ => 1 } @$addresses;
 
@@ -283,31 +285,59 @@ sub add_mesh_tests {
     
     #add measurement archives
     if($self->configure_archives()){
-        my $has_latency_ma = 0;
+        my $ma_map = {
+            "pinger" => {}, 
+            "perfsonarbuoy/owamp" => {}, 
+            "perfsonarbuoy/bwctl" => {}, 
+            "traceroute" => {}
+            };
         foreach my $test_type(keys %test_types){
-            my $archive = $local_host->lookup_measurement_archive({ type => $test_type, recursive => 1 });
-            if(!$archive){
+            #lookup archive in explicit hosts and host classes. Append them all together if multiple match
+            my @archives = ();
+            if($local_host){
+                my $host_archive = $local_host->lookup_measurement_archive({ type => $test_type, recursive => 1 });
+                push @archives, $host_archive if($host_archive);
+            }
+            #lookup archives in host classes
+            foreach my $host_class(@{$host_classes}){
+                if($host_class->host_properties){
+                    my $hc_archive = $host_class->host_properties->lookup_measurement_archive({ type => $test_type, recursive => 1 });
+                    push @archives, $hc_archive if($hc_archive);
+                }
+            }
+            #lookup archives in requesting agent
+            if($requesting_agent){
+                 my $agent_archive = $requesting_agent->lookup_measurement_archive({ type => $test_type, recursive => 1 });
+                 push @archives, $agent_archive if($agent_archive);
+            }
+            
+            if(@archives < 1){
                 die("Unable to find measurement archive of type $test_type");
             }
-            my $archive_obj;
-            if ($test_type eq "pinger" || $test_type eq "perfsonarbuoy/owamp") {
-                next if $has_latency_ma;
-                $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency();
-                foreach my $summ(@{$default_summaries->{'latency'}}){
-                    push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+            
+            #iterate through archives skipping duplicates (same URL + same type)
+            foreach my $archive(@archives){
+                next if $ma_map->{$test_type}->{$archive->write_url()};
+                my $archive_obj;
+                if ($test_type eq "pinger" || $test_type eq "perfsonarbuoy/owamp") {
+                    next if $ma_map->{'perfsonarbuoy/owamp'}->{$archive->write_url()} || $ma_map->{'pinger'}->{$archive->write_url()};
+                    $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency();
+                    foreach my $summ(@{$default_summaries->{'latency'}}){
+                        push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+                    }
+                }elsif ($test_type eq "traceroute") {
+                    $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute();
+                }elsif ($test_type eq "perfsonarbuoy/bwctl") {
+                    $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput();
+                    foreach my $summ(@{$default_summaries->{'throughput'}}){
+                        push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+                    }
                 }
-                $has_latency_ma = 1;
-            }elsif ($test_type eq "traceroute") {
-                $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute();
-            }elsif ($test_type eq "perfsonarbuoy/bwctl") {
-                $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput();
-                foreach my $summ(@{$default_summaries->{'throughput'}}){
-                    push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
-                }
+                $archive_obj->database($archive->write_url());
+                $archive_obj->added_by_mesh(1);
+                push @{ $self->regular_testing_conf->measurement_archives }, $archive_obj;
+                $ma_map->{$test_type}->{$archive->write_url()} = 1;
             }
-            $archive_obj->database($archive->write_url());
-            $archive_obj->added_by_mesh(1);
-            push @{ $self->regular_testing_conf->measurement_archives }, $archive_obj;
         }
         
     }
