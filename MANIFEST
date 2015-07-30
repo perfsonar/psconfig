@@ -41,7 +41,6 @@ lib/perfSONAR_PS/MeshConfig/Config/Group/OrderedMesh.pm
 lib/perfSONAR_PS/MeshConfig/Config/Host.pm
 lib/perfSONAR_PS/MeshConfig/Config/HostClass.pm
 lib/perfSONAR_PS/MeshConfig/Config/HostClassDataSources/CurrentMesh.pm
-lib/perfSONAR_PS/MeshConfig/Config/HostClassDataSources/Mesh.pm
 lib/perfSONAR_PS/MeshConfig/Config/HostClassDataSources/RequestingAgent.pm
 lib/perfSONAR_PS/MeshConfig/Config/HostClassDataSources/Base.pm
 lib/perfSONAR_PS/MeshConfig/Config/HostClassFilters/And.pm

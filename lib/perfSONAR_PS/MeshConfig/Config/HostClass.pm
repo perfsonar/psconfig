@@ -18,7 +18,6 @@ perfSONAR_PS::MeshConfig::Config::HostClass;
 =cut
 
 use perfSONAR_PS::MeshConfig::Config::HostClassDataSources::CurrentMesh;
-use perfSONAR_PS::MeshConfig::Config::HostClassDataSources::Mesh;
 use perfSONAR_PS::MeshConfig::Config::HostClassDataSources::RequestingAgent;
 
 use perfSONAR_PS::MeshConfig::Config::HostClassFilters::AddressType;
