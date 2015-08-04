@@ -19,7 +19,7 @@ use Data::Validate::IP qw(is_ipv4);
 use Net::IP;
 use File::Temp qw(tempfile);
 
-use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
+use perfSONAR_PS::MeshConfig::Utils qw(load_mesh build_json);
 
 Log::Log4perl->easy_init($DEBUG);
 
@@ -81,248 +81,22 @@ else {
     %configuration = Config::General->new($INPUT)->getall;
 }
 
-# We maintain a mapping of the array variables to their 'real' name so we know
-# what to rename them to.
-my %array_variables = (
-                    "include"       => { },
-                    "administrator" => { new_key => "administrators" },
-                    "test" => { new_key => "tests" },
-                    "measurement_archive" => { new_key => "measurement_archives" },
-                    "address" => { new_key => "addresses", except => [ "address", "addresses" ] },
-                    "tag" => { new_key => "tags", except => [ "filter", "filters" ] },
-                    "member" => { new_key => "members" },
-                    "a_member" => { new_key => "a_members" },
-                    "b_member" => { new_key => "b_members" },
-                    "site" => { new_key => "sites" },
-                    "organization" => { new_key => "organizations" },
-                    "host" => { new_key => "hosts" },
-                    "no_agent" => { except => [ "hosts" ], new_key => "no_agents" },
-                    "filter" => { new_key => "filters" },
-                    "data_source" => { new_key => "data_sources" },
-                    "host_class" => { new_key => "host_classes", except => [ "filter", "filters" ] },
-                );
-
-# Parse everything except the 'test', 'group' and 'test_spec' elements.
-my $json_configuration = __parse_hash(\%configuration, [ "test", "group", "test_spec" ]);
-
-# Go through and parse all the test specs, keeping track of their id.
-my %test_specs = ();
-foreach my $test_spec_id (keys %{ $configuration{"test_spec"} }) {
-    my $desc = $configuration{"test_spec"}->{$test_spec_id};
-
-    $test_specs{$test_spec_id} = __parse_hash($desc, [], "test_spec");
-}
-
-# Go through and parse all the groups, keeping track of their id.
-my %groups = ();
-foreach my $group_id (keys %{ $configuration{"group"} }) {
-    my $desc = $configuration{"group"}->{$group_id};
-
-    $groups{$group_id} = __parse_hash($desc, [], "group");
-}
-
-if ($configuration{"test"}) {
-    my @tests = ();
-
-    $configuration{"test"} = [] unless $configuration{"test"};
-
-    if (ref($configuration{"test"}) ne "ARRAY") {
-        $configuration{"test"} = [ $configuration{"test"} ];
-    }
-
-    # Parse all the tests, and merge their group and test_spec so that the test is
-    # of the appropriate json format.
-    foreach my $test (@{ $configuration{"test"} }) {
-        $test = __parse_hash($test, [], "test");
-        my $group = $test->{group};
-        my $test_spec = $test->{test_spec};
-
-        delete($test->{group});
-        delete($test->{test_spec});
-
-        unless ($test_specs{$test_spec}) {
-           die("missing test spec: ".$test_spec);
-        }
-
-        unless ($groups{$group}) {
-           die("missing group: ".$group);
-        }
-
-        my %test_spec = %{ $test_specs{$test_spec} };
-        my %group = %{ $groups{$group} };
-
-	# Fill in any parameters that override parameters from the test spec
-        if ($test->{parameters}) {
-            for my $param (keys %{ $test->{parameters} }) {
-                $test_spec{$param} = $test->{parameters}->{$param};
-            }
-        }
-
-        $test->{parameters} = \%test_spec;
-        $test->{members}    = \%group;
-
-        # In the .json, no_agents are specified at the group level.
-        if ($test->{no_agents}) {
-            $test->{members}->{no_agents} = $test->{no_agents};
-            delete($test->{no_agents});
-        }
-
-        push @tests, $test;
-    }
-
-    $json_configuration->{tests} = \@tests;
-}
-
-# Normalize the host class 'match' and 'exclude' blocks.
-# 
-# Instead of:
-#    <match>
-#       <filter>...</filter>
-#       <filter>...</filter>
-#       <filter>...</filter>
-#    </match>
-#
-# These are just an array of 'filter' objects named 'match_filters' or
-# 'exclude_filters'.
-if ($json_configuration->{"host_classes"}) {
-    foreach my $host_class (@{ $json_configuration->{"host_classes"} }) {
-        foreach my $type ("match", "exclude") {
-            next unless ($host_class->{$type});
-
-            my $filters = $host_class->{$type}->{filters};
-
-            delete($host_class->{$type});
-
-            next unless $filters;
-
-            $host_class->{$type."_filters"} = $filters;
-        }
-    }
-}
-
-
-# Validate the mesh by outputing a temporary file, and loading the mesh as
-# normal.
-if ($RESOLVE_INCLUDES or not $SKIP_VALIDATION) {
-    my ($fh, $tmp_json) = tempfile();
-
-    print { $fh } JSON->new->pretty(1)->encode($json_configuration);
-
-    close $fh;
-
-    my ($status, $res) = load_mesh({ configuration_url => "file://".$tmp_json });
-
-    unlink($tmp_json);
-
-    my $meshes = $res;
-
-    unless ($SKIP_VALIDATION) {
-        if ($status == 0) {
-            eval {
-                # Parse the resulting hash to  make sure it's correct. We use strict checking
-                foreach my $mesh (@$meshes) {
-                    # Parse the resulting hash to  make sure it's correct. We use strict checking
-                    $mesh->validate_mesh();
-                }
-            };
-            if ($@) {
-                $status = -1;
-                $res    = $@;
-            }
-        }
-
-        unless ($status == 0) {
-            print "Resulting mesh is invalid: $res\n";
-            exit(-1);
-        }
-    }
-
-    if ($RESOLVE_INCLUDES) {
-        unless ($status == 0) {
-            print "Problem resolving includes: $res\n";
-            exit(-1);
-        }
-
-        my $json_configuration;
-
-        if (length($meshes) == 1) {
-            my @unparsed_meshes = ();
-            foreach my $mesh (@$meshes) {
-                push @unparsed_meshes, $mesh->unparse();
-            }
-
-            $json_configuration = \@unparsed_meshes;
-        }
-        else {
-            $json_configuration = $res->unparse();
-        }
-    }
+my ($json_status, $result) = build_json(configuration => \%configuration, 
+                                    skip_validation => $SKIP_VALIDATION, 
+                                    resolve_includes => $RESOLVE_INCLUDES);
+if($json_status < 0){
+    print $result;
+    exit(-1);
 }
 
 if ($OUTPUT eq "-") {
-    print JSON->new->pretty(1)->encode($json_configuration);
+    print JSON->new->pretty(1)->encode($result);
 }
 else {
     open(OUTPUT, ">$OUTPUT");
-    print OUTPUT JSON->new->pretty(1)->encode($json_configuration);
+    print OUTPUT JSON->new->pretty(1)->encode($result);
     close(OUTPUT);
 }
 
 exit 0;
 
-# Go through the hash, and convert any 'array' variables into an array, and
-# rename their 'key'.
-sub __parse_hash {
-    my ($hash, $skip, $in_key) = @_;
-
-    $in_key = "" unless $in_key;
-
-    my %skip_map = map { $_ => 1 } @$skip;
-
-    my %new_hash = ();
-
-    foreach my $key  (keys %$hash) {
-        my $value = $hash->{$key};
-
-        next if ($skip_map{$key});
-
-        if ($array_variables{$key}) {
-            my $skip;
-            if ($array_variables{$key}->{except}) {
-                foreach my $except (@{ $array_variables{$key}->{except} }) {
-                    $skip = 1 if ($except eq $in_key);
-                }
-            }
-
-            unless ($skip) {
-                if ($array_variables{$key}->{new_key}) {
-                    $key = $array_variables{$key}->{new_key};
-                }
-
-                $value = [ $value ] unless (ref($value) eq "ARRAY");
-            }
-        }
-
-        if (ref($value) eq "ARRAY") {
-            my @new_value = ();
-
-            foreach my $element (@$value) {
-                if (ref($element) eq "HASH") {
-                    push @new_value, __parse_hash($element, [], $key);
-                }
-                else {
-                    push @new_value, $element;
-                }
-            }
-
-            $value = \@new_value;
-        }
-        elsif (ref($value) eq "HASH") {
-            $value = __parse_hash($value, [], $key);
-        }
-
-        $new_hash{$key} = $value;
-    }
-
-    return \%new_hash;
-}

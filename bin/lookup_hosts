@@ -13,6 +13,7 @@ use Log::Log4perl qw(:easy);
 use URI;
 
 use perfSONAR_PS::Client::LS::PSQueryObjects::PSServiceQueryObject;
+use perfSONAR_PS::MeshConfig::Utils qw( build_json );
 
 use SimpleLookupService::Client::SimpleLS;
 use SimpleLookupService::Client::Query;
@@ -279,13 +280,23 @@ foreach my $lsq_def(@{$conf{query}}){
 #output file
 my @org_list = values %{$org_map};
 push @org_list, $default_org if(@{$default_org->{'site'}} > 0);
-my $output_config = Config::General->new({ organization => \@org_list });
-if ($OUTPUT eq "-") {
-    print $output_config->save_string();
-}else{
-    $output_config->save_file($OUTPUT);
+my %output_config = Config::General->new({ organization => \@org_list })->getall;
+my ($json_status, $result) = build_json(configuration => \%output_config, 
+                                    skip_validation => 0, 
+                                    resolve_includes => 0);
+if($json_status < 0){
+    print $result;
+    exit(-1);
 }
 
+if ($OUTPUT eq "-") {
+    print JSON->new->pretty(1)->encode($result);
+}
+else {
+    open(OUTPUT, ">$OUTPUT");
+    print OUTPUT JSON->new->pretty(1)->encode($result);
+    close(OUTPUT);
+}
 
 # Merge tag list when you encounter the same org/site/host/address multiple times
 sub _merge_tags {
