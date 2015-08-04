@@ -9,6 +9,7 @@ bin/validate_json
 doc/INSTALL
 doc/cron-restart_gui_services
 doc/cron-restart_services
+doc/cron-lookup_hosts
 doc/example.conf
 doc/example.json
 etc/agent_configuration.conf
