@@ -384,7 +384,7 @@ sub generate_maddash_config {
                     #Set IP version if needed
                     if($test->parameters->ipv6_only){
                         $graph_options .= "&ipversion=6";
-                    }elsif($test->parameters->ipv6_only){
+                    }elsif($test->parameters->ipv4_only){
                         $graph_options .= "&ipversion=4";
                     }
                     #Set BWCTL options if needed
