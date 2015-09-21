@@ -478,23 +478,28 @@ sub generate_maddash_config {
 
             $groups->{$row_id}    = \@row_members;
             $groups->{$column_id} = \@column_members;
-
-            # Build the checks
+            
+            #Build the checks 
+            my @checks = ();
+            
+            # Build the top half of the box check
             my $check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%forward_ma_map, exclude_checks => \%forward_exclude_checks, direction => "forward", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%forward_graph_map);
-            my $rev_check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%reverse_ma_map, exclude_checks => \%reverse_exclude_checks, direction => "reverse", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%reverse_graph_map);
-
-            # Add the checks
             if ($checks->{$check->{id}}) {
                 die("Check ".$check->{id}." has been redefined");
             }
-
-            if ($checks->{$rev_check->{id}}) {
-                die("Check ".$rev_check->{id}." has been redefined");
-            }
-
             $checks->{$check->{id}}     = $check;
-            $checks->{$rev_check->{id}} = $rev_check;
-
+            push @checks, $check->{id};
+            
+            # Build the bottom half of the box check
+            if($test->parameters->force_bidirectional){
+                my $rev_check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%reverse_ma_map, exclude_checks => \%reverse_exclude_checks, direction => "reverse", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%reverse_graph_map);
+                if ($checks->{$rev_check->{id}}) {
+                    die("Check ".$rev_check->{id}." has been redefined");
+                }
+                $checks->{$rev_check->{id}} = $rev_check;
+                push @checks, $rev_check->{id};
+            }
+            
             # Build the grid
             my $grid = {};
             $grid->{name}            = $grid_name;
@@ -504,7 +509,7 @@ sub generate_maddash_config {
             $grid->{colOrder}        = "alphabetical";
             $grid->{excludeSelf}     = 1;
             $grid->{columnAlgorithm} = $columnAlgorithm;
-            $grid->{checks}          = [ $check->{id}, $rev_check->{id} ];
+            $grid->{checks}          = \@checks;
             $grid->{statusLabels}    = {
                 ok => $check->{ok_description},
                 warning  => $check->{warning_description},
