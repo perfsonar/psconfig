@@ -447,14 +447,14 @@ sub __build_tests {
                 }
                 # Default to 25 second tests (could use sample_count, but the
                 # 300 number might push those into the deny category)
-                $parameters->packet_count(25/$test->parameters->packet_interval);
+                $parameters->packet_count(25/$test->parameters->packet_interval) if($test->parameters->packet_interval);
             }
             else {
                 $parameters = perfSONAR_PS::RegularTesting::Tests::Powstream->new();
                 $parameters->resolution($test->parameters->sample_count * $test->parameters->packet_interval) if $test->parameters->sample_count * $test->parameters->packet_interval;
             }
-            $parameters->inter_packet_time($test->parameters->packet_interval);
-            $parameters->packet_length($test->parameters->packet_padding);
+            $parameters->inter_packet_time($test->parameters->packet_interval) if($test->parameters->packet_interval);
+            $parameters->packet_length($test->parameters->packet_padding) if($test->parameters->packet_padding);
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
