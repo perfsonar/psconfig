@@ -82,7 +82,7 @@ for the various services.
 Summary:		perfSONAR Mesh Configuration JSON Builder
 Group:			Applications/Communications
 Requires:		perfsonar-meshconfig-shared
-Requires:		perfsonar-sls-perl
+Requires:		libperfsonar-sls-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-JSONBuilder
 %description jsonbuilder
 The perfSONAR Mesh Configuration JSON Builder is used to convert the Mesh
