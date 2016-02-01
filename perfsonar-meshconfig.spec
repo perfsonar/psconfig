@@ -62,8 +62,7 @@ Requires:		chkconfig
 Requires:		shadow-utils
 Requires:       libperfsonar-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Shared
-
-%description Shared
+%description shared
 This package is the set of library files shared RPMs by the perfSONAR Mesh
 Configuration agents.
 
@@ -74,7 +73,7 @@ Requires:		perfsonar-meshconfig-shared
 Requires:       libperfsonar-toolkit-perl
 Requires:       libperfsonar-regulartesting-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Agent
-%description Agent
+%description agent
 The perfSONAR Mesh Configuration Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate configuration
 for the various services.
@@ -85,7 +84,7 @@ Group:			Applications/Communications
 Requires:		perfsonar-meshconfig-shared
 Requires:		perfsonar-sls-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-JSONBuilder
-%description JSONBuilder
+%description jsonbuilder
 The perfSONAR Mesh Configuration JSON Builder is used to convert the Mesh
 .conf file format into a properly formed JSON file for agents to consume.
 
@@ -97,7 +96,7 @@ Requires:		perfsonar-meshconfig-shared
 Requires:		maddash-server
 Requires:       libperfsonar-toolkit-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-GUIAgent
-%description GUIAgent
+%description guiagent
 The perfSONAR Mesh Configuration Agent downloads a centralized JSON file
 describing the tests a mesh is running, and generates a MaDDash configuration.
 
