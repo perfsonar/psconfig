@@ -20,5 +20,5 @@ dist:
 install:
 	mkdir -p ${ROOTPATH}
 	tar ch --exclude=etc/* --exclude=*spec --exclude=dependencies --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
-	sed -i "s:\$RealBin/../etc:$(CONFIGPATH):g" bin/*
+	sed -i 's:.RealBin/\.\./etc:$(CONFIGPATH):g' ${ROOTPATH}/bin/*
 	for i in `cat MANIFEST | grep ^etc/ | sed "s/^etc\///"`; do  mkdir -p `dirname $(CONFIGPATH)/$${i}`; if [ -e $(CONFIGPATH)/$${i} ]; then install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}.new; else install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}; fi; done
