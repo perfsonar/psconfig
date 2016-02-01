@@ -118,11 +118,11 @@ install -D -m 0600 %{buildroot}/%{install_base}/scripts/%{crontab_1} %{buildroot
 install -D -m 0600 %{buildroot}/%{install_base}/scripts/%{crontab_2} %{buildroot}/etc/cron.d/%{crontab_2}
 rm -rf %{buildroot}/%{install_base}/scripts/
 
-install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-lookup_hosts %{buildroot}/%{install_base}/perfsonar-meshconfig-jsonbuilder/cron-lookup_hosts
-install -D -m 0644 %{buildroot}/%{install_base}/doc/example.conf %{buildroot}/%{install_base}/perfsonar-meshconfig-jsonbuilder/example.conf
-install -D -m 0644 %{buildroot}/%{install_base}/doc/example.json %{buildroot}/%{install_base}/perfsonar-meshconfig-jsonbuilder/example.json
-install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_gui_services %{buildroot}/%{install_base}/perfsonar-meshconfig-guiagent/cron-restart_gui_services
-install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_services %{buildroot}/%{install_base}/perfsonar-meshconfig-agent/cron-restart_services
+install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-lookup_hosts %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/cron-lookup_hosts
+install -D -m 0644 %{buildroot}/%{install_base}/doc/example.conf %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/example.conf
+install -D -m 0644 %{buildroot}/%{install_base}/doc/example.json %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/example.json
+install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_gui_services %{buildroot}/%{doc_base}/perfsonar-meshconfig-guiagent/cron-restart_gui_services
+install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_services %{buildroot}/%{doc_base}/perfsonar-meshconfig-agent/cron-restart_services
 rm -rf %{buildroot}/%{install_base}/doc
 
 %clean
