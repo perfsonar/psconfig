@@ -16,7 +16,7 @@ use perfSONAR_PS::MeshConfig::GUIAgent;
 
 Log::Log4perl->easy_init($DEBUG);
 
-my $CONFIG_FILE = "$RealBin/../etc/gui_agent_configuration.conf";
+my $CONFIG_FILE = "$RealBin/../etc/meshconfig-guiagent.conf";
 my $LOGGER_CONF;
 my $DEBUGFLAG;
 my $HELP;

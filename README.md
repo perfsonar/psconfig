@@ -38,19 +38,19 @@ make dist
 To build a JSON file run:
 
 ```bash
-/opt/perfsonar_ps/mesh_config/bin/build_json --input <path-to-config-file> --output <path-to-json-output-file>
+/usr/lib/perfsonar/bin/build_json --input <path-to-config-file> --output <path-to-json-output-file>
 ```
 
 To generate a test configuration run:
 
 ```bash
-/opt/perfsonar_ps/mesh_config/bin/generate_configuration
+/usr/lib/perfsonar/bin/generate_configuration
 ```
 
 To generate a MaDDash configuration run: 
 
 ```bash
-/opt/perfsonar_ps/mesh_config/bin/generate_gui_configuration
+/usr/lib/perfsonar/bin/generate_gui_configuration
 ```
 
 ##Using the *shared* Submodule

@@ -1,2 +1,0 @@
-MAILTO=root
-0 2 * * * perfsonar /opt/perfsonar_ps/mesh_config/bin/generate_configuration &> /var/log/perfsonar/mesh_configuration_agent.log

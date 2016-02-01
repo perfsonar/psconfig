@@ -16,7 +16,7 @@ use perfSONAR_PS::MeshConfig::Agent;
 
 Log::Log4perl->easy_init($DEBUG);
 
-my $CONFIG_FILE = "$RealBin/../etc/agent_configuration.conf";
+my $CONFIG_FILE = "$RealBin/../etc/meshconfig-agent.conf";
 my $ADDRESS;
 my $LOGGER_CONF;
 my $DEBUGFLAG;
