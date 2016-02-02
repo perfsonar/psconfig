@@ -62,6 +62,7 @@ Requires:		chkconfig
 Requires:		shadow-utils
 Requires:       libperfsonar-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Shared
+Provides:       perl-perfSONAR_PS-MeshConfig-Shared
 %description shared
 This package is the set of library files shared RPMs by the perfSONAR Mesh
 Configuration agents.
@@ -73,6 +74,7 @@ Requires:		perfsonar-meshconfig-shared
 Requires:       libperfsonar-toolkit-perl
 Requires:       libperfsonar-regulartesting-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Agent
+Provides:       perl-perfSONAR_PS-MeshConfig-Agent
 %description agent
 The perfSONAR Mesh Configuration Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate configuration
@@ -84,6 +86,7 @@ Group:			Applications/Communications
 Requires:		perfsonar-meshconfig-shared
 Requires:		libperfsonar-sls-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-JSONBuilder
+Provides:       perl-perfSONAR_PS-MeshConfig-JSONBuilder
 %description jsonbuilder
 The perfSONAR Mesh Configuration JSON Builder is used to convert the Mesh
 .conf file format into a properly formed JSON file for agents to consume.
@@ -96,6 +99,7 @@ Requires:		perfsonar-meshconfig-shared
 Requires:		maddash-server
 Requires:       libperfsonar-toolkit-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-GUIAgent
+Provides:       perl-perfSONAR_PS-MeshConfig-GUIAgent
 %description guiagent
 The perfSONAR Mesh Configuration Agent downloads a centralized JSON file
 describing the tests a mesh is running, and generates a MaDDash configuration.
@@ -133,30 +137,31 @@ mkdir -p /var/lib/perfsonar/meshconfig
 chown perfsonar:perfsonar /var/lib/perfsonar/meshconfig
 
 %post jsonbuilder
-#Update config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
-if [ -L "%{config_base}/meshconfig-lookuphosts.conf" ]; then
-    echo "WARN: /opt/perfsonar_ps/mesh_config/etc/lookup_hosts.conf will be moved to %{config_base}/meshconfig-lookuphosts.conf in 3.6. Update configuration management software as soon as possible. "
-elif [ -e "/opt/perfsonar_ps/mesh_config/etc/lookup_hosts.conf" ]; then
-    mv %{config_base}/meshconfig-lookuphosts.conf %{config_base}/meshconfig-lookuphosts.conf.default
-    ln -s /opt/perfsonar_ps/mesh_config/etc/lookup_hosts.conf %{config_base}/meshconfig-lookuphosts.conf
+if [ "$1" = "1" ]; then
+    # clean install, check for pre 3.5.1 files
+    if [ -e "/opt/perfsonar_ps/mesh_config/etc/lookup_hosts.conf" ]; then
+        mv %{config_base}/meshconfig-lookuphosts.conf %{config_base}/meshconfig-lookuphosts.conf.default
+        mv /opt/perfsonar_ps/mesh_config/etc/lookup_hosts.conf %{config_base}/meshconfig-lookuphosts.conf
+    fi
 fi
 
 %post agent
-#Update config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
-if [ -L "%{config_base}/meshconfig-agent.conf" ]; then
-    echo "WARN: /opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf will be moved to %{config_base}/meshconfig-agent.conf in 3.6. Update configuration management software as soon as possible. "
-elif [ -e "/opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf" ]; then
-    mv %{config_base}/meshconfig-agent.conf %{config_base}/meshconfig-agent.conf.default
-    ln -s /opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf %{config_base}/meshconfig-agent.conf
+if [ "$1" = "1" ]; then
+    # clean install, check for pre 3.5.1 files
+    if [ -e "/opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf" ]; then
+        mv %{config_base}/meshconfig-agent.conf %{config_base}/meshconfig-agent.conf.default
+        mv /opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf %{config_base}/meshconfig-agent.conf
+    fi
 fi
 
 %post guiagent
-#Update config file. For 3.5.1 will symlink to old location. In 3.6 we will move it.
-if [ -L "%{config_base}/meshconfig-guiagent.conf" ]; then
-    echo "WARN: /opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf will be moved to %{config_base}/meshconfig-guiagent.conf in 3.6. Update configuration management software as soon as possible. "
-elif [ -e "/opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf" ]; then
-    mv %{config_base}/meshconfig-guiagent.conf %{config_base}/meshconfig-guiagent.conf.default
-    ln -s /opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf %{config_base}/meshconfig-guiagent.conf
+
+if [ "$1" = "1" ]; then
+    # clean install, check for pre 3.5.1 files
+    if [ -e "/opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf" ]; then
+        mv %{config_base}/meshconfig-guiagent.conf %{config_base}/meshconfig-guiagent.conf.default
+        mv /opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf %{config_base}/meshconfig-guiagent.conf
+    fi
 fi
 
 %files shared
