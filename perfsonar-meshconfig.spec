@@ -165,7 +165,7 @@ if [ "$1" = "1" ]; then
     fi
     
     #Correct paths on x86_64 hosts
-    if [ -d "/usr/lib64/nagios/plugins"]; then
+    if [ -d "/usr/lib64/nagios/plugins" ]; then
         sed -i "s:/usr/lib/nagios/plugins:/usr/lib64/nagios/plugins:g" %{config_base}/meshconfig-guiagent.conf
     fi
 fi
