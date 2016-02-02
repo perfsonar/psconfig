@@ -97,6 +97,7 @@ Summary:		perfSONAR Mesh Configuration GUI Agent
 Group:			Applications/Communications
 Requires:		perfsonar-meshconfig-shared
 Requires:		maddash-server
+Requires:       nagios-plugins-perfsonar
 Requires:       libperfsonar-toolkit-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-GUIAgent
 Provides:       perl-perfSONAR_PS-MeshConfig-GUIAgent
@@ -161,6 +162,11 @@ if [ "$1" = "1" ]; then
     if [ -e "/opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf" ]; then
         mv %{config_base}/meshconfig-guiagent.conf %{config_base}/meshconfig-guiagent.conf.default
         mv /opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf %{config_base}/meshconfig-guiagent.conf
+    fi
+    
+    #Correct paths on x86_64 hosts
+    if [ -d "/usr/lib64/nagios/plugins"]; then
+        sed -i "s:/usr/lib/nagios/plugins:/usr/lib64/nagios/plugins:g" %{config_base}/meshconfig-guiagent.conf
     fi
 fi
 
