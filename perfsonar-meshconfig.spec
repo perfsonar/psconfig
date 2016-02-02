@@ -162,6 +162,7 @@ if [ "$1" = "1" ]; then
     if [ -e "/opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf" ]; then
         mv %{config_base}/meshconfig-guiagent.conf %{config_base}/meshconfig-guiagent.conf.default
         mv /opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf %{config_base}/meshconfig-guiagent.conf
+        sed -i "s:/opt/perfsonar_ps/nagios/bin:/usr/lib/nagios/plugins:g" %{config_base}/meshconfig-guiagent.conf
     fi
     
     #Correct paths on x86_64 hosts
