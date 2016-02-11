@@ -5,7 +5,7 @@
 %define crontab_1 perfsonar-meshconfig-agent
 %define crontab_2 perfsonar-meshconfig-guiagent
 
-%define relnum 0.0.a1 
+%define relnum 0.1.rc1 
 
 Name:			perfsonar-meshconfig
 Version:		3.5.1
@@ -71,6 +71,7 @@ Configuration agents.
 Summary:		perfSONAR Mesh Configuration Agent
 Group:			Applications/Communications
 Requires:		perfsonar-meshconfig-shared
+Requires:       libperfsonar-perl
 Requires:       libperfsonar-toolkit-perl
 Requires:       libperfsonar-regulartesting-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Agent
