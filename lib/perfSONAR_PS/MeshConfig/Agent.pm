@@ -37,7 +37,7 @@ has 'restart_services'       => (is => 'rw', isa => 'Bool');
 
 has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { [] });
 
-has 'regular_testing_conf'   => (is => 'rw', isa => 'Str', default => "/opt/perfsonar_ps/regular_testing/etc/regular_testing.conf");
+has 'regular_testing_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/regulartesting.conf");
 has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool', default => 0);
 has 'use_bwctl2'             => (is => 'rw', isa => 'Bool', default=>0);
 has 'configure_archives'     => (is => 'rw', isa => 'Bool', default=>0);

@@ -155,6 +155,8 @@ if [ "$1" = "1" ]; then
         mv /opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf %{config_base}/meshconfig-agent.conf
     fi
 fi
+#update regular_testing.conf path
+sed -i "s:/opt/perfsonar_ps/regular_testing/etc/regular_testing.conf:/etc/perfsonar/regulartesting.conf:g" %{config_base}/meshconfig-agent.conf
 
 %post guiagent
 
