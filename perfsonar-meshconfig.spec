@@ -170,6 +170,9 @@ if [ "$1" = "1" ]; then
     if [ -d "/usr/lib64/nagios/plugins" ]; then
         sed -i "s:/usr/lib/nagios/plugins:/usr/lib64/nagios/plugins:g" %{config_base}/meshconfig-guiagent.conf
     fi
+    
+    #Fix graph URL
+    sed -i "s:/serviceTest:/perfsonar-graphs:g" %{config_base}/meshconfig-guiagent.conf
 fi
 
 %files shared

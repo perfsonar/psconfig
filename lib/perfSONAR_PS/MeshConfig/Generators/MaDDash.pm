@@ -321,16 +321,7 @@ sub generate_maddash_config {
                 my $dst_site_hosts = $addr_site_map{$dst_addr} ? $addr_site_map{$dst_addr} : [{'addresses' => [$dst_addr]}];
                 
                 #Build graph URL
-                if($ma->read_url =~ /\/perfSONAR_PS\/services\/pSB\/?$/){
-                    #HACK: Assume if using pSB MA that they want old style graphs
-                    if($test->parameters->type eq 'perfsonarbuoy/bwctl'){
-                        $graph_url = '/serviceTest/bandwidthGraph.cgi?url=%maUrl&dst=%col&src=%row&length=2592000';
-                        $rev_graph_url = '/serviceTest/bandwidthGraph.cgi?url=%maUrl&dst=%row&src=%col&length=2592000';
-                    }else{
-                        $graph_url = '/serviceTest/delayGraph.cgi?url=%maUrl&dst=%col&src=%row&length=14400';
-                        $rev_graph_url = '/serviceTest/delayGraph.cgi?url=%maUrl&dst=%row&src=%col&length=14400';
-                    }
-                }elsif($enable_combined_graphs){
+                if($enable_combined_graphs){
                     #New MA so use new graphs that try to plot all latency and throughput data together
                     #Note using combined graphs forgoes bwctl protocol filters, tool name, and custom filters due to complexity
                     my $is_source_ma = $tester eq $src_addr ? 1 : 0;
@@ -582,7 +573,7 @@ my %maddash_default_check_options = (
         critical_loss_rate => 0.01,
         enable_combined_graphs => 0,
         filter_tool_name => 0,
-        graph_url => '/serviceTest/graphWidget.cgi',
+        graph_url => '/perfsonar-graphs/graphWidget.cgi',
         ma_filter => [],
     },
     "perfsonarbuoy/bwctl" => {
@@ -596,7 +587,7 @@ my %maddash_default_check_options = (
         critical_throughput => 500,
         enable_combined_graphs => 0,
         filter_tool_name => 0,
-        graph_url => '/serviceTest/graphWidget.cgi',
+        graph_url => '/perfsonar-graphs/graphWidget.cgi',
         ma_filter => []
     },
 );
