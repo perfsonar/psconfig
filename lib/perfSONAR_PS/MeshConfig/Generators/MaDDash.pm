@@ -324,7 +324,7 @@ sub generate_maddash_config {
                 if($enable_combined_graphs){
                     #New MA so use new graphs that try to plot all latency and throughput data together
                     #Note using combined graphs forgoes bwctl protocol filters, tool name, and custom filters due to complexity
-                    my $is_source_ma = $tester eq $src_addr ? 1 : 0;
+                    my $is_source_ma = $tester->{address} eq $src_addr ? 1 : 0;
                     foreach my $src_site_host(@{$src_site_hosts}){
                         foreach my $dst_site_host(@{$dst_site_hosts}){
                         
@@ -557,7 +557,8 @@ sub __quote_ipv6_address {
     $yaml =~ s/($IPv6_re)/\'$1\'/gm;
     $yaml =~ s/\'\'/\'/gm;
     $yaml =~ s/\=\'($IPv6_re)\'/=$1/gm;
-    $yaml =~ s/(https?)\:\/\/\'($IPv6_re)\'(.*)/'$1:\/\/[$2]$3'/gm;
+    $yaml =~ s/([^=]https?)\:\/\/\'($IPv6_re)\'/'$1:\/\/[$2]'/gm;
+    $yaml =~ s/(\=https?)\:\/\/\'($IPv6_re)\'/$1:\/\/[$2]/gm;
     return $yaml; 
 }
 
