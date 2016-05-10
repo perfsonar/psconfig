@@ -9,7 +9,7 @@
 
 Name:			perfsonar-meshconfig
 Version:		3.5.1
-Release:		%{relnum}
+Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Mesh Configuration Agent
 License:		Distributable, see LICENSE
 Group:			Development/Libraries
