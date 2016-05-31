@@ -1,0 +1,141 @@
+{
+   "administrators" : [
+      {
+         "email" : "hakan.calim@fau.de",
+         "name" : "Hakan Calim"
+      }
+   ],
+   "organizations" : [
+      {
+         "sites" : [
+            {
+               "hosts" : [
+                  {
+                     "addresses" : [
+                        "192.168.100.10",
+                        "192.168.100.100",
+                        "192.168.100.101"
+                     ],
+                     "description" : "perfSONAR Erlangen VM1"
+                  },
+                  {
+                     "addresses" : [
+                        "192.168.100.11"
+                     ],
+                     "description" : "perfSONAR Erlangen VM2",
+                     "no_agent" : "1"
+                  },
+                  {
+                     "addresses" : [
+                        "192.168.100.12"
+                     ],
+                     "description" : "perfSONAR Erlangen Toolkit"
+                  }
+               ],
+               "measurement_archives" : [
+                  {
+                     "read_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "write_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "type" : "traceroute"
+                  },
+                  {
+                     "read_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "write_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "type" : "perfsonarbuoy/owamp"
+                  },
+                  {
+                     "read_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "write_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "type" : "perfsonarbuoy/bwctl"
+                  }
+               ],
+               "location" : {
+                  "city" : "Erlangen",
+                  "longitude" : "11.015105",
+                  "latitude" : "49.599937",
+                  "state" : "Bayern"
+               }
+            }
+         ],
+         "administrators" : [
+            {
+               "email" : "hakan.calim@fau.de",
+               "name" : "Hakan Calim"
+            }
+         ],
+         "description" : "DEVELOPMENT"
+      }
+   ],
+   "tests" : [
+      {
+         "members" : {
+            "members" : [
+               "192.168.100.10",
+               "192.168.100.11",
+               "192.168.100.12"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "type" : "traceroute",
+            "packet_size" : "40",
+            "test_interval" : "600"
+         },
+         "description" : "Traceroute Test Between development hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "192.168.100.10",
+               "192.168.100.11",
+               "192.168.100.12"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "bucket_width" : "0.001",
+            "sample_count" : "600",
+            "packet_interval" : "0.1",
+            "type" : "perfsonarbuoy/owamp"
+         },
+         "description" : "OWAMP Test Between development hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "192.168.100.10",
+               "192.168.100.11",
+               "192.168.100.12"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "protocol" : "tcp",
+            "tool" : "bwctl/iperf3",
+            "duration" : "20",
+            "type" : "perfsonarbuoy/bwctl",
+            "interval" : "14400"
+         },
+         "description" : "BWCTL/iperf3 Test Between development hosts"
+      },
+      {
+         "members" : {
+            "members" : [
+               "192.168.100.11",
+               "192.168.100.12"
+            ],
+            "center_address" : "192.168.100.10",
+            "type" : "star"
+         },
+         "parameters" : {
+            "protocol" : "tcp",
+            "tool" : "bwctl/iperf3",
+            "duration" : "20",
+            "type" : "perfsonarbuoy/bwctl",
+            "interval" : "14400"
+         },
+         "description" : "BWCTL/iperf3 Test Between development hosts in star group"
+      }
+   ],
+   "description" : "My devel test mesh config"
+}

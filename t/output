@@ -1,0 +1,12 @@
+......E
+Time:  0 wallclock secs ( 0.07 usr +  0.05 sys =  0.12 CPU)
+
+!!!FAILURES!!!
+Test Results:
+Run: 6, Failures: 0, Errors: 1
+
+There was 1 error:
+1) /home/hakan/Repos/mesh-config/t/../lib/perfSONAR_PS/MeshConfig/Statistic.pm:198 - test_build_statistic(MeshConfig::StatisticTest)
+Can't locate object method "members" via package "perfSONAR_PS::MeshConfig::Config::Group::Disjoint"
+
+Test was not successful.
