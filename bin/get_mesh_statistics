@@ -71,7 +71,10 @@ $statistics->init(configuration_file => $mesh_file_path);
 $statistics->build_statistics();
 
 if ($OUTPUT_FORMAT eq "str") {
-	print $statistics->as_string() . "\n";
+	print $statistics->as_string();
+} elsif ($OUTPUT_FORMAT eq "json") {
+	print $statistics->as_json();
 }
+
 
 exit 0;

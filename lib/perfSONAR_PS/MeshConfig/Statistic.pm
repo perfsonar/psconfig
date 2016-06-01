@@ -9,6 +9,7 @@ use Log::Log4perl qw(get_logger);
 use Params::Validate qw(:all);
 use Data::Dumper qw(Dumper);
 use Text::TabularDisplay;
+use JSON;
 
 use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
 
@@ -103,7 +104,10 @@ sub build_statistics{
 
 #TODO: Export statistics as JSON for other applications.
 sub as_json {
-	
+	my ($self) = @_;
+	my %statistics_tree = %{$self->statistics_tree};
+	my $json = JSON->new->allow_nonref;
+	return $json->pretty->encode( $self->statistics_tree );
 }
 
 =head2 as_string()
