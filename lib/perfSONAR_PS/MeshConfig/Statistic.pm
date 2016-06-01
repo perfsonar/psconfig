@@ -25,10 +25,13 @@ use Moose;
 =head1 API
 
 =head1 TODO
+
 	* Why my $addr_obj = $members->lookup_address(address => $member) returns a undefined addr_obj?
 	* Implement as json
 	* Implement BWCTL tests percentage of time tests
 	
+=head1 Methods
+
 
 =cut
 
@@ -81,7 +84,8 @@ sub build_statistics{
 			
 			foreach my $address ( keys %initiations) {
 				
-				if ( $statistics_tree{$address}{$tool}{$local_inits} >= 0)	{
+				if ( $statistics_tree{$address}{$tool} and 
+					$statistics_tree{$address}{$tool}{$local_inits} >= 0)	{
 					#add initiations to current initiations
 					$statistics_tree{$address}{$tool}{$local_inits} += ( $initiations{$address}{$local_inits} * $force_bidirectional);
 					$statistics_tree{$address}{$tool}{$remote_inits} += ( $initiations{$address}{$remote_inits} * $force_bidirectional);					
@@ -93,6 +97,7 @@ sub build_statistics{
 			
 		}	
 	}
+	#print Dumper(%statistics_tree);
 	$self->statistics_tree(\%statistics_tree);
 }
 
@@ -101,6 +106,22 @@ sub as_json {
 	
 }
 
+=head2 as_string()
+
+	Returns the statistic as a string. The string is build as a table. The colomns of the table
+	are defined as follows:
+	1. column: Address where the tests are initiated.
+	2. column: Counts for bwctl tests.
+	3. Column: Counts for owamp tests.
+	4. Column: Counts for traceroute tests.
+	
+	The test counts has the following form if the address is listed in a test:
+	1. digit: local initiations.
+	2. digit: remote initiations.
+	3. digit: total of 1 and 2
+	
+	Sometimes the address is not used for a test. Then only 0 will be displayed. 
+=cut
 sub as_string {
 	my ($self) = @_;
 	my $tool_bwctl = "perfsonarbuoy/bwctl";
@@ -119,25 +140,37 @@ sub as_string {
 						
 		my ( $num_bwctl, $num_owamp, $num_traceroute) = 0;
 		my ( $num_bwctl_remote, $num_owamp_remote, $num_traceroute_remote) = 0;
+		my ($total_bwctl, $total_owamp, $total_traceroute) = 0;
 		
-		$num_bwctl = $statistics_tree{$address}{$tool_bwctl}{$local_inits};
-		$num_bwctl_remote = $statistics_tree{$address}{$tool_bwctl}{$remote_inits};
-		my $total_bwctl = $num_bwctl + $num_bwctl_remote;
+		if ($statistics_tree{$address}{$tool_bwctl}){
+			$num_bwctl = $statistics_tree{$address}{$tool_bwctl}{$local_inits};
+			$num_bwctl_remote = $statistics_tree{$address}{$tool_bwctl}{$remote_inits};
+			$total_bwctl = $num_bwctl + $num_bwctl_remote;
+			$col_bwctl = $num_bwctl . " " . $num_bwctl_remote . " " . $total_bwctl;
+		} else {
+			$col_bwctl = "0";
+		}
 		
-		$num_owamp = $statistics_tree{$address}{$tool_owamp}{$local_inits};
-		$num_owamp_remote = $statistics_tree{$address}{$tool_owamp}{$remote_inits};
-		my $total_owamp = $num_owamp + $num_owamp_remote;
+		if ($statistics_tree{$address}{$tool_owamp}){
+			$num_owamp = $statistics_tree{$address}{$tool_owamp}{$local_inits};
+			$num_owamp_remote = $statistics_tree{$address}{$tool_owamp}{$remote_inits};
+			$total_owamp = $num_owamp + $num_owamp_remote;
+			$col_owamp = $num_owamp . " " . $num_owamp_remote . " " . $total_owamp;
+		} else {
+			$col_owamp = "0";
+		}
 		
-		$num_traceroute = $statistics_tree{$address}{$tool_traceroute}{$local_inits};
-		$num_traceroute_remote = $statistics_tree{$address}{$tool_traceroute}{$remote_inits};
-		my $total_traceroute = $num_traceroute + $num_traceroute_remote;
-		
+		if ($statistics_tree{$address}{$tool_traceroute}){		
+			$num_traceroute = $statistics_tree{$address}{$tool_traceroute}{$local_inits};
+			$num_traceroute_remote = $statistics_tree{$address}{$tool_traceroute}{$remote_inits};
+			$total_traceroute = $num_traceroute + $num_traceroute_remote;
+			$col_traceroute = $num_traceroute ." " . $num_traceroute_remote . " " . $total_traceroute;
+		} else {
+			$col_traceroute = "0";
+		}
+				
 		$col_interface = $address;
-		$col_bwctl = $num_bwctl . " " . $num_bwctl_remote . " " . $total_bwctl;
-		$col_owamp = $num_owamp . " " . $num_owamp_remote . " " . $total_owamp;
-		$col_traceroute = $num_traceroute ." " . $num_traceroute_remote . " " . $total_traceroute;
-			
-		
+	
 		$table->add($col_interface, $col_bwctl, $col_owamp, $col_traceroute);
 	}
 	
@@ -179,6 +212,7 @@ sub __get_test_initiations {
 }
 
 =head2 __get_test_initiations_mesh(members)
+
 	This method counts the test initiations for a mesh group. Every member initiates a tests 
 	with other members. When a  member is defined as no_agent then the local_initiations is 
 	set to 0. It teturns a hash with the addresses as a key and local_initiations or 
@@ -204,6 +238,7 @@ sub __get_test_initiations_mesh {
 }
 
 =head2 __get_test_initiations_disjoint(members)
+
 	Calculate the initiations  of tests for a disjoint group. A star group is a special cae of 
 	disjoint group definition. Where the center address is an single a_member and the other members
 	are b_members. It returns a hash with the addresses as a key and local_initiations or 
@@ -247,7 +282,8 @@ sub __get_test_initiations_disjoint {
 	return \%initiations;	
 }
 
-=head2 __get_test_initiations_ordered_mesh
+=head2 __get_test_initiations_ordered_mesh(members)
+
 	This method returns the initiations for ordered mesh group type. The first member initiate local 
 	to all members without itself. Every member initiates locally n-i tests where n the amount 
 	of member is and i is the iterator i=(1,2,..n).  For remote initiations has the first 
