@@ -8,6 +8,7 @@ use Params::Validate qw(:all);
 use Log::Log4perl qw(get_logger);
 use Data::Validate::IP qw(is_ipv4 is_ipv6);
 use perfSONAR_PS::Utils::DNS qw(resolve_address);
+use perfSONAR_PS::MeshConfig::Generators::MaDDash::DefaultReports qw(load_default_reports);
 use Net::IP;
 
 use JSON;
@@ -46,12 +47,14 @@ sub generate_maddash_config {
     $existing_maddash_yaml->{checks}     = {} unless $existing_maddash_yaml->{checks};
     $existing_maddash_yaml->{groups}     = {} unless $existing_maddash_yaml->{groups};
     $existing_maddash_yaml->{groupMembers}  = [] unless $existing_maddash_yaml->{groupMembers};
+    $existing_maddash_yaml->{reports}       = [] unless $existing_maddash_yaml->{reports};
     
     my @deleted_grids = ();
     my $elements_to_delete = { groups => [], checks => [] };
+    my $existing_reports = {};
     
     # Delete the elements that we added
-    foreach my $type ("dashboards", "grids", "groupMembers") {
+    foreach my $type ("dashboards", "grids", "groupMembers", "reports") {
         my @new_value = ();
         foreach my $element (@{ $existing_maddash_yaml->{$type} }) {
             if ($element->{added_by_mesh_agent}) {
@@ -63,7 +66,10 @@ sub generate_maddash_config {
                 }
             }
             else {
-                push @new_value, $element 
+                push @new_value, $element;
+                if ($type eq "reports") {
+                    $existing_reports->{$element->{'id'}} = 1;
+                }
             }
         }
 
@@ -73,6 +79,16 @@ sub generate_maddash_config {
     foreach my $type (keys %$elements_to_delete) {
         foreach my $key (@{ $elements_to_delete->{$type} }) {
             delete($existing_maddash_yaml->{$type}->{$key});
+        }
+    }
+    
+    #create map of existing reports
+    #add default reports if they are not already in place
+    foreach my $default_report(@{load_default_reports()}){
+        #add unless we have our own manual version of the same name. allows default rules to be overridden.
+        unless($existing_reports->{$default_report->{id}}){
+            $default_report->{added_by_mesh_agent} = 1;
+            push @{ $existing_maddash_yaml->{reports} },$default_report;
         }
     }
     
@@ -99,12 +115,13 @@ sub generate_maddash_config {
              next;
         }
 
-        my $dashboards = $existing_maddash_yaml->{dashboards};
-        my $checks     = $existing_maddash_yaml->{checks};
-        my $groups     = $existing_maddash_yaml->{groups};
-        my $groupMembers     = $existing_maddash_yaml->{groupMembers};
-        my $grids      = $existing_maddash_yaml->{grids};
-
+        my $dashboards      = $existing_maddash_yaml->{dashboards};
+        my $checks          = $existing_maddash_yaml->{checks};
+        my $groups          = $existing_maddash_yaml->{groups};
+        my $groupMembers    = $existing_maddash_yaml->{groupMembers};
+        my $grids           = $existing_maddash_yaml->{grids};
+        my $reports         = $existing_maddash_yaml->{reports};
+        
         my $dashboard = {};
         $dashboard->{name}                = $mesh->description?$mesh->description:"Mesh Sites";
         $dashboard->{grids}               = [];
@@ -508,6 +525,12 @@ sub generate_maddash_config {
                 unknown => "Unable to retrieve data",
                 notrun => "Check has not yet run",
             };
+            $grid->{report} = __generate_report_id(
+                                    grid_name => $grid_name,
+                                    group_type => $test->members->type, 
+                                    test_type => $test->parameters->type,
+                                    maddash_options => $maddash_options
+                                );
             $grid->{added_by_mesh_agent} = 1;
 
             # Add the new grid
@@ -532,6 +555,35 @@ sub generate_maddash_config {
     return encode('ascii', $ret);
 }
 
+sub __generate_report_id {
+    my $parameters = validate( @_, { grid_name => 1, group_type => 1, test_type => 1, maddash_options => 1, } );
+    my $grid_name = $parameters->{grid_name};
+    my $group_type = $parameters->{group_type};
+    my $test_type = $parameters->{test_type};
+    my $maddash_options = $parameters->{maddash_options};
+    
+    #look if report_id specified in config
+    my $report_id = __get_check_option({ option => "report_id", test_type => $test_type, grid_name => $grid_name, maddash_options => $maddash_options });
+    
+    #otherwise generate default id
+    unless($report_id){
+        $report_id = "meshconfig";
+        if($group_type eq 'mesh'){
+            $report_id .= "_mesh";
+        }else{
+            $report_id .= "_disjoint";
+        }
+    
+        if($test_type eq "perfsonarbuoy/bwctl"){
+            $report_id .= "_throughput";
+        }else{
+            $report_id .= "_loss";
+        }
+    }
+    
+    return $report_id;
+}
+    
 sub __quote_ipv6_address {
     my $parameters = validate( @_, { maddash_yaml => 1 } );
     my $yaml = $parameters->{maddash_yaml};
@@ -576,6 +628,7 @@ my %maddash_default_check_options = (
         filter_tool_name => 0,
         graph_url => '/perfsonar-graphs/graphWidget.cgi',
         ma_filter => [],
+        report_id => '',
     },
     "perfsonarbuoy/bwctl" => {
         check_command => "/usr/lib/nagios/plugins/check_throughput.pl",
@@ -589,7 +642,8 @@ my %maddash_default_check_options = (
         enable_combined_graphs => 0,
         filter_tool_name => 0,
         graph_url => '/perfsonar-graphs/graphWidget.cgi',
-        ma_filter => []
+        ma_filter => [],
+        report_id => '',
     },
 );
 

@@ -55,6 +55,7 @@ lib/perfSONAR_PS/MeshConfig/Config/TestParameters/Traceroute.pm
 lib/perfSONAR_PS/MeshConfig/GUIAgent.pm
 lib/perfSONAR_PS/MeshConfig/Generators/Base.pm
 lib/perfSONAR_PS/MeshConfig/Generators/MaDDash.pm
+lib/perfSONAR_PS/MeshConfig/Generators/MaDDash/DefaultReports.pm
 lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 lib/perfSONAR_PS/MeshConfig/Utils.pm
 scripts/example_client.pl

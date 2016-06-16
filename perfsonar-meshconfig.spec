@@ -208,6 +208,7 @@ fi
 %config(noreplace) %{config_base}/meshconfig-guiagent.conf
 %{install_base}/lib/perfSONAR_PS/MeshConfig/GUIAgent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/MaDDash.pm
+%{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/MaDDash/DefaultReports.pm
 %doc %{doc_base}/perfsonar-meshconfig-guiagent/cron-restart_gui_services
 %attr(0644,root,root) /etc/cron.d/%{crontab_2}
 
