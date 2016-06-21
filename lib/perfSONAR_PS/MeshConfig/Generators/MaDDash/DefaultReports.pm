@@ -48,8 +48,8 @@ reports:
                         status: 0
                     problem:
                         severity: 0
-                        category: CONFIGURATION
-                        message: "No issues found"
+                        category: PERFORMANCE
+                        message: "Entire grid has OK status."
                 - 
                     type: forEachSite
                     rule:
@@ -317,8 +317,8 @@ reports:
                         status: 0
                     problem:
                         severity: 0
-                        category: CONFIGURATION
-                        message: "No issues found"
+                        category: PERFORMANCE
+                        message: "Entire grid has OK status."
                 - 
                     type: forEachSite
                     rule:
@@ -450,8 +450,8 @@ reports:
                         status: 0
                     problem:
                         severity: 0
-                        category: CONFIGURATION
-                        message: "No issues found"
+                        category: PERFORMANCE
+                        message: "Entire grid has OK status"
                 - 
                     type: forEachSite
                     rule:
@@ -714,8 +714,8 @@ reports:
                         status: 0
                     problem:
                         severity: 0
-                        category: CONFIGURATION
-                        message: "No issues found"
+                        category: PERFORMANCE
+                        message: "Entire grid has OK status"
                 - 
                     type: forEachSite
                     rule:
