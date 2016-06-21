@@ -663,7 +663,7 @@ reports:
                                         problem:
                                             severity: 2
                                             category: PERFORMANCE
-                                            message: "Outgoing loss is below warning or critical thresholds to a majority of sites"
+                                            message: "Outgoing loss is above warning or critical thresholds to a majority of sites"
                                     - 
                                         type: rule
                                         selector:
@@ -679,7 +679,7 @@ reports:
                                         problem:
                                             severity: 2
                                             category: PERFORMANCE
-                                            message: "Incoming loss is below warning or critical thresholds to a majority of sites"
+                                            message: "Incoming loss is above warning or critical thresholds to a majority of sites"
     -
         id: "meshconfig_disjoint_loss"
         rule:
@@ -794,7 +794,7 @@ reports:
                                         problem:
                                             severity: 2
                                             category: PERFORMANCE
-                                            message: "Outgoing loss is below warning or critical thresholds to a majority of sites"
+                                            message: "Outgoing loss is above warning or critical thresholds to a majority of sites"
                                     - 
                                         type: rule
                                         selector:
@@ -812,7 +812,7 @@ reports:
                                         problem:
                                             severity: 2
                                             category: PERFORMANCE
-                                            message: "Incoming loss is below warning or critical thresholds to a majority of sites"
+                                            message: "Incoming loss is above warning or critical thresholds to a majority of sites"
 
 REPORT
 
