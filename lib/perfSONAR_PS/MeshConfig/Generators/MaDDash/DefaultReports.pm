@@ -1,4 +1,5 @@
-package perfSONAR_PS::MeshConfig::Generators::MaDDash;
+package perfSONAR_PS::MeshConfig::Generators::MaDDash::DefaultReports;
+
 use strict;
 use warnings;
 
