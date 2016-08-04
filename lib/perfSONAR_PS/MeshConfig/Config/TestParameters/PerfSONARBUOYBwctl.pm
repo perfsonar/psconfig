@@ -36,6 +36,7 @@ has 'ipv4_only'       => (is => 'rw', isa => 'Bool');
 has 'ipv6_only'       => (is => 'rw', isa => 'Bool');
 has 'latest_time'     => (is => 'rw', isa => 'Int');
 has 'random_start_percentage' => (is => 'rw', isa => 'Int');
+has 'time_slots'   => (is => 'rw', isa => 'ArrayRef[Str]');
 
 1;
 

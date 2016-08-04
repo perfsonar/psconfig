@@ -441,6 +441,7 @@ sub __parse_hash {
                         "no_agent" => { except => [ "hosts" ], new_key => "no_agents" },
                         "filter" => { new_key => "filters" },
                         "data_source" => { new_key => "data_sources" },
+						"time_slot" => { new_key => "time_slots" },
                         "host_class" => { new_key => "host_classes", except => [ "filter", "filters" ] },
                     );
 
