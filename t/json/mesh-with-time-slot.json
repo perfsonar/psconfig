@@ -1,0 +1,86 @@
+{
+   "administrators" : [
+      {
+         "email" : "hakan.calim@fau.de",
+         "name" : "Hakan Calim"
+      }
+   ],
+   "organizations" : [
+      {
+         "sites" : [
+            {
+               "hosts" : [
+                  {
+                     "addresses" : [
+                        "192.168.100.10",
+                        "192.168.100.10"
+                     ],
+                     "description" : "perfSONAR Erlangen VM1"
+                  },
+                  {
+                     "addresses" : [
+                        "192.168.100.11"
+                     ],
+                     "description" : "perfSONAR Erlangen VM2",
+                     "no_agent" : "1"
+                  },
+                  {
+                     "addresses" : [
+                        "192.168.100.12"
+                     ],
+                     "description" : "perfSONAR Erlangen Toolkit"
+                  }
+               ],
+               "measurement_archives" : [
+                  {
+                     "read_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "write_url" : "http://ps-toolkit.rrze.uni-erlangen.de/esmond/perfsonar/archive",
+                     "type" : "perfsonarbuoy/bwctl"
+                  }
+               ],
+               "location" : {
+                  "city" : "Erlangen",
+                  "longitude" : "11.015105",
+                  "latitude" : "49.599937",
+                  "state" : "Bayern"
+               }
+            }
+         ],
+         "administrators" : [
+            {
+               "email" : "hakan.calim@fau.de",
+               "name" : "Hakan Calim"
+            }
+         ],
+         "description" : "DEVELOPMENT"
+      }
+   ],
+   "tests" : [
+      {
+         "members" : {
+            "members" : [
+               "192.168.100.11",
+               "192.168.100.12"
+            ],
+            "no_agents" : [
+               "192.168.100.10"
+            ],
+            "type" : "mesh"
+         },
+         "parameters" : {
+            "protocol" : "tcp",
+            "tool" : "bwctl/iperf3",
+            "time_slots" : [
+               "01:25",
+               "07:15",
+               "*:25"
+            ],
+            "duration" : "20",
+            "type" : "perfsonarbuoy/bwctl",
+            "interval" : "14400"
+         },
+         "description" : "BWCTL/iperf3 Test with time slots"
+      }
+   ],
+   "description" : "My devel test mesh config"
+}
