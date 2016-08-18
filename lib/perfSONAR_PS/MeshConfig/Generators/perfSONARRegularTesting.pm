@@ -7,7 +7,7 @@ our $VERSION = 3.1;
 use Params::Validate qw(:all);
 use Log::Log4perl qw(get_logger);
 use Encode qw(encode);
-
+use Data::Dumper qw(Dumper);
 use utf8;
 
 use perfSONAR_PS::MeshConfig::Generators::Base;
@@ -148,6 +148,7 @@ sub add_mesh_tests {
     my $local_host = $parameters->{local_host};
     my $host_classes = $parameters->{host_classes};
     my $requesting_agent = $parameters->{requesting_agent};
+    
     
     my %host_addresses = map { $_ => 1 } @$addresses;
 
@@ -433,10 +434,15 @@ sub __build_tests {
             $parameters->latest_time($test->parameters->latest_time) if $test->parameters->latest_time;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
-
-            $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
-            $schedule->interval($test->parameters->interval) if $test->parameters->interval;
-            $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
+			
+			if ($test->parameters->time_slots){
+				$schedule   = perfSONAR_PS::RegularTesting::Schedulers::TimeBasedSchedule->new();
+				$schedule->time_slots($test->parameters->time_slots)
+			} else {
+				$schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
+            	$schedule->interval($test->parameters->interval) if $test->parameters->interval;
+            	$schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
+			}
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
             if ($self->force_bwctl_owamp) {
