@@ -5,10 +5,10 @@
 %define crontab_1 perfsonar-meshconfig-agent
 %define crontab_2 perfsonar-meshconfig-guiagent
 
-%define relnum 1 
+%define relnum 0.1.rc1 
 
 Name:			perfsonar-meshconfig
-Version:		3.5.1.2
+Version:		4.0
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Mesh Configuration Agent
 License:		Distributable, see LICENSE
@@ -73,7 +73,7 @@ Group:			Applications/Communications
 Requires:		perfsonar-meshconfig-shared
 Requires:       libperfsonar-perl
 Requires:       libperfsonar-toolkit-perl
-Requires:       libperfsonar-regulartesting-perl
+Requires:       libperfsonar-pscheduler-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Agent
 Provides:       perl-perfSONAR_PS-MeshConfig-Agent
 %description agent
@@ -134,7 +134,7 @@ rm -rf %{buildroot}/%{install_base}/doc
 %clean
 rm -rf %{buildroot}
 
-%post
+%post shared
 mkdir -p /var/lib/perfsonar/meshconfig
 chown perfsonar:perfsonar /var/lib/perfsonar/meshconfig
 

@@ -15,7 +15,6 @@ use FreezeThaw qw(freeze thaw);
 
 use perfSONAR_PS::Utils::Host qw(get_ips);
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
-use perfSONAR_PS::NPToolkit::ConfigManager::Utils qw(restart_service save_file);
 
 use Data::Validate::Domain qw(is_hostname);
 use Data::Validate::IP qw(is_ipv4);
@@ -24,9 +23,7 @@ use Net::IP;
 use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
 
 use perfSONAR_PS::MeshConfig::Config::Mesh;
-use perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting;
-
-use perfSONAR_PS::NPToolkit::Services::ServicesMap qw(get_service_object);
+use perfSONAR_PS::MeshConfig::Generators::PScheduler;
 
 use Module::Load;
 
@@ -37,14 +34,14 @@ has 'restart_services'       => (is => 'rw', isa => 'Bool');
 
 has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { [] });
 
-has 'regular_testing_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/regulartesting.conf");
-has 'force_bwctl_owamp'      => (is => 'rw', isa => 'Bool', default => 0);
-has 'use_bwctl2'             => (is => 'rw', isa => 'Bool', default=>0);
+has 'pscheduler_url'         => (is => 'rw', isa => 'Str', default => "https://localhost/pscheduler");
 has 'configure_archives'     => (is => 'rw', isa => 'Bool', default=>0);
+has 'task_file'              => (is => 'rw', isa => 'Str', default => "/var/lib/perfsonar/meshconfig/task_tracker");
 
 has 'addresses'              => (is => 'rw', isa => 'ArrayRef[Str]');
 has 'requesting_agent'       => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
 has 'requesting_agent_config' => (is => 'rw', isa => 'HashRef');
+has 'client_uuid_file'        => (is => 'rw', isa => 'Str', default => "/var/lib/perfsonar/meshconfig/client_uuid");
 
 has 'send_error_emails'      => (is => 'rw', isa => 'Bool', default => 1);
 
@@ -128,9 +125,6 @@ sub init {
                                          validate_certificate => 0,
                                          ca_certificate_file => 0,
                                          ca_certificate_path => 0,
-                                         regular_testing_conf => 0,
-                                         force_bwctl_owamp    => 0,
-                                         use_bwctl2           => 0,
                                          configure_archives   => 0,
                                          skip_redundant_tests => 0,
                                          addresses => 0,
@@ -272,28 +266,31 @@ sub __configure_host {
     if (scalar(@{ $self->meshes }) == 0) {
         $logger->warn("No meshes defined in the configuration");
     }
-
-    my $generator = perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting->new();
-    my ($status, $res) = $generator->init({ config_file => $self->regular_testing_conf,
+    
+    ##
+    # Download and build mesh
+    my $generator = perfSONAR_PS::MeshConfig::Generators::PScheduler->new();
+    my ($status, $res) = $generator->init({ 
+                                            url => $self->pscheduler_url,
                                             skip_duplicates => $self->skip_redundant_tests,
-                                            force_bwctl_owamp => $self->force_bwctl_owamp,
-                                            use_bwctl2 => $self->use_bwctl2,
-                                            configure_archives => $self->configure_archives });
+                                            configure_archives => $self->configure_archives,
+                                            client_uuid_file => $self->client_uuid_file,
+                                            task_file => $self->task_file
+                                          });
     if ($status != 0) {
-        my $msg = "Problem initializing Regular Testing configuration: ".$res;
+        my $msg = "Problem initializing PScheduler generator: ".$res;
         $logger->error($msg);
         $self->__add_error({ error_msg => $msg });
         return;
     }
 
     # The $dont_change variable lets us know at the end whether or not we
-    # should go through with writing the files, and restarting the daemons. If
-    # a user has specified that a mesh must exist, or no updates occur, we
-    # don't change anything.
+    # should go through with writing the tasks. If a user has specified that a mesh must 
+    # exist, or no updates occur, we don't change anything.
     my $dont_change = 0;
 
     my @local_addresses = map { $_->address } @{ $self->requesting_agent->addresses };
-
+    
     foreach my $mesh_params (@{ $self->meshes }) {
         # Grab the mesh from the server
         my ($status, $res) = load_mesh({
@@ -437,22 +434,10 @@ sub __configure_host {
         $self->__add_error({ error_msg => $msg });
         return;
     }
-
-    my $config = $generator->get_config();
-
-    $status = $self->__write_file({ file => $self->regular_testing_conf, contents => $config });
-
-    if ($status and $self->restart_services) {
-        ($status, $res) = $self->__restart_service({ name => "regular_testing" });
-        if ($status != 0) {
-            my $msg = "Problem restarting Regular Testing: ".$res;
-            $logger->error($msg);
-            foreach my $mesh_params (@{ $self->meshes }) {
-                $self->__add_error({ mesh => $mesh_params->{mesh}, host => $mesh_params->{host}, error_msg => $msg });
-            }
-        }
-    }
-
+    
+    #commit changes
+    $generator->save();
+    
     return;
 }
 
