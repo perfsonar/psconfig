@@ -14,6 +14,7 @@ doc/example.json
 etc/meshconfig-agent.conf
 etc/meshconfig-guiagent.conf
 etc/meshconfig-lookuphosts.conf
+etc/meshconfig-tasks.conf
 lib/perfSONAR_PS/MeshConfig/Agent.pm
 lib/perfSONAR_PS/MeshConfig/Config/Address.pm
 lib/perfSONAR_PS/MeshConfig/Config/Administrator.pm

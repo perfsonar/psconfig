@@ -74,8 +74,10 @@ Requires:		perfsonar-meshconfig-shared
 Requires:       libperfsonar-perl
 Requires:       libperfsonar-toolkit-perl
 Requires:       libperfsonar-pscheduler-perl
+Requires:       perl(Linux::Inotify2)
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Agent
 Provides:       perl-perfSONAR_PS-MeshConfig-Agent
+
 %description agent
 The perfSONAR Mesh Configuration Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate configuration
@@ -197,6 +199,7 @@ fi
 %defattr(0644,perfsonar,perfsonar,0755)
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/generate_configuration
 %config(noreplace) %{config_base}/meshconfig-agent.conf
+%config(noreplace) %{config_base}/meshconfig-tasks.conf
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Agent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 %doc %{doc_base}/perfsonar-meshconfig-agent/cron-restart_services

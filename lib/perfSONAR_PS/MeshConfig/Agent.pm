@@ -23,25 +23,22 @@ use Net::IP;
 use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
 
 use perfSONAR_PS::MeshConfig::Config::Mesh;
-use perfSONAR_PS::MeshConfig::Generators::PScheduler;
+use perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting;
+
+use perfSONAR_PS::NPToolkit::Services::ServicesMap qw(get_service_object);
 
 use Module::Load;
 
 use Moose;
 
-has 'use_toolkit'            => (is => 'rw', isa => 'Bool');
-has 'restart_services'       => (is => 'rw', isa => 'Bool');
-
 has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { [] });
 
-has 'pscheduler_url'         => (is => 'rw', isa => 'Str', default => "https://localhost/pscheduler");
+has 'meshconfig_tasks_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/meshconfig-tasks.conf");
 has 'configure_archives'     => (is => 'rw', isa => 'Bool', default=>0);
-has 'task_file'              => (is => 'rw', isa => 'Str', default => "/var/lib/perfsonar/meshconfig/task_tracker");
 
 has 'addresses'              => (is => 'rw', isa => 'ArrayRef[Str]');
 has 'requesting_agent'       => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
 has 'requesting_agent_config' => (is => 'rw', isa => 'HashRef');
-has 'client_uuid_file'        => (is => 'rw', isa => 'Str', default => "/var/lib/perfsonar/meshconfig/client_uuid");
 
 has 'send_error_emails'      => (is => 'rw', isa => 'Bool', default => 1);
 
@@ -119,12 +116,11 @@ sub init {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { 
                                          meshes => 1,
-                                         use_toolkit => 0,
-                                         restart_services => 0,
                                          requesting_agent_config => 0,
                                          validate_certificate => 0,
                                          ca_certificate_file => 0,
                                          ca_certificate_path => 0,
+                                         meshconfig_tasks_conf => 0,
                                          configure_archives   => 0,
                                          skip_redundant_tests => 0,
                                          addresses => 0,
@@ -266,31 +262,26 @@ sub __configure_host {
     if (scalar(@{ $self->meshes }) == 0) {
         $logger->warn("No meshes defined in the configuration");
     }
-    
-    ##
-    # Download and build mesh
-    my $generator = perfSONAR_PS::MeshConfig::Generators::PScheduler->new();
-    my ($status, $res) = $generator->init({ 
-                                            url => $self->pscheduler_url,
+
+    my $generator = perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting->new();
+    my ($status, $res) = $generator->init({ config_file => $self->meshconfig_tasks_conf,
                                             skip_duplicates => $self->skip_redundant_tests,
-                                            configure_archives => $self->configure_archives,
-                                            client_uuid_file => $self->client_uuid_file,
-                                            task_file => $self->task_file
-                                          });
+                                            configure_archives => $self->configure_archives });
     if ($status != 0) {
-        my $msg = "Problem initializing PScheduler generator: ".$res;
+        my $msg = "Problem initializing Tasks configuration: ".$res;
         $logger->error($msg);
         $self->__add_error({ error_msg => $msg });
         return;
     }
 
     # The $dont_change variable lets us know at the end whether or not we
-    # should go through with writing the tasks. If a user has specified that a mesh must 
-    # exist, or no updates occur, we don't change anything.
+    # should go through with writing the files, and restarting the daemons. If
+    # a user has specified that a mesh must exist, or no updates occur, we
+    # don't change anything.
     my $dont_change = 0;
 
     my @local_addresses = map { $_->address } @{ $self->requesting_agent->addresses };
-    
+
     foreach my $mesh_params (@{ $self->meshes }) {
         # Grab the mesh from the server
         my ($status, $res) = load_mesh({
@@ -421,7 +412,7 @@ sub __configure_host {
                     $dont_change = 1;
                 }
 
-                my $msg = "Problem adding Regular Testing tests: $@";
+                my $msg = "Problem adding tasks: $@";
                 $logger->error($msg);
                 $self->__add_error({ mesh => $mesh, host => $hosts->[0], error_msg => $msg });
             }
@@ -434,10 +425,11 @@ sub __configure_host {
         $self->__add_error({ error_msg => $msg });
         return;
     }
-    
-    #commit changes
-    $generator->save();
-    
+
+    my $config = $generator->get_config();
+
+    $status = $self->__write_file({ file => $self->meshconfig_tasks_conf, contents => $config });
+
     return;
 }
 
@@ -473,17 +465,9 @@ sub __write_file {
     $logger->debug("Writing ".$file);
 
     eval {
-        if ($self->use_toolkit) {
-            my $res = save_file( { file => $file, content => $contents } );
-            if ( $res == -1 ) {
-                die("Couldn't save ".$file."via toolkit daemon");
-            }
-        } 
-        else {
-            open(FILE, ">".$file) or die("Couldn't open $file");
-            print FILE $contents;
-            close(FILE);
-        }
+        open(FILE, ">".$file) or die("Couldn't open $file");
+        print FILE $contents;
+        close(FILE);
     };
     if ($@) {
         my $msg = "Problem writing to $file: $@";
@@ -518,38 +502,6 @@ sub __compare_file {
     }
 
     return $differ;
-}
-
-sub __restart_service {
-    my ($self, @args) = @_;
-    my $parameters = validate( @args, { name => 1 } );
-    my $name  = $parameters->{name};
-
-    eval {
-        if ($self->use_toolkit) {
-            my $res = restart_service( { name => $name } );
-            if ( $res == -1 ) {
-                die("Couldn't restart service ".$name." via toolkit daemon");
-            }
-        }
-        else {
-            my $service_obj = get_service_object($name);
-            unless ($service_obj) {
-                my $msg = "Invalid service: $name";
-                $logger->error($msg);
-                die($msg);
-            }
-
-            die if ($service_obj->restart);
-        } 
-    };
-    if ($@) {
-        my $msg = "Problem restarting $name: $@";
-        $logger->error($msg);
-        return (-1, $msg);
-    }
-
-    return (0, "");
 }
 
 sub __get_addresses {
