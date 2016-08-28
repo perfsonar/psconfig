@@ -275,6 +275,13 @@ while(1){
         die("Problem parsing configuration file: $@");
     }
     
+    #get global measurement archives
+    my %ma_map = ();
+    foreach my $ma(@{ $parsed_config->measurement_archives }){
+        $ma_map{$ma->type()} = [] unless($ma_map{$ma->type()});
+        push @{$ma_map{$ma->type()}}, $ma->to_pscheduler();
+    }
+    
     #build tests
     my $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
     $task_manager->init(
@@ -285,7 +292,7 @@ while(1){
                     );
     foreach my $test (@{ $parsed_config->tests }) {
         next if $test->disabled;
-        $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager);
+        $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map);
     }
     
     #commit tasks
