@@ -147,14 +147,14 @@ $SIG{__WARN__} = sub {
 };
 
 $SIG{__DIE__} = sub {                       ## still dies upon return
-	die @_ if $^S;                      ## see perldoc -f die perlfunc
-	die @_ if $insig;                   ## protect against reentrance.
-	$insig = 1;
-	$logger->error("Died: ".join( '', @_ ));
-	$insig = 0;
-	return;
+    die @_ if $^S;                      ## see perldoc -f die perlfunc
+    die @_ if $insig;                   ## protect against reentrance.
+    $insig = 1;
+    $logger->error("Died: ".join( '', @_ ));
+    $insig = 0;
+    return;
 };
-										    #
+
 if ( not $DEBUGFLAG ) {
     ( $status, $res ) = daemonize();
     if ( $status != 0 ) {
@@ -181,7 +181,13 @@ $inotify->watch($conf{"meshconfig_tasks_conf"}, IN_MODIFY) or die $conf{"meshcon
 while(1){
     ##
     # Load configuration
-    %conf = Config::General->new( $CONFIG_FILE )->getall();
+    eval{
+        %conf = Config::General->new( $CONFIG_FILE )->getall();
+    };
+    if($@){
+        $logger->error("Error reading $CONFIG_FILE, proceeding with defaults. Caused by: $@");
+        %conf = ();
+    }
     
     unless ($conf{"client_uuid_file"}) {
         my $default = "/var/lib/perfsonar/meshconfig/client_uuid";
@@ -254,82 +260,110 @@ while(1){
     ##
     # Check remote test definitions
     my $start = time;
-    my $agent = perfSONAR_PS::MeshConfig::Agent->new();
-    $agent->init({
-                 meshes => $conf{mesh},
-                 meshconfig_tasks_conf => $conf{meshconfig_tasks_conf},
-                 validate_certificate => $conf{validate_certificate},
-                 ca_certificate_file => $conf{ca_certificate_file},
-                 ca_certificate_path => $conf{ca_certificate_path},
-                 configure_archives   => $conf{configure_archives},  
-                 skip_redundant_tests => $conf{skip_redundant_tests},
-                 addresses => $addresses,
-                 requesting_agent_config => $conf{local_host},
-                 from_address => $conf{from_address},
-                 administrator_emails => $conf{administrator_emails},
-                 send_error_emails    => $conf{send_error_emails},
-    });
-    $agent->run();
-    $inotify->poll(); #clear out any events caused by changes from above
+    eval{
+        my $agent = perfSONAR_PS::MeshConfig::Agent->new();
+        $agent->init({
+                     meshes => $conf{mesh},
+                     meshconfig_tasks_conf => $conf{meshconfig_tasks_conf},
+                     validate_certificate => $conf{validate_certificate},
+                     ca_certificate_file => $conf{ca_certificate_file},
+                     ca_certificate_path => $conf{ca_certificate_path},
+                     configure_archives   => $conf{configure_archives},  
+                     skip_redundant_tests => $conf{skip_redundant_tests},
+                     addresses => $addresses,
+                     requesting_agent_config => $conf{local_host},
+                     from_address => $conf{from_address},
+                     administrator_emails => $conf{administrator_emails},
+                     send_error_emails    => $conf{send_error_emails},
+        });
+        $agent->run();
+        $inotify->poll(); #clear out any events caused by changes from above
+    };
+    if($@){
+        $logger->error("Problem reading remote meshes: $@");
+    }
     
     ##
     # Load meshconfig_tasks_conf and interact with pScheduler
     
     #parse into hash
-    my ($status, $res) = parse_file(file => $conf{"meshconfig_tasks_conf"});
-    if ($status != 0) {
-        $logger->error("Problem parsing tasks configuration file: $res");
-        exit(-1);
-    }
-    
-    #parse into objects
     my $parsed_config;
-    eval {
-        $parsed_config = perfSONAR_PS::RegularTesting::Config->parse($res, 1);
+    my ($status, $res);
+    eval{
+        ($status, $res) = parse_file(file => $conf{"meshconfig_tasks_conf"});
     };
-    if ($@) {
-        die("Problem parsing configuration file: $@");
-    }
-    
-    #get global measurement archives
-    my %ma_map = ();
-    foreach my $ma(@{ $parsed_config->measurement_archives }){
-        $ma_map{$ma->type()} = [] unless($ma_map{$ma->type()});
-        push @{$ma_map{$ma->type()}}, $ma->to_pscheduler();
-    }
-    
-    #build tests
-    my $end = time;
-    my $until_next_refresh = $conf{"check_interval"} - ($end - $start);
-    $start = $end;
-    my $old_task_deadline = $end + $until_next_refresh;
-    my $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
-    $task_manager->init(
-                        pscheduler_url => $conf{pscheduler_url},
-                        task_file => $conf{pscheduler_tracker_file},
-                        client_uuid_file => $conf{client_uuid_file},
-                        user_agent => "perfsonar-meshconfig",
-                        new_task_min_ttl => $conf{"task_min_ttl"},
-                        new_task_min_repeats => $conf{"task_min_repeats"},
-                        old_task_deadline => $old_task_deadline,
-                        task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"}
-                    );
-    foreach my $test (@{ $parsed_config->tests }) {
-        next if $test->disabled;
-        eval{
-            $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map);
+    if($@){
+        #probably shouldn't happen, but just in case
+        $logger->error("Error reading tasks configuration file: $@");
+    }elsif ($status != 0) {
+        #errors should be here
+        $logger->error("Problem reading tasks configuration file: $res");
+    }else{    
+        #able to read file, parse into objects
+        eval {
+            $parsed_config = perfSONAR_PS::RegularTesting::Config->parse($res, 1);
         };
-        if($@){
-            $logger->error("Error build pScheduler task: " . $@);
+        if ($@) {
+            $logger->error("Problem parsing tasks configuration file: $@");
         }
     }
     
-    #commit tasks
-    $task_manager->commit();
-    foreach my $error(@{$task_manager->errors()}){
-       $logger->warn($error);
-    }
     
+    #initialize our timing variables
+    my $end = time;
+    my $until_next_refresh = $conf{"check_interval"} - ($end - $start);
+    $start = $end;
+    #if we were able to read the file, do stuff with it
+    if($parsed_config){
+        #get global measurement archives
+        my %ma_map = ();
+        foreach my $ma(@{ $parsed_config->measurement_archives }){
+            $ma_map{$ma->type()} = [] unless($ma_map{$ma->type()});
+            eval {
+                push @{$ma_map{$ma->type()}}, $ma->to_pscheduler();
+            };
+            if($@){
+                $logger->error("Problem parsing measurement archive: $@");
+            }
+        }
+    
+        #build tests
+        my $old_task_deadline = $end + $until_next_refresh;
+        my $task_manager;        
+        eval{
+            $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
+            $task_manager->init(
+                                pscheduler_url => $conf{pscheduler_url},
+                                task_file => $conf{pscheduler_tracker_file},
+                                client_uuid_file => $conf{client_uuid_file},
+                                user_agent => "perfsonar-meshconfig",
+                                new_task_min_ttl => $conf{"task_min_ttl"},
+                                new_task_min_repeats => $conf{"task_min_repeats"},
+                                old_task_deadline => $old_task_deadline,
+                                task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"}
+                            );
+        };
+        if($@){
+            $logger->error("Problem initializing task_manager: $@");
+        }else{
+            foreach my $test (@{ $parsed_config->tests }) {
+                next if $test->disabled;
+                eval{
+                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map);
+                };
+                if($@){
+                    $logger->error("Error building pScheduler task: " . $@);
+                }
+            }
+    
+            #commit tasks
+            $task_manager->commit();
+            foreach my $error(@{$task_manager->errors()}){
+               $logger->warn($error);
+            }
+        }
+    }
+
     ##
     # Sleep until its time to look for file updates or time to refesh
     $end = time;

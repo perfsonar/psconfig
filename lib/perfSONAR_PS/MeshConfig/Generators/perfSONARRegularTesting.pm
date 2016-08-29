@@ -97,8 +97,7 @@ sub init {
     eval {
         my ($status, $res) = parse_file(file => $config_file);
         if ($status != 0) {
-            $logger->error("Problem parsing configuration file: $res");
-            exit(-1);
+            die("Problem parsing configuration file: $res");
         }
 
         my $conf = $res;
