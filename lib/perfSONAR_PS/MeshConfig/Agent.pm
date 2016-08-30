@@ -33,14 +33,14 @@ use Moose;
 
 has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { [] });
 
-has 'meshconfig_tasks_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/meshconfig-tasks.conf");
+has 'meshconfig_tasks_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/meshconfig-agent-tasks.conf");
 has 'configure_archives'     => (is => 'rw', isa => 'Bool', default=>0);
 
 has 'addresses'              => (is => 'rw', isa => 'ArrayRef[Str]');
 has 'requesting_agent'       => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
 has 'requesting_agent_config' => (is => 'rw', isa => 'HashRef');
 
-has 'send_error_emails'      => (is => 'rw', isa => 'Bool', default => 1);
+has 'send_error_emails'      => (is => 'rw', isa => 'Bool', default => 0);
 
 has 'from_address'           => (is => 'rw', isa => 'Str');
 has 'administrator_emails'   => (is => 'rw', isa => 'ArrayRef[Str]');

@@ -45,7 +45,7 @@ my $DEBUGFLAG;
 my $HELP;
 my $RUNAS_USER;
 my $RUNAS_GROUP;
-my $DEFAULT_TASKS_FILE = '/etc/perfsonar/meshconfig-tasks.conf';
+my $DEFAULT_TASKS_FILE = '/etc/perfsonar/meshconfig-agent-tasks.conf';
 
 my ( $status, $res );
 
