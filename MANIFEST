@@ -1,17 +1,17 @@
 MANIFEST
 Makefile
 bin/build_json
-bin/generate_configuration
+bin/perfsonar_meshconfig_agent
 bin/generate_gui_configuration
 bin/lookup_hosts
 bin/validate_configuration
 bin/validate_json
 doc/cron-lookup_hosts
 doc/cron-restart_gui_services
-doc/cron-restart_services
 doc/example.conf
 doc/example.json
 etc/meshconfig-agent.conf
+etc/meshconfig-agent-logger.conf
 etc/meshconfig-agent-tasks.conf
 etc/meshconfig-guiagent.conf
 etc/meshconfig-lookuphosts.conf
@@ -61,4 +61,5 @@ lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 lib/perfSONAR_PS/MeshConfig/Utils.pm
 scripts/example_client.pl
 scripts/perfsonar-meshconfig-agent
+scripts/perfsonar-meshconfig-agent.service
 scripts/perfsonar-meshconfig-guiagent

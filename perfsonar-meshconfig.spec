@@ -2,7 +2,7 @@
 %define config_base  /etc/perfsonar
 %define doc_base     /usr/share/doc
 
-%define crontab_1 perfsonar-meshconfig-agent
+%define script_agent perfsonar-meshconfig-agent
 %define crontab_2 perfsonar-meshconfig-guiagent
 
 %define relnum 0.1.rc1 
@@ -58,11 +58,17 @@ Requires:		perl(lib)
 Requires:		perl(vars)
 Requires:		perl(warnings)
 Requires:		coreutils
+%if 0%{?el7}
+BuildRequires: systemd
+%{?systemd_requires: %systemd_requires}
+%else
 Requires:		chkconfig
+%endif
 Requires:		shadow-utils
 Requires:       libperfsonar-perl
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Shared
 Provides:       perl-perfSONAR_PS-MeshConfig-Shared
+
 %description shared
 This package is the set of library files shared RPMs by the perfSONAR Mesh
 Configuration agents.
@@ -77,6 +83,8 @@ Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-Agent
 Provides:       perl-perfSONAR_PS-MeshConfig-Agent
+Obsoletes:      perfsonar-regulartesting
+Provides:       perfsonar-regulartesting
 
 %description agent
 The perfSONAR Mesh Configuration Agent downloads a centralized JSON file
@@ -122,7 +130,13 @@ rm -rf %{buildroot}
 
 make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
 
-install -D -m 0600 %{buildroot}/%{install_base}/scripts/%{crontab_1} %{buildroot}/etc/cron.d/%{crontab_1}
+mkdir -p %{buildroot}/etc/init.d
+
+%if 0%{?el7}
+install -D -m 0644 scripts/%{script_agent}.service %{buildroot}/%{_unitdir}/%{script_agent}.service
+%else
+install -D -m 0755 scripts/%{script_agent} %{buildroot}/etc/init.d/%{script_agent}
+%endif
 install -D -m 0600 %{buildroot}/%{install_base}/scripts/%{crontab_2} %{buildroot}/etc/cron.d/%{crontab_2}
 rm -rf %{buildroot}/%{install_base}/scripts/
 
@@ -130,7 +144,6 @@ install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-lookup_hosts %{buildroo
 install -D -m 0644 %{buildroot}/%{install_base}/doc/example.conf %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/example.conf
 install -D -m 0644 %{buildroot}/%{install_base}/doc/example.json %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/example.json
 install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_gui_services %{buildroot}/%{doc_base}/perfsonar-meshconfig-guiagent/cron-restart_gui_services
-install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_services %{buildroot}/%{doc_base}/perfsonar-meshconfig-agent/cron-restart_services
 rm -rf %{buildroot}/%{install_base}/doc
 
 %clean
@@ -139,6 +152,9 @@ rm -rf %{buildroot}
 %post shared
 mkdir -p /var/lib/perfsonar/meshconfig
 chown perfsonar:perfsonar /var/lib/perfsonar/meshconfig
+
+mkdir -p /var/log/perfsonar
+chown perfsonar:perfsonar /var/log/perfsonar
 
 %post jsonbuilder
 if [ "$1" = "1" ]; then
@@ -150,6 +166,9 @@ if [ "$1" = "1" ]; then
 fi
 
 %post agent
+%if 0%{?el7}
+%systemd_post %{script_agent}.service
+%else
 if [ "$1" = "1" ]; then
     # clean install, check for pre 3.5.1 files
     if [ -e "/opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf" ]; then
@@ -157,8 +176,17 @@ if [ "$1" = "1" ]; then
         mv /opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf %{config_base}/meshconfig-agent.conf
     fi
 fi
+if [ "$1" = "2" ]; then
+    if [ -e "/etc/perfsonar/regulartesting.conf" ]; then
+        mv %{config_base}/meshconfig-agent-tasks.conf %{config_base}/meshconfig-agent-tasks.conf.default
+        mv /etc/perfsonar/regulartesting.conf %{config_base}/meshconfig-agent-tasks.conf
+    fi
+fi
 #update regular_testing.conf path
 sed -i "s:/opt/perfsonar_ps/regular_testing/etc/regular_testing.conf:/etc/perfsonar/regulartesting.conf:g" %{config_base}/meshconfig-agent.conf
+
+/sbin/chkconfig --add %{script_agent}
+%endif
 
 %post guiagent
 
@@ -179,6 +207,27 @@ if [ "$1" = "1" ]; then
     sed -i "s:/serviceTest:/perfsonar-graphs:g" %{config_base}/meshconfig-guiagent.conf
 fi
 
+%preun agent
+%if 0%{?el7}
+%systemd_preun %{script_agent}.service
+%else
+if [ "$1" = "0" ]; then
+	# Totally removing the service
+	/etc/init.d/%{script_agent} stop
+	/sbin/chkconfig --del %{script_agent}
+fi
+%endif
+
+%postun agent
+%if 0%{?el7}
+%systemd_postun_with_restart %{script_agent}.service
+%else
+if [ "$1" != "0" ]; then
+	# An RPM upgrade
+	/etc/init.d/%{script_agent} restart
+fi
+%endif
+
 %files shared
 %defattr(0644,perfsonar,perfsonar,0755)
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Utils.pm
@@ -197,13 +246,18 @@ fi
 
 %files agent
 %defattr(0644,perfsonar,perfsonar,0755)
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/generate_configuration
 %config(noreplace) %{config_base}/meshconfig-agent.conf
+%config(noreplace) %{config_base}/meshconfig-agent-logger.conf
 %config(noreplace) %{config_base}/meshconfig-agent-tasks.conf
+%{install_base}/bin/perfsonar_meshconfig_agent
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Agent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
-%doc %{doc_base}/perfsonar-meshconfig-agent/cron-restart_services
-%attr(0644,root,root) /etc/cron.d/%{crontab_1}
+%if 0%{?el7}
+%attr(0644,root,root) %{_unitdir}/%{script_agent}.service
+%else
+%attr(0755,perfsonar,perfsonar) /etc/init.d/%{script_agent}
+%endif
+
 
 %files guiagent
 %defattr(0644,perfsonar,perfsonar,0755)

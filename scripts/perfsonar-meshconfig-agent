@@ -1,2 +1,98 @@
-MAILTO=root
-0 2 * * * perfsonar /usr/lib/perfsonar/bin/generate_configuration &> /var/log/perfsonar/meshconfig-agent.log
+#!/bin/bash
+#
+# Init file for perfSONAR MeshConfig Agent Daemon
+#
+# chkconfig: 2345 90 20
+# description: perfSONAR MeshConfig Agent Daemon
+#
+
+PREFIX=/usr/lib/perfsonar
+BINDIR=${PREFIX}/bin
+CONFDIR=/etc/perfsonar
+RUNDIR=/var/run
+
+CONFFILE=${CONFDIR}/meshconfig-agent.conf
+LOGGERFILE=${CONFDIR}/meshconfig-agent-logger.conf
+PIDFILE=${RUNDIR}/meshconfig-agent.pid
+
+USER=perfsonar
+GROUP=perfsonar
+
+PERFSONAR="${BINDIR}/perfsonar_meshconfig_agent --config=${CONFFILE} --pidfile=${PIDFILE} --logger=${LOGGERFILE} --user=${USER} --group=${GROUP}"
+
+ERROR=0
+ARGV="$@"
+if [ "x$ARGV" = "x" ] ; then 
+    ARGS="help"
+fi
+
+for ARG in $@ $ARGS
+do
+    # check for pidfile
+    if [ -f $PIDFILE ] ; then
+        PID=`cat $PIDFILE`
+        if [ "x$PID" != "x" ] && kill -0 $PID 2>/dev/null ; then
+            STATUS="perfSONAR MeshConfig Agent (pid $PID) running"
+            RUNNING=1
+        else
+            STATUS="perfSONAR MeshConfig Agent (pid $PID?) not running"
+            RUNNING=0
+        fi
+    else
+        STATUS="perfSONAR MeshConfig Agent (no pid file) not running"
+        RUNNING=0
+    fi 
+
+    case $ARG in
+    start)
+	echo $PERFSONAR
+
+	if $PERFSONAR ; then
+	    echo "$0 $ARG: perfSONAR MeshConfig Agent started"
+	    touch /var/lock/subsys/perfsonar-lsregistrationdaemon
+        ERROR=0
+	else
+	    echo "$0 $ARG: perfSONAR MeshConfig Agent could not be started"
+	    ERROR=3
+	fi
+	;;
+    stop)
+	if [ $RUNNING -eq 0 ]; then
+	    echo "$0 $ARG: $STATUS"
+	    continue
+	fi
+	if kill $PID ; then
+	    echo "$0 $ARG: perfSONAR MeshConfig Agent stopped"
+	    rm /var/lock/subsys/perfsonar-lsregistrationdaemon
+	else
+	    echo "$0 $ARG: perfSONAR MeshConfig Agent could not be stopped"
+	    ERROR=4
+	fi
+	;;
+    restart)
+    	$0 stop; echo "waiting..."; sleep 10; $0 start;
+	;;
+    status)
+	    echo $STATUS
+	    [ $RUNNING -eq 0 ] && ERROR=3
+	;;
+    *)
+	echo "usage: $0 (start|stop|restart|help)"
+	cat <<EOF
+
+start      - start perfSONAR MeshConfig Agent
+stop       - stop perfSONAR MeshConfig Agent
+restart    - restart perfSONAR MeshConfig Agent if running by sending a SIGHUP or start if 
+             not running
+status     - Indicates if the service is running
+help       - this screen
+
+EOF
+	ERROR=2
+    ;;
+
+    esac
+
+done
+
+exit $ERROR
