@@ -33,7 +33,7 @@ use Moose;
 
 has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { [] });
 
-has 'meshconfig_tasks_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/meshconfig-agent-tasks.conf");
+has 'tasks_conf'   => (is => 'rw', isa => 'Str', default => "/etc/perfsonar/meshconfig-agent-tasks.conf");
 has 'configure_archives'     => (is => 'rw', isa => 'Bool', default=>0);
 
 has 'addresses'              => (is => 'rw', isa => 'ArrayRef[Str]');
@@ -120,7 +120,7 @@ sub init {
                                          validate_certificate => 0,
                                          ca_certificate_file => 0,
                                          ca_certificate_path => 0,
-                                         meshconfig_tasks_conf => 0,
+                                         tasks_conf => 0,
                                          configure_archives   => 0,
                                          skip_redundant_tests => 0,
                                          addresses => 0,
@@ -264,7 +264,7 @@ sub __configure_host {
     }
 
     my $generator = perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting->new();
-    my ($status, $res) = $generator->init({ config_file => $self->meshconfig_tasks_conf,
+    my ($status, $res) = $generator->init({ config_file => $self->tasks_conf,
                                             skip_duplicates => $self->skip_redundant_tests,
                                             configure_archives => $self->configure_archives });
     if ($status != 0) {
@@ -428,7 +428,7 @@ sub __configure_host {
 
     my $config = $generator->get_config();
 
-    $status = $self->__write_file({ file => $self->meshconfig_tasks_conf, contents => $config });
+    $status = $self->__write_file({ file => $self->tasks_conf, contents => $config });
 
     return;
 }

@@ -167,14 +167,15 @@ unlockPIDFile( $fileHandle );
 
 ##
 # Monitor config files for changes
-unless ($conf{"meshconfig_tasks_conf"}) {
+my $tasks_conf_file = $conf{"tasks_conf"};
+unless ($tasks_conf_file) {
     $logger->debug( "No tasks file specified. Defaulting to $DEFAULT_TASKS_FILE" );
-    $conf{"meshconfig_tasks_conf"} = $DEFAULT_TASKS_FILE;
+    $tasks_conf_file = $DEFAULT_TASKS_FILE;
 }
 my $inotify = new Linux::Inotify2 or die "Unable to create new inotify object: $!" ;
 $inotify->blocking(0);
 $inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation failed" ;
-$inotify->watch($conf{"meshconfig_tasks_conf"}, IN_MODIFY) or die $conf{"meshconfig_tasks_conf"} . " watcher creation failed" ;
+$inotify->watch($tasks_conf_file, IN_MODIFY) or die "$tasks_conf_file watcher creation failed" ;
 
 ##
 # Start main program loop
@@ -202,7 +203,7 @@ while(1){
     }
     
     unless ($conf{"pscheduler_tracker_file"}) {
-        my $default = "/var/lib/perfsonar/meshconfig/task_tracker";
+        my $default = "/var/lib/perfsonar/meshconfig/psc_tracker";
         $logger->debug( "No pScheduler tracker file specified. Defaulting to $default" );
         $conf{"pscheduler_tracker_file"} = $default;
     }
@@ -222,9 +223,9 @@ while(1){
         $conf{"task_min_ttl"} = 86400;
     }
     
-    unless ($conf{"task_min_repeats"}) {
-        $logger->debug( "No task minimum repeats specified. Defaulting to 2" );
-        $conf{"task_min_repeats"} = 2;
+    unless ($conf{"task_min_runs"}) {
+        $logger->debug( "No task minimum runs specified. Defaulting to 2" );
+        $conf{"task_min_runs"} = 2;
     }
     
     unless ($conf{"task_renewal_fudge_factor"}) {
@@ -264,7 +265,7 @@ while(1){
         my $agent = perfSONAR_PS::MeshConfig::Agent->new();
         $agent->init({
                      meshes => $conf{mesh},
-                     meshconfig_tasks_conf => $conf{meshconfig_tasks_conf},
+                     tasks_conf => $tasks_conf_file,
                      validate_certificate => $conf{validate_certificate},
                      ca_certificate_file => $conf{ca_certificate_file},
                      ca_certificate_path => $conf{ca_certificate_path},
@@ -284,13 +285,13 @@ while(1){
     }
     
     ##
-    # Load meshconfig_tasks_conf and interact with pScheduler
+    # Load tasks_conf and interact with pScheduler
     
     #parse into hash
     my $parsed_config;
     my ($status, $res);
     eval{
-        ($status, $res) = parse_file(file => $conf{"meshconfig_tasks_conf"});
+        ($status, $res) = parse_file(file => $tasks_conf_file);
     };
     if($@){
         #probably shouldn't happen, but just in case
@@ -334,11 +335,11 @@ while(1){
             $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
             $task_manager->init(
                                 pscheduler_url => $conf{pscheduler_url},
-                                task_file => $conf{pscheduler_tracker_file},
+                                tracker_file => $conf{pscheduler_tracker_file},
                                 client_uuid_file => $conf{client_uuid_file},
                                 user_agent => "perfsonar-meshconfig",
                                 new_task_min_ttl => $conf{"task_min_ttl"},
-                                new_task_min_repeats => $conf{"task_min_repeats"},
+                                new_task_min_runs => $conf{"task_min_runs"},
                                 old_task_deadline => $old_task_deadline,
                                 task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"}
                             );
