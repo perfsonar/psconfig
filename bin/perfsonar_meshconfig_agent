@@ -320,7 +320,7 @@ while(1){
         foreach my $ma(@{ $parsed_config->measurement_archives }){
             $ma_map{$ma->type()} = [] unless($ma_map{$ma->type()});
             eval {
-                push @{$ma_map{$ma->type()}}, $ma->to_pscheduler();
+                push @{$ma_map{$ma->type()}}, $ma;
             };
             if($@){
                 $logger->error("Problem parsing measurement archive: $@");
