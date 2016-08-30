@@ -341,7 +341,8 @@ while(1){
                                 new_task_min_ttl => $conf{"task_min_ttl"},
                                 new_task_min_runs => $conf{"task_min_runs"},
                                 old_task_deadline => $old_task_deadline,
-                                task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"}
+                                task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
+                                debug => $DEBUGFLAG
                             );
         };
         if($@){
@@ -359,8 +360,19 @@ while(1){
     
             #commit tasks
             $task_manager->commit();
+            
+            #Log results
             foreach my $error(@{$task_manager->errors()}){
                $logger->warn($error);
+            }
+            foreach my $deleted_task(@{$task_manager->deleted_tasks()}){
+               $logger->debug("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url);
+            }
+            foreach my $added_task(@{$task_manager->added_tasks()}){
+               $logger->debug("Created task " . $added_task->uuid . " on server " . $added_task->url);
+            }
+            if(@{$task_manager->added_tasks()} || @{$task_manager->deleted_tasks()}){
+                $logger->info("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks");
             }
         }
     }
