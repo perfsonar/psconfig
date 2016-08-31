@@ -169,23 +169,28 @@ fi
 %if 0%{?el7}
 %systemd_post %{script_agent}.service
 %else
+/sbin/chkconfig --add %{script_agent}
 if [ "$1" = "1" ]; then
     # clean install, check for pre 3.5.1 files
     if [ -e "/opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf" ]; then
         mv %{config_base}/meshconfig-agent.conf %{config_base}/meshconfig-agent.conf.default
         mv /opt/perfsonar_ps/mesh_config/etc/agent_configuration.conf %{config_base}/meshconfig-agent.conf
     fi
+    #make sure it is started on install 
+    /sbin/service perfsonar-meshconfig-agent start &>/dev/null || :
 fi
 if [ "$1" = "2" ]; then
+    # 4.0 upgrade
     if [ -e "/etc/perfsonar/regulartesting.conf" ]; then
         mv %{config_base}/meshconfig-agent-tasks.conf %{config_base}/meshconfig-agent-tasks.conf.default
         mv /etc/perfsonar/regulartesting.conf %{config_base}/meshconfig-agent-tasks.conf
+        #make sure this gets started on its first update to version with agent
+        /sbin/service perfsonar-meshconfig-agent restart &>/dev/null || :
     fi
 fi
 #update regular_testing.conf path
 sed -i "s:/opt/perfsonar_ps/regular_testing/etc/regular_testing.conf:/etc/perfsonar/regulartesting.conf:g" %{config_base}/meshconfig-agent.conf
 
-/sbin/chkconfig --add %{script_agent}
 %endif
 
 %post guiagent
