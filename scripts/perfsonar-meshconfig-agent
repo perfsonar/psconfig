@@ -13,7 +13,7 @@ RUNDIR=/var/run
 
 CONFFILE=${CONFDIR}/meshconfig-agent.conf
 LOGGERFILE=${CONFDIR}/meshconfig-agent-logger.conf
-PIDFILE=${RUNDIR}/meshconfig-agent.pid
+PIDFILE=${RUNDIR}/perfsonar-meshconfig-agent.pid
 
 USER=perfsonar
 GROUP=perfsonar

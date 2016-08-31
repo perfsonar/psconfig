@@ -249,7 +249,7 @@ fi
 %config(noreplace) %{config_base}/meshconfig-agent.conf
 %config(noreplace) %{config_base}/meshconfig-agent-logger.conf
 %config(noreplace) %{config_base}/meshconfig-agent-tasks.conf
-%{install_base}/bin/perfsonar_meshconfig_agent
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/perfsonar_meshconfig_agent
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Agent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/perfSONARRegularTesting.pm
 %if 0%{?el7}
