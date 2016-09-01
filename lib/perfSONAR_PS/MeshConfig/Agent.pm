@@ -260,7 +260,7 @@ sub __configure_host {
     my ($self) = @_;
 
     if (scalar(@{ $self->meshes }) == 0) {
-        $logger->warn("No meshes defined in the configuration");
+        $logger->debug("No meshes defined in the configuration");
     }
 
     my $generator = perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting->new();
@@ -458,7 +458,7 @@ sub __write_file {
     my $contents = $parameters->{contents};
 
     unless ($self->__compare_file({ file => $file, contents => $contents })) {
-        $logger->info($file." is unchanged.");
+        $logger->debug($file." is unchanged.");
         return;
     }
 
