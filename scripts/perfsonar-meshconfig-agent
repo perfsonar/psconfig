@@ -2,7 +2,7 @@
 #
 # Init file for perfSONAR MeshConfig Agent Daemon
 #
-# chkconfig: 2345 90 20
+# chkconfig: 2345 92 20
 # description: perfSONAR MeshConfig Agent Daemon
 #
 

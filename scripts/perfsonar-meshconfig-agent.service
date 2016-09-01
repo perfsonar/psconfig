@@ -1,6 +1,6 @@
 [Unit]
 Description=perfSONAR MeshConfig Agent
-After=network.target
+After=network.target  pscheduler-scheduler.service pscheduler-archiver.service pscheduler-ticker.service pscheduler-runner.service
 
 [Service]
 Type=forking
