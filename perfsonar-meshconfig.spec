@@ -167,11 +167,12 @@ fi
 
 %post agent
 %if 0%{?el7}
+%systemd_post %{script_agent}.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
     systemctl enable %{script_agent}.service
+    systemctl start %{script_agent}.service
 fi
-%systemd_post %{script_agent}.service
 %else
 /sbin/chkconfig --add %{script_agent}
 if [ "$1" = "1" ]; then
