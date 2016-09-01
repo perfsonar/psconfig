@@ -177,6 +177,16 @@ $inotify->blocking(0);
 $inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation failed" ;
 $inotify->watch($tasks_conf_file, IN_MODIFY) or die "$tasks_conf_file watcher creation failed" ;
 
+
+##
+# Initialize parameters related to pscheduler failures
+my $pscheduler_fails = 0;
+my $max_pscheduler_attempts = $conf{"pscheduler_fail_attempts"};
+unless ($max_pscheduler_attempts) {
+    $logger->debug( "No pscheduler fail attempts specified. Defaulting to 5" );
+    $max_pscheduler_attempts = 5;
+}
+
 ##
 # Start main program loop
 while(1){
@@ -347,7 +357,12 @@ while(1){
         };
         if($@){
             $logger->error("Problem initializing task_manager: $@");
+        }elsif(!$task_manager->check_assist_server()){
+            $logger->error("Problem contacting pScheduler, will try again later.");
+            $pscheduler_fails++;
         }else{
+            $logger->info("pScheduler is back up, resuming normal operation") if($pscheduler_fails);
+            $pscheduler_fails = 0;
             foreach my $test (@{ $parsed_config->tests }) {
                 next if $test->disabled;
                 eval{
@@ -387,6 +402,9 @@ while(1){
         sleep($until_next_refresh < $until_next_file_check ? $until_next_refresh : $until_next_file_check);
         if($inotify->poll()){
             $logger->info("Configuration file change detected, refreshing records.");
+            last;
+        }elsif($pscheduler_fails > 0 && $pscheduler_fails < $max_pscheduler_attempts){
+            $logger->info("Retrying pscheduler after failure");
             last;
         }else{
             $end = time;
