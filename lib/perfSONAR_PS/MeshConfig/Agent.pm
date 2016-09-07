@@ -25,8 +25,6 @@ use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
 use perfSONAR_PS::MeshConfig::Config::Mesh;
 use perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting;
 
-use perfSONAR_PS::NPToolkit::Services::ServicesMap qw(get_service_object);
-
 use Module::Load;
 
 use Moose;
