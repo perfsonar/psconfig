@@ -216,6 +216,8 @@ if [ "$1" = "1" ]; then
     #Fix graph URL
     sed -i "s:/serviceTest:/perfsonar-graphs:g" %{config_base}/meshconfig-guiagent.conf
 fi
+#migrate to new graphs in 4.0
+sed -i "s:graphWidget.cgi::g" %{config_base}/meshconfig-guiagent.conf
 
 %preun agent
 %if 0%{?el7}
