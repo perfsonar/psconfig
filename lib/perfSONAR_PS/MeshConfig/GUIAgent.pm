@@ -314,9 +314,9 @@ sub __write_file {
 
     eval {
         if ($self->use_toolkit) {
-            my $res = save_file( { file => $file, content => $contents } );
-            if ( $res == -1 ) {
-                die("Couldn't save ".$file."via toolkit daemon");
+            my ($status, $res) = save_file( { file => $file, content => $contents } );
+            if ( $status == -1 ) {
+                die("Couldn't save ".$file."via toolkit daemon: ".$res);
             }
         } 
         else {
