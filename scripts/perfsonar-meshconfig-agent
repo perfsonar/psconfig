@@ -49,7 +49,7 @@ do
 
 	if $PERFSONAR ; then
 	    echo "$0 $ARG: perfSONAR MeshConfig Agent started"
-	    touch /var/lock/subsys/perfsonar-lsregistrationdaemon
+	    touch /var/lock/subsys/perfsonar-meshconfig-agent
         ERROR=0
 	else
 	    echo "$0 $ARG: perfSONAR MeshConfig Agent could not be started"
@@ -63,7 +63,7 @@ do
 	fi
 	if kill $PID ; then
 	    echo "$0 $ARG: perfSONAR MeshConfig Agent stopped"
-	    rm /var/lock/subsys/perfsonar-lsregistrationdaemon
+	    rm /var/lock/subsys/perfsonar-meshconfig-agent
 	else
 	    echo "$0 $ARG: perfSONAR MeshConfig Agent could not be stopped"
 	    ERROR=4
