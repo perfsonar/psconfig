@@ -37,6 +37,15 @@ has 'ipv6_only'       => (is => 'rw', isa => 'Bool');
 has 'latest_time'     => (is => 'rw', isa => 'Int');
 has 'random_start_percentage' => (is => 'rw', isa => 'Int');
 has 'time_slots'   => (is => 'rw', isa => 'ArrayRef[Str]');
+#new pscheduler fields
+has 'tcp_bandwidth' => (is => 'rw', isa => 'Int');
+has 'mss' => (is => 'rw', isa => 'Int');
+has 'dscp' => (is => 'rw', isa => 'Int');
+has 'dynamic_window_size'   => (is => 'rw', isa => 'Int');
+has 'no_delay' => (is => 'rw', isa => 'Bool');
+has 'congestion' => (is => 'rw', isa => 'Str');
+has 'flow_label' => (is => 'rw', isa => 'Str');
+has 'cpu_affinity' => (is => 'rw', isa => 'Str');
 
 1;
 

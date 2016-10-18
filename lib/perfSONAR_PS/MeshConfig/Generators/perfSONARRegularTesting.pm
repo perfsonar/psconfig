@@ -383,6 +383,11 @@ sub __build_tests {
             $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
             $parameters->packet_ttl($test->parameters->packet_ttl) if $test->parameters->packet_ttl;
             $parameters->inter_packet_time($test->parameters->packet_interval) if $test->parameters->packet_interval;
+            $parameters->flowlabel($test->parameters->flowlabel) if $test->parameters->flowlabel;
+            $parameters->hostnames($test->parameters->hostnames) if $test->parameters->hostnames;
+            $parameters->suppress_loopback($test->parameters->suppress_loopback) if $test->parameters->suppress_loopback;
+            $parameters->deadline($test->parameters->deadline) if $test->parameters->deadline;
+            $parameters->timeout($test->parameters->timeout) if $test->parameters->timeout;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
@@ -400,6 +405,14 @@ sub __build_tests {
             $parameters->packet_length($test->parameters->packet_size) if $test->parameters->packet_size;
             $parameters->packet_first_ttl($test->parameters->first_ttl) if $test->parameters->first_ttl;
             $parameters->packet_max_ttl($test->parameters->max_ttl) if $test->parameters->max_ttl;
+            $parameters->algorithm($test->parameters->algorithm) if $test->parameters->algorithm;
+            $parameters->as($test->parameters->as) if $test->parameters->as;
+            $parameters->fragment($test->parameters->fragment) if $test->parameters->fragment;
+            $parameters->hostnames($test->parameters->hostnames) if $test->parameters->hostnames;
+            $parameters->probe_type($test->parameters->probe_type) if $test->parameters->probe_type;
+            $parameters->queries($test->parameters->queries) if $test->parameters->queries;
+            $parameters->sendwait($test->parameters->sendwait) if $test->parameters->sendwait;
+            $parameters->wait($test->parameters->wait) if $test->parameters->wait;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
@@ -431,6 +444,15 @@ sub __build_tests {
             $parameters->streams($test->parameters->streams) if $test->parameters->streams;
             $parameters->window_size($test->parameters->window_size) if $test->parameters->window_size;
             $parameters->latest_time($test->parameters->latest_time) if $test->parameters->latest_time;
+            $parameters->tcp_bandwidth($test->parameters->tcp_bandwidth) if $test->parameters->tcp_bandwidth;
+            $parameters->mss($test->parameters->mss) if $test->parameters->mss;
+            $parameters->dscp($test->parameters->dscp) if $test->parameters->dscp;
+            $parameters->dynamic_window_size($test->parameters->dynamic_window_size) if $test->parameters->dynamic_window_size;
+            $parameters->no_delay($test->parameters->no_delay) if $test->parameters->no_delay;
+            $parameters->congestion($test->parameters->congestion) if $test->parameters->congestion;
+            $parameters->flow_label($test->parameters->flow_label) if $test->parameters->flow_label;
+            $parameters->cpu_affinity($test->parameters->cpu_affinity) if $test->parameters->cpu_affinity;
+            
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 			
@@ -460,6 +482,7 @@ sub __build_tests {
             }
             $parameters->inter_packet_time($test->parameters->packet_interval) if($test->parameters->packet_interval);
             $parameters->packet_length($test->parameters->packet_padding) if($test->parameters->packet_padding);
+            $parameters->output_raw($test->parameters->output_raw) if($test->parameters->output_raw);
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 

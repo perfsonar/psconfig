@@ -23,16 +23,25 @@ override 'type' => sub { "traceroute" };
 has 'test_interval' => (is => 'rw', isa => 'Int');
 has 'tool' => (is => 'rw', isa => 'Str');
 has 'packet_size' => (is => 'rw', isa => 'Int');
-has 'timeout' => (is => 'rw', isa => 'Int');
-has 'waittime' => (is => 'rw', isa => 'Int');
+has 'timeout' => (is => 'rw', isa => 'Int');#DEPRECATED
+has 'waittime' => (is => 'rw', isa => 'Int');#DEPRECATED
 has 'first_ttl' => (is => 'rw', isa => 'Int');
 has 'max_ttl' => (is => 'rw', isa => 'Int');
-has 'pause' => (is => 'rw', isa => 'Int');
-has 'protocol' => (is => 'rw', isa => 'Str');
+has 'pause' => (is => 'rw', isa => 'Int');#DEPRECATED
+has 'protocol' => (is => 'rw', isa => 'Str');#DEPRECATED
 has 'ipv4_only'       => (is => 'rw', isa => 'Bool');
 has 'ipv6_only'       => (is => 'rw', isa => 'Bool');
 has 'force_bidirectional' => (is => 'rw', isa => 'Bool');
 has 'random_start_percentage' => (is => 'rw', isa => 'Int');
+#new pscheduler fields
+has 'algorithm' => (is => 'rw', isa => 'Str');
+has 'as' => (is => 'rw', isa => 'Bool');
+has 'fragment' => (is => 'rw', isa => 'Bool');
+has 'hostnames' => (is => 'rw', isa => 'Bool');
+has 'probe_type' => (is => 'rw', isa => 'Str');
+has 'queries' => (is => 'rw', isa => 'Int');
+has 'sendwait' => (is => 'rw', isa => 'Int');
+has 'wait' => (is => 'rw', isa => 'Int');
 
 1;
 

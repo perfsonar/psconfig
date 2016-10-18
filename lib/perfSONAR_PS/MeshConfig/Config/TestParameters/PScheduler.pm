@@ -1,4 +1,4 @@
-package perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
+package perfSONAR_PS::MeshConfig::Config::TestParameters::PScheduler;
 use strict;
 use warnings;
 
@@ -8,7 +8,7 @@ use Moose;
 
 =head1 NAME
 
-perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
+perfSONAR_PS::MeshConfig::Config::TestParameters::PScheduler;
 
 =head1 DESCRIPTION
 
@@ -18,18 +18,27 @@ perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
 
 extends 'perfSONAR_PS::MeshConfig::Config::TestParameters::Base';
 
-override 'type' => sub { "perfsonarbuoy/owamp" };
+override 'type' => sub { "pscheduler" };
 
-has 'bucket_width'    => (is => 'rw', isa => 'Num');
-has 'packet_interval' => (is => 'rw', isa => 'Num');
-has 'loss_threshold'  => (is => 'rw', isa => 'Int');
-has 'packet_padding'  => (is => 'rw', isa => 'Int');
-has 'session_count'   => (is => 'rw', isa => 'Int');
-has 'sample_count'    => (is => 'rw', isa => 'Int');
+#task options
+has 'test_type'            => (is => 'rw', isa => 'Str');
+has 'tool'              => (is => 'rw', isa => 'Str');
+has 'reference'         => (is => 'rw', isa => 'HashRef');
+#archivers?
+
+#scheduling options
+has 'max_runs'          => (is => 'rw', isa => 'Int');
+has 'randslip'          => (is => 'rw', isa => 'Num');
+has 'repeat'            => (is => 'rw', isa => 'Str');
+has 'slip'              => (is => 'rw', isa => 'Str');
+has 'start'             => (is => 'rw', isa => 'Str');
+has 'until'             => (is => 'rw', isa => 'Str');
+
+#test specific parameters
+has 'parameters'        => (is => 'rw', isa => 'HashRef');
+
+#meshconfig specific
 has 'force_bidirectional' => (is => 'rw', isa => 'Bool');
-has 'ipv4_only'       => (is => 'rw', isa => 'Bool');
-has 'ipv6_only'       => (is => 'rw', isa => 'Bool');
-has 'output_raw'        => (is => 'rw', isa => 'Bool');
 
 1;
 
