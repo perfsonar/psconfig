@@ -5,7 +5,7 @@
 %define script_agent perfsonar-meshconfig-agent
 %define crontab_2 perfsonar-meshconfig-guiagent
 
-%define relnum 0.2.rc1 
+%define relnum 0.3.rc1 
 
 Name:			perfsonar-meshconfig
 Version:		4.0
