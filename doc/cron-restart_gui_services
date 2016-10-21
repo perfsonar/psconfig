@@ -1,3 +1,0 @@
-MAILTO=root
-# 10 minutes after the GUI mesh configuration agent has run, restart the maddash server
-10 2 * * * root /etc/init.d/maddash-server restart

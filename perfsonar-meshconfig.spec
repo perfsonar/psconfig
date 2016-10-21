@@ -3,7 +3,7 @@
 %define doc_base     /usr/share/doc
 
 %define script_agent perfsonar-meshconfig-agent
-%define crontab_2 perfsonar-meshconfig-guiagent
+%define script_guiagent perfsonar-meshconfig-guiagent
 
 %define relnum 0.2.rc1 
 
@@ -134,16 +134,16 @@ mkdir -p %{buildroot}/etc/init.d
 
 %if 0%{?el7}
 install -D -m 0644 scripts/%{script_agent}.service %{buildroot}/%{_unitdir}/%{script_agent}.service
+install -D -m 0644 scripts/%{script_guiagent}.service %{buildroot}/%{_unitdir}/%{script_guiagent}.service
 %else
 install -D -m 0755 scripts/%{script_agent} %{buildroot}/etc/init.d/%{script_agent}
+install -D -m 0755 scripts/%{script_guiagent} %{buildroot}/etc/init.d/%{script_guiagent}
 %endif
-install -D -m 0600 %{buildroot}/%{install_base}/scripts/%{crontab_2} %{buildroot}/etc/cron.d/%{crontab_2}
 rm -rf %{buildroot}/%{install_base}/scripts/
 
 install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-lookup_hosts %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/cron-lookup_hosts
 install -D -m 0644 %{buildroot}/%{install_base}/doc/example.conf %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/example.conf
 install -D -m 0644 %{buildroot}/%{install_base}/doc/example.json %{buildroot}/%{doc_base}/perfsonar-meshconfig-jsonbuilder/example.json
-install -D -m 0644 %{buildroot}/%{install_base}/doc/cron-restart_gui_services %{buildroot}/%{doc_base}/perfsonar-meshconfig-guiagent/cron-restart_gui_services
 rm -rf %{buildroot}/%{install_base}/doc
 
 %clean
@@ -199,7 +199,15 @@ sed -i "s:/opt/perfsonar_ps/regular_testing/etc/regular_testing.conf:/etc/perfso
 %endif
 
 %post guiagent
-
+%if 0%{?el7}
+%systemd_post %{script_guiagent}.service
+if [ "$1" = "1" ]; then
+    #if new install, then enable
+    systemctl enable %{script_guiagent}.service
+    systemctl start %{script_guiagent}.service
+fi
+%else
+/sbin/chkconfig --add %{script_guiagent}
 if [ "$1" = "1" ]; then
     # clean install, check for pre 3.5.1 files
     if [ -e "/opt/perfsonar_ps/mesh_config/etc/gui_agent_configuration.conf" ]; then
@@ -216,8 +224,15 @@ if [ "$1" = "1" ]; then
     #Fix graph URL
     sed -i "s:/serviceTest:/perfsonar-graphs:g" %{config_base}/meshconfig-guiagent.conf
 fi
+if [ "$1" = "2" ]; then
+    #make sure this gets started on its first update to version with guiagent
+    /sbin/service perfsonar-meshconfig-guagent start &>/dev/null || :
+    #make sure maddash.yaml is indeed owned by maddash
+    chown maddash:maddash /etc/maddash/maddash-server/maddash.yaml &>/dev/null || :
+fi
 #migrate to new graphs in 4.0
 sed -i "s:graphWidget.cgi::g" %{config_base}/meshconfig-guiagent.conf
+%endif
 
 %preun agent
 %if 0%{?el7}
@@ -237,6 +252,27 @@ fi
 if [ "$1" != "0" ]; then
 	# An RPM upgrade
 	/etc/init.d/%{script_agent} restart
+fi
+%endif
+
+%preun guiagent
+%if 0%{?el7}
+%systemd_preun %{script_guiagent}.service
+%else
+if [ "$1" = "0" ]; then
+	# Totally removing the service
+	/etc/init.d/%{script_guiagent} stop
+	/sbin/chkconfig --del %{script_guiagent}
+fi
+%endif
+
+%postun guiagent
+%if 0%{?el7}
+%systemd_postun_with_restart %{script_guiagent}.service
+%else
+if [ "$1" != "0" ]; then
+	# An RPM upgrade
+	/etc/init.d/%{script_guiagent} restart
 fi
 %endif
 
@@ -273,13 +309,17 @@ fi
 
 %files guiagent
 %defattr(0644,perfsonar,perfsonar,0755)
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/generate_gui_configuration
 %config(noreplace) %{config_base}/meshconfig-guiagent.conf
+%config(noreplace) %{config_base}/meshconfig-guiagent-logger.conf
+%attr(0755,perfsonar,perfsonar) %{install_base}/bin/perfsonar_meshconfig_guiagent
 %{install_base}/lib/perfSONAR_PS/MeshConfig/GUIAgent.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/MaDDash.pm
 %{install_base}/lib/perfSONAR_PS/MeshConfig/Generators/MaDDash/DefaultReports.pm
-%doc %{doc_base}/perfsonar-meshconfig-guiagent/cron-restart_gui_services
-%attr(0644,root,root) /etc/cron.d/%{crontab_2}
+%if 0%{?el7}
+%attr(0644,root,root) %{_unitdir}/%{script_guiagent}.service
+%else
+%attr(0755,perfsonar,perfsonar) /etc/init.d/%{script_guiagent}
+%endif
 
 %changelog
 * Thu Jun 19 2014 andy@es.net 3.4-5

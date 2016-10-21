@@ -1,0 +1,12 @@
+[Unit]
+Description=perfSONAR MeshConfig GUI Agent
+After=network.target  maddash-server.service
+
+[Service]
+Type=forking
+PIDFile=/var/run/perfsonar-meshconfig-guiagent.pid
+ExecStart=/usr/lib/perfsonar/bin/perfsonar_meshconfig_guiagent --config=/etc/perfsonar/meshconfig-guiagent.conf --logger=/etc/perfsonar/meshconfig-guiagent-logger.conf --pidfile=/var/run/perfsonar-meshconfig-guiagent.pid --user=maddash --group=maddash
+
+[Install]
+WantedBy=multi-user.target
+

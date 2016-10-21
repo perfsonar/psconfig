@@ -34,7 +34,7 @@ reports:
                         solutions:
                             - "If you just configured this grid in the mesh, you may just need to wait as it takes several hours for throughput data to populate (depending on the interval between tests)"
                             - "Verify maddash is configured properly. Look in the files under /var/log/maddash/ for any errors. Things to look for are incorrect paths to checks or connection errors."
-                            - "Verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"                            
+                            - "Verify that perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
                             - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
@@ -70,7 +70,7 @@ reports:
                                     solutions:
                                         - "Verify the host is up"
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first BWCTL test to run on this host."
-                                        - "If recently removed from the mesh, verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"
+                                        - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host" 
                                         - "Verify the local and remote sites allow access to TCP port 4823, TCP/UDP ports 6001-6200, and TCP/UDP ports 5001-5900"                           
                             - 
@@ -303,7 +303,7 @@ reports:
                         solutions:
                             - "If you just configured this grid in the mesh, you may just need to wait as it takes several hours for throughput data to populate (depending on the interval between tests)"
                             - "Verify maddash is configured properly. Look in the files under /var/log/maddash/ for any errors. Things to look for are incorrect paths to checks or connection errors."
-                            - "Verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"                            
+                            - "Verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
                             - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
@@ -340,7 +340,7 @@ reports:
                                         - "Verify the host is up"
                                         - "Verify the local and remote sites allow access to TCP port 4823, TCP/UDP ports 6001-6200, and TCP/UDP ports 5001-5900" 
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first BWCTL test to run on this host."
-                                        - "If recently removed from the mesh, verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"
+                                        - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host"                                                                   
                                         - "Verify that your measurement archive(s) are running"
                                         - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
@@ -436,7 +436,7 @@ reports:
                         solutions:
                             - "If you just configured this grid in the mesh, you may just need to wait as it takes a few minutes for loss data to populate"
                             - "Verify maddash is configured properly. Look in the files under /var/log/maddash/ for any errors. Things to look for are incorrect paths to checks or connection errors."
-                            - "Verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"                            
+                            - "Verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
                             - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
@@ -472,7 +472,7 @@ reports:
                                     solutions:
                                         - "Verify the host is up"
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update."
-                                        - "If recently removed from the mesh, verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"
+                                        - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify the local and remote sites allow access to TCP port 861 and UDP ports 8760-9960"                           
                             - 
                                 type: rule
@@ -700,7 +700,7 @@ reports:
                         solutions:
                             - "If you just configured this grid in the mesh, you may just need to wait as it takes a few minutes for one-way delay data to populate"
                             - "Verify maddash is configured properly. Look in the files under /var/log/maddash/ for any errors. Things to look for are incorrect paths to checks or connection errors."
-                            - "Verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"                            
+                            - "Verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
                             - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
@@ -737,7 +737,7 @@ reports:
                                         - "Verify the host is up"
                                         - "Verify the local and remote sites allow access to TCP port 861 and UDP ports 8760-9960 through their host and router firewalls" 
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update."
-                                        - "If recently removed from the mesh, verify that /usr/lib/perfsonar/bin/generate_gui_configuration has run recently and you are looking at an accurate test mesh"
+                                        - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host"                                                                   
                                         - "Verify that your measurement archive(s) are running"
                                         - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
