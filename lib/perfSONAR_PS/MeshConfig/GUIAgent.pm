@@ -13,9 +13,6 @@ use Params::Validate qw(:all);
 use URI::Split qw(uri_split);
 use YAML qw(LoadFile);
 
-use perfSONAR_PS::NPToolkit::ConfigManager::Utils qw(restart_service save_file);
-use perfSONAR_PS::NPToolkit::Services::ServicesMap qw(get_service_object);
-
 use perfSONAR_PS::MeshConfig::Utils qw(load_mesh);
 
 use perfSONAR_PS::MeshConfig::Generators::MaDDash qw( generate_maddash_config );
@@ -23,9 +20,6 @@ use perfSONAR_PS::MeshConfig::Generators::MaDDash qw( generate_maddash_config );
 use Module::Load;
 
 use Moose;
-
-has 'use_toolkit'            => (is => 'rw', isa => 'Bool');
-has 'restart_services'       => (is => 'rw', isa => 'Bool');
 
 has 'meshes'                 => (is => 'rw', isa => 'ArrayRef[HashRef]');
 
@@ -46,8 +40,6 @@ sub init {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { 
                                          meshes => 1,
-                                         use_toolkit => 0,
-                                         restart_services => 0,
                                          validate_certificate => 0,
                                          ca_certificate_file => 0,
                                          ca_certificate_path => 0,
@@ -60,8 +52,6 @@ sub init {
                                          send_error_emails_to_mesh => 0,
                                       });
     my $meshes                 = $parameters->{meshes};
-    my $use_toolkit            = $parameters->{use_toolkit};
-    my $restart_services       = $parameters->{restart_services};
     my $maddash_yaml           = $parameters->{maddash_yaml};
     my $maddash_options        = $parameters->{maddash_options};
     my $addresses              = $parameters->{addresses};
@@ -71,8 +61,6 @@ sub init {
     my $send_error_emails_to_mesh = $parameters->{send_error_emails_to_mesh};
 
     $self->meshes($meshes) if defined $meshes;
-    $self->use_toolkit($use_toolkit) if defined $use_toolkit;
-    $self->restart_services($restart_services) if defined $restart_services;
     $self->maddash_yaml($maddash_yaml) if defined $maddash_yaml;
     $self->maddash_options($maddash_options) if defined $maddash_options;
     $self->addresses($addresses) if defined $addresses;
@@ -251,21 +239,6 @@ sub __configure_guis {
         $wrote_maddash = 0;
     }
 
-    if ($self->restart_services) {
-        foreach my $service ("maddash") {
-            next if ($service eq "maddash" and not $wrote_maddash);
-
-            ($status, $res) = $self->__restart_service({ name => $service });
-            if ($status != 0) {
-                my $msg = "Problem restarting service $service: ".$res;
-                $logger->error($msg);
-                foreach my $mesh (@meshes) {
-                    $self->__add_error({ mesh => $mesh, error_msg => $msg });
-                }
-            }
-        }
-    }
-
     return;
 }
 
@@ -313,17 +286,9 @@ sub __write_file {
     my $contents = $parameters->{contents};
 
     eval {
-        if ($self->use_toolkit) {
-            my ($status, $res) = save_file( { file => $file, content => $contents } );
-            if ( $status == -1 ) {
-                die("Couldn't save ".$file."via toolkit daemon: ".$res);
-            }
-        } 
-        else {
-            open(FILE, ">".$file) or die("Couldn't open $file");
-            print FILE $contents;
-            close(FILE);
-        } 
+        open(FILE, ">".$file) or die("Couldn't open $file");
+        print FILE $contents;
+        close(FILE);
     };
     if ($@) {
         my $msg = "Problem writing to $file: $@";
@@ -334,37 +299,6 @@ sub __write_file {
     return (0, "");
 }
 
-sub __restart_service {
-    my ($self, @args) = @_;
-    my $parameters = validate( @args, { name => 1 } );
-    my $name  = $parameters->{name};
-
-    eval {
-        if ($self->use_toolkit) {
-            my $res = restart_service( { name => $name } );
-            if ( $res == -1 ) {
-                die("Couldn't restart service ".$name." via toolkit daemon");
-            }
-        }
-        else {
-            my $service_obj = get_service_object($name);
-            unless ($service_obj) {
-                my $msg = "Invalid service: $name";
-                $logger->error($msg);
-                die($msg);
-            }
-
-            die if ($service_obj->restart);
-        } 
-    };
-    if ($@) {
-        my $msg = "Problem restarting $name: $@";
-        $logger->error($msg);
-        return (-1, $msg);
-    }
-
-    return (0, "");
-}
 
 sub __send_email {
     my ($self, @args) = @_;
