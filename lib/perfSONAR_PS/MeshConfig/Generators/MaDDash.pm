@@ -41,7 +41,7 @@ sub generate_maddash_config {
     # grok the output.
     local $YAML::UseHeader = 0;
     local $YAML::CompressSeries = 0;
-
+    
     $existing_maddash_yaml->{dashboards} = [] unless $existing_maddash_yaml->{dashboards};
     $existing_maddash_yaml->{grids}      = [] unless $existing_maddash_yaml->{grids};
     $existing_maddash_yaml->{checks}     = {} unless $existing_maddash_yaml->{checks};
@@ -49,6 +49,11 @@ sub generate_maddash_config {
     $existing_maddash_yaml->{groupMembers}  = [] unless $existing_maddash_yaml->{groupMembers};
     $existing_maddash_yaml->{reports}       = [] unless $existing_maddash_yaml->{reports};
     
+    #set some defaults so people don't need to start with partial file
+    $existing_maddash_yaml->{database} = '/var/lib/maddash/' unless $existing_maddash_yaml->{database};
+    $existing_maddash_yaml->{serverHost} = 'localhost' unless $existing_maddash_yaml->{serverHost};
+    $existing_maddash_yaml->{http} = { 'port' => 8881 } unless $existing_maddash_yaml->{http};
+     
     my @deleted_grids = ();
     my $elements_to_delete = { groups => [], checks => [] };
     my $existing_reports = {};
