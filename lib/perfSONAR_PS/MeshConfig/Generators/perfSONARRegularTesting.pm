@@ -192,13 +192,19 @@ sub add_mesh_tests {
                 next if (($host_addresses{$sender->{address}} and $sender->{no_agent}) or
                            ($host_addresses{$receiver->{address}} and $receiver->{no_agent}));
 
+                #figure out mapped addresses 
+                my $sender_address   = $self->__lookup_mapped_address(address_map_field => $test->members->address_map_field, local_addr_maps => $sender->{addr_obj}->maps, local_address => $sender->{address}, remote_address => $receiver->{address}, exclude_unmapped => $test->members->exclude_unmapped);
+                my $receiver_address = $self->__lookup_mapped_address(address_map_field => $test->members->address_map_field, local_addr_maps => $receiver->{addr_obj}->maps, local_address => $receiver->{address}, remote_address => $sender->{address}, exclude_unmapped => $test->members->exclude_unmapped);
+                #skip this test - this means that i don't have a mapping for one or more hosts and exclude_unmapped was enabled
+                next unless($sender_address && $receiver_address);
+                 
                 if ($self->skip_duplicates) {
                     # Check if a specific test (i.e. same
                     # source/destination/test parameters) has been added
                     # before, and if so, don't add it.
                     my %duplicate_params = %{$test->parameters->unparse()};
-                    $duplicate_params{source} = $pair->{source}->{address};
-                    $duplicate_params{destination} = $pair->{destination}->{address};
+                    $duplicate_params{source} = $sender_address ;
+                    $duplicate_params{destination} = $receiver_address;
                     my $already_added = $self->__add_test_if_not_added(\%duplicate_params);
 
                     if ($already_added) {
@@ -216,8 +222,8 @@ sub add_mesh_tests {
                         ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional) or
                         ($test->parameters->type eq "traceroute" or $test->parameters->type eq "ping")) {
 
-                        $receiver_targets{$sender->{address}} = [] unless $receiver_targets{$sender->{address}};
-                        push @{ $receiver_targets{$sender->{address}} }, $receiver->{address};
+                        $receiver_targets{$sender_address} = [] unless $receiver_targets{$sender_address};
+                        push @{ $receiver_targets{$sender_address} }, $receiver_address;
                     }
                 }
                 else {
@@ -228,8 +234,8 @@ sub add_mesh_tests {
                     if ($receiver->{no_agent} or
                         ($test->parameters->can("force_bidirectional") and $test->parameters->force_bidirectional) or
                         ($test->parameters->type ne "traceroute" or $test->parameters->type ne "ping")) {
-                            $sender_targets{$receiver->{address}} = [] unless $sender_targets{$receiver->{address}};
-                            push @{ $sender_targets{$receiver->{address}} }, $sender->{address};
+                            $sender_targets{$receiver_address} = [] unless $sender_targets{$receiver_address};
+                            push @{ $sender_targets{$receiver_address} }, $sender_address;
                     }
                 }
             }
@@ -345,6 +351,46 @@ sub add_mesh_tests {
     push @{ $self->regular_testing_conf->tests }, @tests;
 
     return;
+}
+
+sub __lookup_mapped_address {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { address_map_field => 1, local_addr_maps => 1, local_address => 1, remote_address => 1, exclude_unmapped => 1});
+    my $address_map_field = $parameters->{address_map_field};
+    my $local_addr_maps = $parameters->{local_addr_maps};
+    my $local_address = $parameters->{local_address};
+    my $remote_address = $parameters->{remote_address};
+    my $exclude_unmapped = $parameters->{exclude_unmapped};
+    
+    #if not mapped field, just return
+    return $local_address unless($address_map_field);
+    
+    #go through map and find field - also ignore meaningless exclude_unmapped in this case
+    my $found_default = 0;
+    foreach my $addr_map(@{$local_addr_maps}){
+        if($addr_map->remote_address eq $remote_address){
+            foreach my $addr_map_field(@{$addr_map->fields}){
+                if($addr_map_field->name eq $address_map_field){
+                    return $addr_map_field->value;
+                }
+            }
+        }elsif($addr_map->remote_address eq 'default'){
+            #use default, but keep looking in case we find something better
+            foreach my $addr_map_field(@{$addr_map->fields}){
+                if($addr_map_field->name eq $address_map_field){
+                    $local_address = $addr_map_field->value;
+                    $found_default = 1;
+                }
+            }
+        }
+    }
+    
+    #if we got here and $exclude_unmapped set, then return unless we got a default value
+    if(!$found_default && $exclude_unmapped){
+        return undef;
+    }
+    
+    return $local_address;
 }
 
 sub __build_tests {
