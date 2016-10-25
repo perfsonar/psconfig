@@ -270,15 +270,12 @@ sub generate_maddash_config {
 
             # build the 'exclude' maps to remove any pairs in the above that don't
             # actually form a test.
-            my %forward_exclude_checks = ();
-            my %reverse_exclude_checks = ();
+            my %exclude_checks = ();
 
             foreach my $row (@row_members) {
-                $forward_exclude_checks{$row} = {};
-                $reverse_exclude_checks{$row} = {};
+                $exclude_checks{$row} = {};
                 foreach my $column (@column_members) {
-                    $forward_exclude_checks{$row}->{$column} = 1;
-                    $reverse_exclude_checks{$row}->{$column} = 1;
+                    $exclude_checks{$row}->{$column} = 1;
                 }
             }
             
@@ -290,24 +287,27 @@ sub generate_maddash_config {
             
             foreach my $pair (@{ $test->members->source_destination_pairs }) {
                 next if ($pair->{source}->{no_agent} and $pair->{destination}->{no_agent});
-    
-                delete($forward_exclude_checks{$pair->{source}->{address}}->{$pair->{destination}->{address}});
-                if (scalar(keys %{ $forward_exclude_checks{$pair->{source}->{address}} }) == 0) {
-                    delete($forward_exclude_checks{$pair->{source}->{address}});
+                #if using mapped addresses with exclude_unmapped, make sure to skip unmapped
+                if($test->members->address_map_field && $test->members->exclude_unmapped){
+                    next unless __has_mapped_address(address_map_field => $test->members->address_map_field, local_addr_maps => $pair->{source}->{addr_obj}->maps, remote_address => $pair->{destination}->{address});
+                    next unless __has_mapped_address(address_map_field => $test->members->address_map_field, local_addr_maps => $pair->{destination}->{addr_obj}->maps, remote_address => $pair->{source}->{address});
+                }
+         
+                delete($exclude_checks{$pair->{source}->{address}}->{$pair->{destination}->{address}});
+                if (scalar(keys %{ $exclude_checks{$pair->{source}->{address}} }) == 0) {
+                    delete($exclude_checks{$pair->{source}->{address}});
                 }
 
-                delete($reverse_exclude_checks{$pair->{destination}->{address}}->{$pair->{source}->{address}});
-                if (scalar(keys %{ $reverse_exclude_checks{$pair->{destination}->{address}} }) == 0) {
-                    delete($reverse_exclude_checks{$pair->{destination}->{address}});
+                delete($exclude_checks{$pair->{destination}->{address}}->{$pair->{source}->{address}});
+                if (scalar(keys %{ $exclude_checks{$pair->{destination}->{address}} }) == 0) {
+                    delete($exclude_checks{$pair->{destination}->{address}});
                 }
             }
 
             # Convert the exclude check lists into the appropriate syntax
-            foreach my $check_hash (\%forward_exclude_checks, \%reverse_exclude_checks) {
-                foreach my $key (keys %$check_hash) {
-                    my @values = keys %{ $check_hash->{$key} };
-                    $check_hash->{$key} = \@values;
-                }
+            foreach my $key (keys %exclude_checks) {
+                my @values = keys %{ $exclude_checks{$key} };
+                $exclude_checks{$key} = \@values;
             }
 
             # build the MA maps
@@ -528,7 +528,7 @@ sub generate_maddash_config {
             my @checks = ();
             
             # Build the top half of the box check
-            my $check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%forward_ma_map, exclude_checks => \%forward_exclude_checks, direction => "forward", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%forward_graph_map, address_map_field => $test->members->address_map_field);
+            my $check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%forward_ma_map, direction => "forward", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%forward_graph_map, address_map_field => $test->members->address_map_field);
             if ($checks->{$check->{id}}) {
                 die("Check ".$check->{id}." has been redefined");
             }
@@ -537,7 +537,7 @@ sub generate_maddash_config {
             
             # Build the bottom half of the box check
             if($test->parameters->force_bidirectional){
-                my $rev_check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%reverse_ma_map, exclude_checks => \%reverse_exclude_checks, direction => "reverse", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%reverse_graph_map, address_map_field => $test->members->address_map_field);
+                my $rev_check = __build_check(grid_name => $grid_name, test_params => $test->parameters, ma_map => \%reverse_ma_map, direction => "reverse", maddash_options => $maddash_options, is_full_mesh => $is_full_mesh, graph_map => \%reverse_graph_map, address_map_field => $test->members->address_map_field);
                 if ($checks->{$rev_check->{id}}) {
                     die("Check ".$rev_check->{id}." has been redefined");
                 }
@@ -555,6 +555,7 @@ sub generate_maddash_config {
             $grid->{excludeSelf}     = 1;
             $grid->{columnAlgorithm} = $columnAlgorithm;
             $grid->{checks}          = \@checks;
+            $grid->{excludeChecks}   = \%exclude_checks;
             $grid->{statusLabels}    = {
                 ok => $check->{ok_description},
                 warning  => $check->{warning_description},
@@ -685,12 +686,11 @@ my %maddash_default_check_options = (
 );
 
 sub __build_check {
-    my $parameters = validate( @_, { grid_name => 1, test_params => 1, ma_map => 1, exclude_checks => 1, direction => 1, maddash_options => 1, is_full_mesh => 1, graph_map => 1, address_map_field => 1  } );
+    my $parameters = validate( @_, { grid_name => 1, test_params => 1, ma_map => 1, direction => 1, maddash_options => 1, is_full_mesh => 1, graph_map => 1, address_map_field => 1  } );
     my $grid_name = $parameters->{grid_name};
     my $test_params  = $parameters->{test_params};
     my $type  = $parameters->{test_params}->type;
     my $ma_map = $parameters->{ma_map};
-    my $exclude_checks = $parameters->{exclude_checks};
     my $direction = $parameters->{direction};
     my $maddash_options = $parameters->{maddash_options};
     my $is_full_mesh = $parameters->{is_full_mesh};
@@ -710,7 +710,6 @@ sub __build_check {
     $check->{retryInterval}   = __get_check_option({ option => "retry_interval", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });;
     $check->{retryAttempts}   = __get_check_option({ option => "retry_attempts", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });;
     $check->{timeout}         = __get_check_option({ option => "timeout", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
-    $check->{excludeChecks}   = $exclude_checks;
     $check->{params}          = {};
     $check->{params}->{maUrl} = $ma_map;
     $check->{checkInterval}   = __get_check_option({ option => "check_interval", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
@@ -967,6 +966,34 @@ sub __get_hostname_ip {
     }
     
     return '';
+}
+
+
+sub __has_mapped_address {
+    my $parameters = validate( @_, { address_map_field => 1, local_addr_maps => 1, remote_address => 1});
+    my $address_map_field = $parameters->{address_map_field};
+    my $local_addr_maps = $parameters->{local_addr_maps};
+    my $remote_address = $parameters->{remote_address};
+    
+    #go through map and find field - also ignore meaningless exclude_unmapped in this case
+    foreach my $addr_map(@{$local_addr_maps}){
+        if($addr_map->remote_address eq $remote_address){
+            foreach my $addr_map_field(@{$addr_map->fields}){
+                if($addr_map_field->name eq $address_map_field){
+                    return 1;
+                }
+            }
+        }elsif($addr_map->remote_address eq 'default'){
+            #use default, but keep looking in case we find something better
+            foreach my $addr_map_field(@{$addr_map->fields}){
+                if($addr_map_field->name eq $address_map_field){
+                    return 1;
+                }
+            }
+        }
+    }
+    
+    return 0;
 }
 
 
