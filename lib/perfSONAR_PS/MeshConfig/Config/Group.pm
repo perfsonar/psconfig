@@ -25,6 +25,7 @@ extends 'perfSONAR_PS::MeshConfig::Config::Base';
 
 has 'type'      => (is => 'rw', isa => 'Str');
 has 'parent'    => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Test');
+has 'address_map_field'      => (is => 'rw', isa => 'Str');
 
 override 'parse' => sub {
     my ($class, $description, $strict, $requesting_agent) = @_;

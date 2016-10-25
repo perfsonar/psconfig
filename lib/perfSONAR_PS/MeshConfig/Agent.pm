@@ -74,7 +74,9 @@ sub __map_arrays {
         'administrator' => { 'value' => 'administrators' }, 
         'address'       => { value => 'addresses', except_in => 'addresses' }, 
         'measurement_archive' => { 'value' => 'measurement_archives' },
-        'tag' => { 'value' => 'tags' }
+        'tag' => { 'value' => 'tags' },
+        'map' => { 'value' => 'maps' },
+        'field' => { 'value' => 'fields' },
     );
 
     use Data::Dumper;

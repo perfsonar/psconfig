@@ -432,6 +432,8 @@ sub __parse_hash {
                         "measurement_archive" => { new_key => "measurement_archives" },
                         "address" => { new_key => "addresses", except => [ "address", "addresses" ] },
                         "tag" => { new_key => "tags", except => [ "filter", "filters" ] },
+                        "map" => { new_key => "maps" },
+                        "field" => { new_key => "fields" },
                         "member" => { new_key => "members" },
                         "a_member" => { new_key => "a_members" },
                         "b_member" => { new_key => "b_members" },

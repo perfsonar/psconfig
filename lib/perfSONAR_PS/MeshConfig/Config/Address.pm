@@ -5,6 +5,7 @@ use warnings;
 our $VERSION = 3.1;
 
 use Moose;
+use perfSONAR_PS::MeshConfig::Config::AddressMap;
 use Params::Validate qw(:all);
 
 =head1 NAME
@@ -21,6 +22,7 @@ extends 'perfSONAR_PS::MeshConfig::Config::Base';
 
 has 'address'             => (is => 'rw', isa => 'Str');
 has 'tags'                => (is => 'rw', isa => 'ArrayRef[Str]', default => sub { [] });
+has 'maps'                => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::AddressMap]', default => sub { [] });
 
 has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');
 
