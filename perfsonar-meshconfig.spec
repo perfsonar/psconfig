@@ -5,7 +5,7 @@
 %define script_agent perfsonar-meshconfig-agent
 %define script_guiagent perfsonar-meshconfig-guiagent
 
-%define relnum 0.3.rc1 
+%define relnum 0.4.rc2 
 
 Name:			perfsonar-meshconfig
 Version:		4.0
