@@ -17,6 +17,8 @@ etc/meshconfig-guiagent-logger.conf
 etc/meshconfig-lookuphosts.conf
 lib/perfSONAR_PS/MeshConfig/Agent.pm
 lib/perfSONAR_PS/MeshConfig/Config/Address.pm
+lib/perfSONAR_PS/MeshConfig/Config/AddressMap.pm
+lib/perfSONAR_PS/MeshConfig/Config/AddressMapField.pm
 lib/perfSONAR_PS/MeshConfig/Config/Administrator.pm
 lib/perfSONAR_PS/MeshConfig/Config/Base.pm
 lib/perfSONAR_PS/MeshConfig/Config/ExpectedTestResults.pm
