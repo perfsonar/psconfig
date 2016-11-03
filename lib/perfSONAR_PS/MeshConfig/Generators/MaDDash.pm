@@ -357,7 +357,8 @@ sub generate_maddash_config {
                 my $enable_combined_graphs = __get_check_option({ option => "enable_combined_graphs", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
                 my $graph_url = __get_check_option({ option => "graph_url", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
                 $graph_url .= '?' if($graph_url !~ /\?$/);
-                my $rev_graph_url = $graph_url;
+                #rev_graph_url is the URL used when both of the following simultaneously hold true:  a) the source is a column and b) it is the bottom check
+                my $rev_graph_url = $graph_url; 
                 #only do combined graphs if not using mapped addresses, since you will get wierd results otherwise
                 if($test->members->address_map_field){
                     $enable_combined_graphs = 0;
@@ -407,8 +408,14 @@ sub generate_maddash_config {
                                     next if $test_type eq 'ipv4' && !is_ipv4($dst_ip);
                                     next if $test_type eq 'ipv6' && !is_ipv6($dst_ip);
                                     foreach my $unique_ma (@unique_mas){
-                                        $graph_url .= "url=$unique_ma&source=$src_ip&dest=$dst_ip&";
-                                        $rev_graph_url .= "url=$unique_ma&dest=$src_ip&source=$dst_ip&";
+                                        if($is_full_mesh){
+                                            $graph_url .= "url=$unique_ma&source=$src_ip&dest=$dst_ip&agent=$src_ip&";
+                                            $rev_graph_url .= "url=$unique_ma&source=$dst_ip&dest=$src_ip&agent=$src_ip&";
+                                        }else{
+                                            $graph_url .= "url=$unique_ma&source=$src_ip&dest=$dst_ip&";
+                                            #below is not a bug. this gets set when src is column and bottom check, thus the forward is the reverse
+                                            $rev_graph_url .= "url=$unique_ma&source=$src_ip&dest=$dst_ip&";
+                                        }
                                         $seen_src_ip{$src_ip}++;
                                         $seen_dst_ip{$dst_ip}++;
                                     }
