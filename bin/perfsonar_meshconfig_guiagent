@@ -198,6 +198,9 @@ while(1){
         }
     }
     
+    #untaint maddash file
+    my $maddash_yaml = $1 if($conf{maddash_yaml} =~ /(.+)/);
+    
     ##
     # Check remote test definitions
     my $start = time;
@@ -205,7 +208,7 @@ while(1){
         my $agent = perfSONAR_PS::MeshConfig::GUIAgent->new();
         $agent->init({
                 meshes               => $conf{mesh},
-                maddash_yaml         => $conf{maddash_yaml},
+                maddash_yaml         => $maddash_yaml,
                 maddash_options      => $conf{maddash_options},
                 from_address         => $conf{email_from_address},
                 administrator_emails => $conf{admin_email},
