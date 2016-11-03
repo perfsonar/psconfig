@@ -234,6 +234,11 @@ fi
 sed -i "s:graphWidget.cgi::g" %{config_base}/meshconfig-guiagent.conf
 %endif
 
+#make sure logs are setup properly
+sed -i "s:/var/log/perfsonar/:/var/log/maddash/:g" %{config_base}/meshconfig-guiagent-logger.conf
+unlink /var/log/perfsonar/meshconfig-guiagent.log &>/dev/null || :
+ln -s /var/log/maddash/meshconfig-guiagent.log /var/log/perfsonar/meshconfig-guiagent.log &>/dev/null || :
+
 %preun agent
 %if 0%{?el7}
 %systemd_preun %{script_agent}.service
