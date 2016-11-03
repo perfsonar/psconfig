@@ -497,7 +497,8 @@ sub __build_tests {
             $parameters->no_delay($test->parameters->no_delay) if $test->parameters->no_delay;
             $parameters->congestion($test->parameters->congestion) if $test->parameters->congestion;
             $parameters->flow_label($test->parameters->flow_label) if $test->parameters->flow_label;
-            $parameters->cpu_affinity($test->parameters->cpu_affinity) if $test->parameters->cpu_affinity;
+            $parameters->client_cpu_affinity($test->parameters->client_cpu_affinity) if $test->parameters->client_cpu_affinity;
+            $parameters->server_cpu_affinity($test->parameters->server_cpu_affinity) if $test->parameters->server_cpu_affinity;
             
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;

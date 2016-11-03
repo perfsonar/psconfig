@@ -45,7 +45,8 @@ has 'dynamic_window_size'   => (is => 'rw', isa => 'Int');
 has 'no_delay' => (is => 'rw', isa => 'Bool');
 has 'congestion' => (is => 'rw', isa => 'Str');
 has 'flow_label' => (is => 'rw', isa => 'Str');
-has 'cpu_affinity' => (is => 'rw', isa => 'Str');
+has 'client_cpu_affinity' => (is => 'rw', isa => 'Int');
+has 'server_cpu_affinity' => (is => 'rw', isa => 'Int');
 
 1;
 
