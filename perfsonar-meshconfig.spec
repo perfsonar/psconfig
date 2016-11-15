@@ -110,6 +110,8 @@ Requires:		perfsonar-meshconfig-shared
 Requires:		maddash-server
 Requires:       nagios-plugins-perfsonar
 Requires:       libperfsonar-toolkit-perl
+Requires:       perl(Mo)
+Requires:       perl(YAML)
 Obsoletes:      perl-perfSONAR_PS-MeshConfig-GUIAgent
 Provides:       perl-perfSONAR_PS-MeshConfig-GUIAgent
 %description guiagent
