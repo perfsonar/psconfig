@@ -661,7 +661,7 @@ sub __quote_ipv6_address {
 
 my %maddash_default_check_options = (
     "perfsonarbuoy/owamp" => {
-        check_command => "/usr/lib/nagios/plugins/check_owdelay.pl",
+        check_command => "/usr/lib64/nagios/plugins/check_owdelay.pl",
         check_interval => 1800,
         check_time_range => 900,
         retry_interval => 600,
@@ -676,7 +676,7 @@ my %maddash_default_check_options = (
         report_id => '',
     },
     "perfsonarbuoy/bwctl" => {
-        check_command => "/usr/lib/nagios/plugins/check_throughput.pl",
+        check_command => "/usr/lib64/nagios/plugins/check_throughput.pl",
         check_interval => 28800,
         check_time_range => 86400,
         retry_interval => 600,
