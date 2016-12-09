@@ -51,28 +51,7 @@ perfSONAR_PS::MeshConfig::Generators::perfSONARRegularTesting;
 =cut
 
 my $logger = get_logger(__PACKAGE__);
-my $default_summaries = {
-    "throughput" => [
-        {"event_type" => 'throughput', "summary_type" => 'average', "summary_window" => 86400},
-    ],
-    "latency" => [
-        {"event_type" => 'packet-loss-rate', "summary_type" => 'aggregation', "summary_window" => 300},
-        {"event_type" => 'histogram-owdelay', "summary_type" => 'aggregation', "summary_window" => 300},
-        {"event_type" => 'histogram-owdelay', "summary_type" => 'statistics', "summary_window" => 300},
-        {"event_type" => 'packet-loss-rate', "summary_type" => 'aggregation', "summary_window" => 3600},
-        {"event_type" => 'packet-loss-rate-bidir', "summary_type" => 'aggregation', "summary_window" => 3600},
-        {"event_type" => 'histogram-owdelay', "summary_type" => 'aggregation', "summary_window" => 3600},
-        {"event_type" => 'histogram-rtt', "summary_type" => 'aggregation', "summary_window" => 3600},
-        {"event_type" => 'histogram-owdelay', "summary_type" => 'statistics', "summary_window" => 3600},
-        {"event_type" => 'histogram-rtt', "summary_type" => 'statistics', "summary_window" => 3600},
-        {"event_type" => 'packet-loss-rate', "summary_type" => 'aggregation', "summary_window" => 86400},
-        {"event_type" => 'packet-loss-rate-bidir', "summary_type" => 'aggregation', "summary_window" => 86400},
-        {"event_type" => 'histogram-owdelay', "summary_type" => 'aggregation', "summary_window" => 86400},
-        {"event_type" => 'histogram-rtt', "summary_type" => 'aggregation', "summary_window" => 86400},
-        {"event_type" => 'histogram-owdelay', "summary_type" => 'statistics', "summary_window" => 86400},
-        {"event_type" => 'histogram-rtt', "summary_type" => 'statistics', "summary_window" => 86400},
-    ]
-};
+my $default_summaries = {};
 
 
 sub init {
