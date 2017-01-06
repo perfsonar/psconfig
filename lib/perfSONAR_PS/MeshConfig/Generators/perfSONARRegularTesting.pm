@@ -15,6 +15,7 @@ use perfSONAR_PS::MeshConfig::Generators::Base;
 use perfSONAR_PS::RegularTesting::Utils::ConfigFile qw( parse_file save_string );
 
 use perfSONAR_PS::RegularTesting::Config;
+use perfSONAR_PS::RegularTesting::CreatedBy;
 use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency;
 use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput;
 use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute;
@@ -119,14 +120,21 @@ sub init {
 
 sub add_mesh_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { mesh => 1, tests => 1, addresses => 1, local_host => 1, host_classes => 1, requesting_agent => 1 } );
+    my $parameters = validate( @args, { mesh => 1, mesh_url => 1, tests => 1, addresses => 1, local_host => 1, host_classes => 1, requesting_agent => 1 } );
     my $mesh   = $parameters->{mesh};
+    my $mesh_url   = $parameters->{mesh_url};
     my $tests  = $parameters->{tests};
     my $addresses = $parameters->{addresses};
     my $local_host = $parameters->{local_host};
     my $host_classes = $parameters->{host_classes};
     my $requesting_agent = $parameters->{requesting_agent};
     
+    #set created-by
+    my $created_by = new perfSONAR_PS::RegularTesting::CreatedBy({
+        'agent_type' => "remote-mesh",
+        'name' => $mesh->description,
+        'uri' => $mesh_url,
+    });
     
     my %host_addresses = map { $_ => 1 } @$addresses;
 
@@ -236,7 +244,7 @@ sub add_mesh_tests {
             }
 
             if ($same_targets) {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1 });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -244,14 +252,14 @@ sub add_mesh_tests {
                 push @tests, @$res;
             }
             else {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1 });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
 
                 push @tests, @$res;
 
-                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1 });
+                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -374,15 +382,17 @@ sub __lookup_mapped_address {
 
 sub __build_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0 });
+    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1  });
     my $test = $parameters->{test};
     my $targets = $parameters->{targets};
     my $target_sends = $parameters->{target_sends};
     my $target_receives = $parameters->{target_receives};
-
+    my $created_by = $parameters->{created_by};
+    
     my @tests = ();
     foreach my $local_address (keys %{ $targets }) {
         my $test_obj = perfSONAR_PS::RegularTesting::Test->new();
+        $test_obj->created_by($created_by);
         $test_obj->added_by_mesh(1);
         $test_obj->description($test->description) if $test->description;
         $test_obj->local_address($local_address);
