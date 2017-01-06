@@ -12,6 +12,7 @@ use perfSONAR_PS::MeshConfig::Config::Group;
 use perfSONAR_PS::MeshConfig::Config::MeasurementArchive;
 use perfSONAR_PS::MeshConfig::Config::Mesh;
 use perfSONAR_PS::MeshConfig::Config::ExpectedTestResults;
+use perfSONAR_PS::MeshConfig::Config::Reference;
 
 use perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYBwctl;
 use perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
@@ -40,6 +41,7 @@ has 'parameters'          => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Conf
 
 has 'expected_results'    => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::ExpectedTestResults]', default => sub { [] });
 
+has 'references'          => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::Reference]', default => sub { [] });
 has 'measurement_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::MeasurementArchive]', default => sub { [] });
 
 has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Mesh');

@@ -429,6 +429,7 @@ sub __parse_hash {
                         "include"       => { },
                         "administrator" => { new_key => "administrators" },
                         "test" => { new_key => "tests" },
+                        "reference" => { new_key => "references" },
                         "measurement_archive" => { new_key => "measurement_archives" },
                         "address" => { new_key => "addresses", except => [ "address", "addresses" ] },
                         "tag" => { new_key => "tags", except => [ "filter", "filters" ] },

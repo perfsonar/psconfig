@@ -522,7 +522,16 @@ sub __build_tests {
         if ($target_receives and not $target_sends) {
             $parameters->receive_only(1);
         }
-
+        
+        my @test_refs = ();
+        foreach my $test_ref(@{$test->references}){
+            push @test_refs, new perfSONAR_PS::RegularTesting::Reference({
+                    'name' => $test_ref->name(),
+                    'value' => $test_ref->value()
+                });
+        }
+        $test_obj->references(\@test_refs);
+        
         $test_obj->parameters($parameters);
         $test_obj->schedule($schedule);
 
