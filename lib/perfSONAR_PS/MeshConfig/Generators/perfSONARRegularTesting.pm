@@ -141,7 +141,7 @@ sub add_mesh_tests {
     my %addresses_added = ();
 
     my $mesh_id = $mesh->description;
-    $mesh_id =~ s/[^A-Za-z0-9_-]/_/g;
+    $mesh_id =~ s/[^A-Za-z0-9_-]/_/g if($mesh_id);
 
     my @tests = ();
     my %test_types = ();
