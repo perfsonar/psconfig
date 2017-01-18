@@ -10,7 +10,7 @@ use Log::Log4perl qw(get_logger);
 use Params::Validate qw(:all);
 use URI::Split qw(uri_split);
 
-use perfSONAR_PS::Utils::HTTPS qw(https_get);
+use perfSONAR_PS::Client::Utils qw(send_http_request build_err_msg);
 
 use perfSONAR_PS::MeshConfig::Config::Mesh;
 
@@ -220,23 +220,25 @@ sub __load_json {
             $res = $@;
         }
     }
-    else {
-        ($status, $res) = https_get({ url                 => $url,
-                                      verify_certificate  => $validate_certificate,
-                                      verify_hostname     => $validate_certificate,
-                                      ca_certificate_file => $ca_certificate_file,
-                                      ca_certificate_path => $ca_certificate_path,
-                                   });
+    else { 
+        $res = send_http_request({ 
+                                  connection_type     => 'GET',
+                                  timeout             => 60,
+                                  url                 => $url,
+                                  verify_hostname     => $validate_certificate,
+                                  ca_certificate_file => $ca_certificate_file,
+                                  ca_certificate_path => $ca_certificate_path,
+                                });
     }
-
-    if ($status != 0) {
-        $logger->debug("Problem retrieving mesh configuration from $url: ".$res);
-        return ($status, $res);
+    if(!$res->is_success){
+        my $msg = build_err_msg(http_response => $res);
+        $logger->debug("Problem retrieving mesh configuration from $url: ".$msg);
+        return (-1, $msg);
     }
 
     my $json;
     eval {
-        $json = JSON->new->decode($res);
+        $json = JSON->new->decode($res->content);
     };
     if ($@) {
         my $msg = "Problem parsing json for $url: ".$@;
