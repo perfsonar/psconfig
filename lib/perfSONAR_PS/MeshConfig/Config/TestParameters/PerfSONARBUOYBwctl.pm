@@ -41,7 +41,6 @@ has 'time_slots'   => (is => 'rw', isa => 'ArrayRef[Str]');
 has 'tcp_bandwidth' => (is => 'rw', isa => 'Int');
 has 'mss' => (is => 'rw', isa => 'Int');
 has 'dscp' => (is => 'rw', isa => 'Int');
-has 'dynamic_window_size'   => (is => 'rw', isa => 'Int');
 has 'no_delay' => (is => 'rw', isa => 'Bool');
 has 'congestion' => (is => 'rw', isa => 'Str');
 has 'flow_label' => (is => 'rw', isa => 'Str');

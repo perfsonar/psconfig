@@ -482,7 +482,6 @@ sub __build_tests {
             $parameters->tcp_bandwidth($test->parameters->tcp_bandwidth) if $test->parameters->tcp_bandwidth;
             $parameters->mss($test->parameters->mss) if $test->parameters->mss;
             $parameters->dscp($test->parameters->dscp) if $test->parameters->dscp;
-            $parameters->dynamic_window_size($test->parameters->dynamic_window_size) if $test->parameters->dynamic_window_size;
             $parameters->no_delay($test->parameters->no_delay) if $test->parameters->no_delay;
             $parameters->congestion($test->parameters->congestion) if $test->parameters->congestion;
             $parameters->flow_label($test->parameters->flow_label) if $test->parameters->flow_label;
