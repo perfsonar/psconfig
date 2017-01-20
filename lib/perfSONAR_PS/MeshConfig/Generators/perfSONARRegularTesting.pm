@@ -423,6 +423,7 @@ sub __build_tests {
             $parameters->suppress_loopback($test->parameters->suppress_loopback) if $test->parameters->suppress_loopback;
             $parameters->deadline($test->parameters->deadline) if $test->parameters->deadline;
             $parameters->timeout($test->parameters->timeout) if $test->parameters->timeout;
+            $parameters->packet_tos_bits($test->parameters->tos_bits) if $test->parameters->tos_bits;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
@@ -448,6 +449,7 @@ sub __build_tests {
             $parameters->queries($test->parameters->queries) if $test->parameters->queries;
             $parameters->sendwait($test->parameters->sendwait) if $test->parameters->sendwait;
             $parameters->wait($test->parameters->wait) if $test->parameters->wait;
+            $parameters->packet_tos_bits($test->parameters->tos_bits) if $test->parameters->tos_bits;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
@@ -518,6 +520,7 @@ sub __build_tests {
             $parameters->inter_packet_time($test->parameters->packet_interval) if($test->parameters->packet_interval);
             $parameters->packet_length($test->parameters->packet_padding) if($test->parameters->packet_padding);
             $parameters->output_raw($test->parameters->output_raw) if($test->parameters->output_raw);
+            $parameters->packet_tos_bits($test->parameters->tos_bits) if $test->parameters->tos_bits;
             $parameters->force_ipv4($test->parameters->ipv4_only) if $test->parameters->ipv4_only;
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 

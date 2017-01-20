@@ -35,6 +35,7 @@ has 'hostnames' => (is => 'rw', isa => 'Bool');
 has 'suppress_loopback' => (is => 'rw', isa => 'Bool');
 has 'deadline' => (is => 'rw', isa => 'Int');
 has 'timeout' => (is => 'rw', isa => 'Int');
+has 'tos_bits'        => (is => 'rw', isa => 'Int');
 
 1;
 

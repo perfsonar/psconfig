@@ -42,6 +42,7 @@ has 'probe_type' => (is => 'rw', isa => 'Str');
 has 'queries' => (is => 'rw', isa => 'Int');
 has 'sendwait' => (is => 'rw', isa => 'Int');
 has 'wait' => (is => 'rw', isa => 'Int');
+has 'tos_bits'        => (is => 'rw', isa => 'Int');
 
 1;
 
