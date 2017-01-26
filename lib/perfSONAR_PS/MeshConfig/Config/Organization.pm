@@ -69,6 +69,26 @@ sub lookup_measurement_archive {
     return $self->parent->lookup_measurement_archive({ type => $type });
 }
 
+sub lookup_measurement_archives {
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { type => 1, recursive => 1 } );
+    my $type       = $parameters->{type};
+    my $recursive  = $parameters->{recursive};
+    
+    my @measurement_archives = ();
+    foreach my $measurement_archive (@{ $self->measurement_archives }) {
+        if ($measurement_archive->type eq $type) {
+            push @measurement_archives, $measurement_archive;
+        }
+    }
+
+    if ($recursive and $self->parent) {
+        push @measurement_archives, @{$self->parent->lookup_measurement_archives({ type => $type, recursive => 1 })};
+    }
+    
+    return \@measurement_archives;
+}
+
 1;
 
 __END__

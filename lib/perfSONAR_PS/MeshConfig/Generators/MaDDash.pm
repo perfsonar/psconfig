@@ -327,9 +327,12 @@ sub generate_maddash_config {
                 my $tester = $pair->{source}->{no_agent}?$pair->{destination}->{addr_obj}:$pair->{source}->{addr_obj};
 
                 my $host = $tester->parent;
-
-                my $ma = $host->lookup_measurement_archive({ type => $test->parameters->type, recursive => 1 });
-
+                
+                #use test-specific first
+                my $ma = $test->lookup_measurement_archive({ type => $test->parameters->type });
+                unless($ma){
+                    $ma = $host->lookup_measurement_archive({ type => $test->parameters->type, recursive => 1 });
+                }
                 unless ($ma) {
                     die("Couldn't find ma for host: ".$tester);
                 }

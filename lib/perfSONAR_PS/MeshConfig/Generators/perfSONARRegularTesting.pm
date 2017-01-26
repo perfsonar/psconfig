@@ -98,7 +98,6 @@ sub init {
         my @new_archives = ();
         foreach my $archive (@{ $config->measurement_archives }) {
             next if ($archive->added_by_mesh);
-
             push @new_archives, $archive;
         }
 
@@ -142,9 +141,50 @@ sub add_mesh_tests {
 
     my $mesh_id = $mesh->description;
     $mesh_id =~ s/[^A-Za-z0-9_-]/_/g if($mesh_id);
-
+    
+    #add measurement archives that apply to all tests setup by the mesh
+    my $ma_map = {
+            "pinger" => {}, 
+            "perfsonarbuoy/owamp" => {}, 
+            "perfsonarbuoy/bwctl" => {}, 
+            "traceroute" => {}
+            };
+    if($self->configure_archives()){
+        foreach my $test_type(keys %{$ma_map}){
+            #lookup archive in explicit hosts and host classes. Append them all together if multiple match
+            my @archives = ();
+            if($local_host){
+                my $host_archives = $local_host->lookup_measurement_archives({ type => $test_type, recursive => 1 });
+                push @archives, @{$host_archives} if($host_archives);
+            }
+            #lookup archives in host classes
+            foreach my $host_class(@{$host_classes}){
+                if($host_class->host_properties){
+                    my $hc_archives = $host_class->host_properties->lookup_measurement_archives({ type => $test_type, recursive => 1 });
+                    push @archives, @{$hc_archives} if($hc_archives);
+                }
+            }
+            #lookup archives in requesting agent
+            if($requesting_agent){
+                 my $agent_archives = $requesting_agent->lookup_measurement_archives({ type => $test_type, recursive => 1 });
+                 push @archives, @{$agent_archives} if($agent_archives);
+            }
+            
+            if(@archives < 1){
+                die("Unable to find measurement archive of type $test_type");
+            }
+            
+            #iterate through archives skipping duplicates (same URL + same type)
+            foreach my $archive(@archives){
+                next if $ma_map->{$test_type}->{$archive->write_url()};
+                $ma_map->{$test_type}->{$archive->write_url()} = $self->__build_archive(test_type => $test_type, archive => $archive);
+            }
+        }
+        
+    }
+    
+    #define tests
     my @tests = ();
-    my %test_types = ();
     foreach my $test (@$tests) {
         if ($test->disabled) {
             $logger->debug("Skipping disabled test: ".$test->description);
@@ -244,7 +284,7 @@ sub add_mesh_tests {
             }
 
             if ($same_targets) {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by, ma_map => $ma_map });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -252,94 +292,63 @@ sub add_mesh_tests {
                 push @tests, @$res;
             }
             else {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by  });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by, ma_map => $ma_map  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
 
                 push @tests, @$res;
 
-                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by  });
+                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by, ma_map => $ma_map  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
     
                 push @tests, @$res;
             }
-            
-            #track test types
-            $test_types{$test->parameters->type} = 1;
-
         };
         if ($@) {
             die("Problem adding test ".$test->description.": ".$@);
         }
     }
     
-    #add measurement archives
-    if($self->configure_archives()){
-        my $ma_map = {
-            "pinger" => {}, 
-            "perfsonarbuoy/owamp" => {}, 
-            "perfsonarbuoy/bwctl" => {}, 
-            "traceroute" => {}
-            };
-        foreach my $test_type(keys %test_types){
-            #lookup archive in explicit hosts and host classes. Append them all together if multiple match
-            my @archives = ();
-            if($local_host){
-                my $host_archive = $local_host->lookup_measurement_archive({ type => $test_type, recursive => 1 });
-                push @archives, $host_archive if($host_archive);
-            }
-            #lookup archives in host classes
-            foreach my $host_class(@{$host_classes}){
-                if($host_class->host_properties){
-                    my $hc_archive = $host_class->host_properties->lookup_measurement_archive({ type => $test_type, recursive => 1 });
-                    push @archives, $hc_archive if($hc_archive);
-                }
-            }
-            #lookup archives in requesting agent
-            if($requesting_agent){
-                 my $agent_archive = $requesting_agent->lookup_measurement_archive({ type => $test_type, recursive => 1 });
-                 push @archives, $agent_archive if($agent_archive);
-            }
-            
-            if(@archives < 1){
-                die("Unable to find measurement archive of type $test_type");
-            }
-            
-            #iterate through archives skipping duplicates (same URL + same type)
-            foreach my $archive(@archives){
-                next if $ma_map->{$test_type}->{$archive->write_url()};
-                my $archive_obj;
-                if ($test_type eq "pinger" || $test_type eq "perfsonarbuoy/owamp") {
-                    next if $ma_map->{'perfsonarbuoy/owamp'}->{$archive->write_url()} || $ma_map->{'pinger'}->{$archive->write_url()};
-                    $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency();
-                    foreach my $summ(@{$default_summaries->{'latency'}}){
-                        push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
-                    }
-                }elsif ($test_type eq "traceroute") {
-                    $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute();
-                }elsif ($test_type eq "perfsonarbuoy/bwctl") {
-                    $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput();
-                    foreach my $summ(@{$default_summaries->{'throughput'}}){
-                        push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
-                    }
-                }
-                $archive_obj->database($archive->write_url());
-                $archive_obj->added_by_mesh(1);
-                push @{ $self->regular_testing_conf->measurement_archives }, $archive_obj;
-                $ma_map->{$test_type}->{$archive->write_url()} = 1;
-            }
-        }
-        
-    }
+    
 
     push @{ $self->regular_testing_conf->tests }, @tests;
 
     return;
 }
 
+sub __build_archive(){
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { test_type => 1, archive => 1 });
+    my $test_type = $parameters->{test_type};
+    my $archive = $parameters->{archive};
+    
+    my $archive_obj;
+    if ($test_type eq "pinger") {
+        $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency();
+        foreach my $summ(@{$default_summaries->{'latency'}}){
+            push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+        }
+    }elsif ($test_type eq "perfsonarbuoy/owamp") {
+        $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency();
+        foreach my $summ(@{$default_summaries->{'latency'}}){
+            push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+        }
+    }elsif ($test_type eq "traceroute") {
+        $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondTraceroute();
+    }elsif ($test_type eq "perfsonarbuoy/bwctl") {
+        $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput();
+        foreach my $summ(@{$default_summaries->{'throughput'}}){
+            push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
+        }
+    }
+    $archive_obj->database($archive->write_url());
+    $archive_obj->added_by_mesh(1);
+    
+    return $archive_obj;
+}
 sub __lookup_mapped_address {
     my ($self, @args) = @_;
     my $parameters = validate( @args, { address_map_field => 1, local_addr_maps => 1, local_address => 1, remote_address => 1, exclude_unmapped => 1});
@@ -382,12 +391,13 @@ sub __lookup_mapped_address {
 
 sub __build_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1  });
+    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1, ma_map => 1  });
     my $test = $parameters->{test};
     my $targets = $parameters->{targets};
     my $target_sends = $parameters->{target_sends};
     my $target_receives = $parameters->{target_receives};
     my $created_by = $parameters->{created_by};
+    my $ma_map = $parameters->{ma_map};
     
     my @tests = ();
     foreach my $local_address (keys %{ $targets }) {
@@ -404,7 +414,28 @@ sub __build_tests {
             push @targets, $target_obj;
         }
         $test_obj->targets(\@targets);
-
+        
+        #add archives to test if needed
+        if($self->configure_archives()){
+            my @measument_archives = ();
+            my $test_archives = $test->lookup_measurement_archives({ type => $test->parameters->type });
+            if($test_archives){
+                foreach my $test_archive(@{$test_archives}){
+                    if(!$ma_map->{$test->parameters->type}->{$test_archive->write_url()}){
+                        my $test_archive_obj = $self->__build_archive( test_type => $test->parameters->type, archive => $test_archive);
+                        push @measument_archives, $test_archive_obj if($test_archive_obj);
+                    }
+                }
+            }
+            
+            foreach my $ma_url(keys %{$ma_map->{$test->parameters->type}}){
+                push @measument_archives, $ma_map->{$test->parameters->type}->{$ma_url};
+            }
+            if(@measument_archives > 0){
+                $test_obj->measurement_archives(\@measument_archives);
+            }
+        }
+        
         my ($schedule, $parameters);
 
         if ($test->parameters->type eq "pinger") {
