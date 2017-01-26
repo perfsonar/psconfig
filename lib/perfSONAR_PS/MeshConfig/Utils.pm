@@ -202,26 +202,22 @@ sub __load_json {
     my $ca_certificate_file    = $parameters->{ca_certificate_file};
     my $ca_certificate_path    = $parameters->{ca_certificate_path};
 
-    my ($status, $res);
-
     my $uri = URI->new($url);
+    my $json_text = '';
     if ($uri->scheme eq "file") {
         eval {
-            $status = 0;
-            $res = "";
             open(FILE, $uri->path) or die("Couldn't open ".$uri->path);
             while(<FILE>) { 
-                $res .= $_;
+                $json_text .= $_;
             }
             close(FILE);
         };
         if ($@) {
-            $status = -1;
-            $res = $@;
+            return (-1, $@);
         }
     }
     else { 
-        $res = send_http_request({ 
+        my $res = send_http_request({ 
                                   connection_type     => 'GET',
                                   timeout             => 60,
                                   url                 => $url,
@@ -229,16 +225,16 @@ sub __load_json {
                                   ca_certificate_file => $ca_certificate_file,
                                   ca_certificate_path => $ca_certificate_path,
                                 });
+        if(!$res->is_success){
+            my $msg = build_err_msg(http_response => $res);
+            $logger->debug("Problem retrieving mesh configuration from $url: ".$msg);
+            return (-1, $msg);
+        }
+        $json_text = $res->content;
     }
-    if(!$res->is_success){
-        my $msg = build_err_msg(http_response => $res);
-        $logger->debug("Problem retrieving mesh configuration from $url: ".$msg);
-        return (-1, $msg);
-    }
-
     my $json;
     eval {
-        $json = JSON->new->decode($res->content);
+        $json = JSON->new->decode($json_text);
     };
     if ($@) {
         my $msg = "Problem parsing json for $url: ".$@;
