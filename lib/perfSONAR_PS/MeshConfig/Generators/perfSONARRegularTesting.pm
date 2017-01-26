@@ -170,10 +170,6 @@ sub add_mesh_tests {
                  push @archives, @{$agent_archives} if($agent_archives);
             }
             
-            if(@archives < 1){
-                die("Unable to find measurement archive of type $test_type");
-            }
-            
             #iterate through archives skipping duplicates (same URL + same type)
             foreach my $archive(@archives){
                 next if $ma_map->{$test_type}->{$archive->write_url()};
@@ -433,6 +429,8 @@ sub __build_tests {
             }
             if(@measument_archives > 0){
                 $test_obj->measurement_archives(\@measument_archives);
+            }else{
+                $logger->warn("Unable to find measurement archive for test '" . $test_obj->description . "'. Proceeding with test but results will not be stored.");
             }
         }
         
