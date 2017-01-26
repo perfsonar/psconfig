@@ -119,7 +119,7 @@ sub init {
 
 sub add_mesh_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { mesh => 1, mesh_url => 1, tests => 1, addresses => 1, local_host => 1, host_classes => 1, requesting_agent => 1 } );
+    my $parameters = validate( @args, { mesh => 1, mesh_url => 1, tests => 1, addresses => 1, local_host => 1, host_classes => 1, requesting_agent => 1, configure_archives => 0 } );
     my $mesh   = $parameters->{mesh};
     my $mesh_url   = $parameters->{mesh_url};
     my $tests  = $parameters->{tests};
@@ -127,6 +127,7 @@ sub add_mesh_tests {
     my $local_host = $parameters->{local_host};
     my $host_classes = $parameters->{host_classes};
     my $requesting_agent = $parameters->{requesting_agent};
+    my $configure_archives = ($parameters->{configure_archives} || (!defined $parameters->{configure_archives} && $self->configure_archives()));
     
     #set created-by
     my $created_by = new perfSONAR_PS::RegularTesting::CreatedBy({
@@ -149,7 +150,7 @@ sub add_mesh_tests {
             "perfsonarbuoy/bwctl" => {}, 
             "traceroute" => {}
             };
-    if($self->configure_archives()){
+    if($configure_archives){
         foreach my $test_type(keys %{$ma_map}){
             #lookup archive in explicit hosts and host classes. Append them all together if multiple match
             my @archives = ();
@@ -280,7 +281,7 @@ sub add_mesh_tests {
             }
 
             if ($same_targets) {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by, ma_map => $ma_map });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -288,14 +289,14 @@ sub add_mesh_tests {
                 push @tests, @$res;
             }
             else {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by, ma_map => $ma_map  });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
 
                 push @tests, @$res;
 
-                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by, ma_map => $ma_map  });
+                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -387,13 +388,14 @@ sub __lookup_mapped_address {
 
 sub __build_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1, ma_map => 1  });
+    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1, ma_map => 1, configure_archives => 1  });
     my $test = $parameters->{test};
     my $targets = $parameters->{targets};
     my $target_sends = $parameters->{target_sends};
     my $target_receives = $parameters->{target_receives};
     my $created_by = $parameters->{created_by};
     my $ma_map = $parameters->{ma_map};
+    my $configure_archives = $parameters->{configure_archives};
     
     my @tests = ();
     foreach my $local_address (keys %{ $targets }) {
@@ -412,7 +414,7 @@ sub __build_tests {
         $test_obj->targets(\@targets);
         
         #add archives to test if needed
-        if($self->configure_archives()){
+        if($configure_archives){
             my @measument_archives = ();
             my $test_archives = $test->lookup_measurement_archives({ type => $test->parameters->type });
             if($test_archives){
