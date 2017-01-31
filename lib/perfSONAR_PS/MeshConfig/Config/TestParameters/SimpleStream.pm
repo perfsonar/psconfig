@@ -29,6 +29,9 @@ has 'tool' => (is => 'rw', isa => 'Str');
 has 'force_bidirectional'       => (is => 'rw', isa => 'Bool');
 has 'random_start_percentage'   => (is => 'rw', isa => 'Int');
 has 'interval'                  => (is => 'rw', isa => 'Int');
+has 'ipv4_only'       => (is => 'rw', isa => 'Bool');
+has 'ipv6_only'       => (is => 'rw', isa => 'Bool');
+
 1;
 
 __END__

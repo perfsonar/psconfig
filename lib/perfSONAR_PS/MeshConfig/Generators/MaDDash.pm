@@ -30,6 +30,11 @@ perfSONAR_PS::MeshConfig::Generators::MaDDash;
 =cut
 
 my $logger = get_logger(__PACKAGE__);
+my %SUPPORTED_TEST_TYPES = (
+    "perfsonarbuoy/owamp" => 1,
+    "perfsonarbuoy/bwctl" => 1,
+    "simplestream" => 1
+);
 
 sub generate_maddash_config {
     my $parameters = validate( @_, { meshes => 1, existing_maddash_yaml => 1, maddash_options => 1 } );
@@ -102,7 +107,7 @@ sub generate_maddash_config {
         my $num_tests = 0;
 
         foreach my $test (@{ $mesh->tests }) {
-            unless ($test->parameters->type eq "perfsonarbuoy/bwctl" or $test->parameters->type eq "perfsonarbuoy/owamp") {
+            unless (exists $SUPPORTED_TEST_TYPES{$test->parameters->type} && $SUPPORTED_TEST_TYPES{$test->parameters->type}) {
                 $logger->debug("Skipping: ".$test->parameters->type);
                 next;
             }
@@ -116,7 +121,7 @@ sub generate_maddash_config {
         }
 
         unless ($num_tests) {
-            $logger->debug("No bwctl or owamp tests run by this mesh");
+            $logger->debug("No supported tests run by this mesh");
              next;
         }
 
@@ -193,7 +198,7 @@ sub generate_maddash_config {
         
         my $i = 0;
         foreach my $test (@{ $mesh->tests }) {
-            unless ($test->parameters->type eq "perfsonarbuoy/bwctl" or $test->parameters->type eq "perfsonarbuoy/owamp") {
+            unless (exists $SUPPORTED_TEST_TYPES{$test->parameters->type} && $SUPPORTED_TEST_TYPES{$test->parameters->type}) {
                 $logger->debug("Skipping: ".$test->parameters->type);
                 next;
             }
@@ -573,12 +578,13 @@ sub generate_maddash_config {
                 unknown => "Unable to retrieve data",
                 notrun => "Check has not yet run",
             };
-            $grid->{report} = __generate_report_id(
+            my $report_id = __generate_report_id(
                                     grid_name => $grid_name,
                                     group_type => $test->members->type, 
                                     test_type => $test->parameters->type,
                                     maddash_options => $maddash_options
                                 );
+            $grid->{report} = $report_id if($report_id);
             $grid->{added_by_mesh_agent} = 1;
 
             # Add the new grid
@@ -624,8 +630,10 @@ sub __generate_report_id {
     
         if($test_type eq "perfsonarbuoy/bwctl"){
             $report_id .= "_throughput";
-        }else{
+        }elsif($test_type eq "perfsonarbuoy/owamp"){
             $report_id .= "_loss";
+        }else{
+            return;
         }
     }
     
@@ -666,9 +674,9 @@ my %maddash_default_check_options = (
     "perfsonarbuoy/owamp" => {
         check_command => "/usr/lib64/nagios/plugins/check_owdelay.pl",
         check_interval => 1800,
-        check_time_range => 900,
-        retry_interval => 600,
-        retry_attempts => 3,
+        check_time_range => 2700,
+        retry_interval => 300,
+        retry_attempts => 1,
         timeout => 60,
         acceptable_loss_rate => 0,
         critical_loss_rate => 0.01,
@@ -682,11 +690,26 @@ my %maddash_default_check_options = (
         check_command => "/usr/lib64/nagios/plugins/check_throughput.pl",
         check_interval => 28800,
         check_time_range => 86400,
-        retry_interval => 600,
-        retry_attempts => 3,
+        retry_interval => 300,
+        retry_attempts => 1,
         timeout => 60,
         acceptable_throughput => 900,
         critical_throughput => 500,
+        enable_combined_graphs => 0,
+        filter_tool_name => 0,
+        graph_url => '/perfsonar-graphs/',
+        ma_filter => [],
+        report_id => '',
+    },
+    "simplestream" => {
+        check_command => "/usr/lib64/nagios/plugins/check_pscheduler_raw.pl",
+        check_interval => 1800,
+        check_time_range => 3600,
+        retry_interval => 300,
+        retry_attempts => 1,
+        timeout => 60,
+        acceptable_count => 1,
+        critical_count => 0,
         enable_combined_graphs => 0,
         filter_tool_name => 0,
         graph_url => '/perfsonar-graphs/',
@@ -771,7 +794,7 @@ sub __build_check {
             $check->{params}->{command} .= ' --tool "' . $test_params->tool . '"'; 
         }
     }
-    else {
+    elsif ($type eq "perfsonarbuoy/owamp") {
         my $ok_loss = __get_check_option({ option => "acceptable_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
         my $critical_loss = __get_check_option({ option => "critical_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
 
@@ -798,6 +821,36 @@ sub __build_check {
             $check->{name} = 'Loss';
             $check->{description} = "Loss from $row_templ_var to $col_templ_var";
             $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_loss.' -c '.$critical_loss.' -r '.$check_time_range." -l -p -s $row_templ_var -d $col_templ_var";
+        }
+    }
+    elsif ($type eq "simplestream") {
+        my $metric_label = "Simplestream Test Count";
+        my $ok_count = __get_check_option({ option => "acceptable_count", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+        my $critical_count = __get_check_option({ option => "critical_count", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+
+        $check->{ok_description}  = "Test count is <= ".$ok_count;
+        $check->{warning_description}  = "Test count is >= ".$ok_count;
+        $check->{critical_description}  = "Test count is >= ".$critical_count;
+
+        if ($is_full_mesh && $direction eq "reverse") {
+           $check->{name} = "$metric_label Alternate MA";
+           $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
+           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.' -c '.$critical_count.' -r '.$check_time_range." --filter pscheduler-test-type:simplestream -s $row_templ_var --filter pscheduler-simplestream-dest:$col_templ_var -a $col_templ_var";
+        }
+        elsif ($is_full_mesh) {
+            $check->{name} = "$metric_label";
+            $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.' -c '.$critical_count.' -r '.$check_time_range." --filter pscheduler-test-type:simplestream -s $row_templ_var --filter pscheduler-simplestream-dest:$col_templ_var -a $row_templ_var";
+        }
+        elsif ($direction eq "reverse") {
+            $check->{name} = "$metric_label Reverse";
+            $check->{description} = "$metric_label from $col_templ_var to $row_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.' -c '.$critical_count.' -r '.$check_time_range." --filter pscheduler-test-type:simplestream -s $col_templ_var --filter pscheduler-simplestream-dest:$row_templ_var";
+        }
+        else {
+            $check->{name} = "$metric_label";
+            $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.' -c '.$critical_count.' -r '.$check_time_range." --filter pscheduler-test-type:simplestream -s $row_templ_var --filter pscheduler-simplestream-dest:$col_templ_var";
         }
     }
 
