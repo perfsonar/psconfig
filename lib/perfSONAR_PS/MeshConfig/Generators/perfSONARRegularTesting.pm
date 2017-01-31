@@ -148,7 +148,8 @@ sub add_mesh_tests {
             "pinger" => {}, 
             "perfsonarbuoy/owamp" => {}, 
             "perfsonarbuoy/bwctl" => {}, 
-            "traceroute" => {}
+            "traceroute" => {},
+            "simplestream" => {},
             };
     if($configure_archives){
         foreach my $test_type(keys %{$ma_map}){
@@ -340,6 +341,8 @@ sub __build_archive(){
         foreach my $summ(@{$default_summaries->{'throughput'}}){
             push @{$archive_obj->summary}, $archive_obj->create_summary_config(%{$summ});
         }
+    }elsif ($test_type eq "simplestream") {
+        $archive_obj = new perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput();
     }
     $archive_obj->database($archive->write_url());
     $archive_obj->added_by_mesh(1);
@@ -556,6 +559,18 @@ sub __build_tests {
             $parameters->force_ipv6($test->parameters->ipv6_only) if $test->parameters->ipv6_only;
 
             $schedule = perfSONAR_PS::RegularTesting::Schedulers::Streaming->new();
+        }
+        elsif ($test->parameters->type eq "simplestream") {
+            $parameters = perfSONAR_PS::RegularTesting::Tests::SimpleStream->new();
+            $parameters->tool($test->parameters->tool) if($test->parameters->tool);
+            $parameters->dawdle($test->parameters->dawdle) if defined $test->parameters->dawdle;
+			$parameters->timeout($test->parameters->timeout) if defined $test->parameters->timeout;
+			$parameters->test_material($test->parameters->test_material) if $test->parameters->test_material;
+			$parameters->fail($test->parameters->fail) if defined  $test->parameters->fail;
+			
+			$schedule = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
+            $schedule->interval($test->parameters->interval) if $test->parameters->interval;
+            $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
         }
 
         if ($target_sends and not $target_receives) {

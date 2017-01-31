@@ -55,6 +55,7 @@ lib/perfSONAR_PS/MeshConfig/Config/TestParameters/Base.pm
 lib/perfSONAR_PS/MeshConfig/Config/TestParameters/PerfSONARBUOYBwctl.pm
 lib/perfSONAR_PS/MeshConfig/Config/TestParameters/PerfSONARBUOYOwamp.pm
 lib/perfSONAR_PS/MeshConfig/Config/TestParameters/PingER.pm
+lib/perfSONAR_PS/MeshConfig/Config/TestParameters/SimpleStream.pm
 lib/perfSONAR_PS/MeshConfig/Config/TestParameters/Traceroute.pm
 lib/perfSONAR_PS/MeshConfig/GUIAgent.pm
 lib/perfSONAR_PS/MeshConfig/Generators/Base.pm

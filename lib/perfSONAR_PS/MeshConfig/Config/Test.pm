@@ -17,6 +17,7 @@ use perfSONAR_PS::MeshConfig::Config::Reference;
 use perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYBwctl;
 use perfSONAR_PS::MeshConfig::Config::TestParameters::PerfSONARBUOYOwamp;
 use perfSONAR_PS::MeshConfig::Config::TestParameters::PingER;
+use perfSONAR_PS::MeshConfig::Config::TestParameters::SimpleStream;
 use perfSONAR_PS::MeshConfig::Config::TestParameters::Traceroute;
 
 =head1 NAME
