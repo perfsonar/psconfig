@@ -379,7 +379,11 @@ sub generate_maddash_config {
                 my $dst_site_hosts = $addr_site_map{$dst_addr} ? $addr_site_map{$dst_addr} : [{'addresses' => [$dst_addr]}];
                 
                 #Build graph URL
-                if($enable_combined_graphs){
+                if($test->parameters->type eq "traceroute"){
+                    $graph_url .= 'mahost=%maUrl&stime=yesterday&etime=now&tzselect=UTC';
+                    $rev_graph_url = $graph_url;
+                }
+                elsif($enable_combined_graphs){
                     #New MA so use new graphs that try to plot all latency and throughput data together
                     #Note using combined graphs forgoes bwctl protocol filters, tool name, and custom filters due to complexity
                     my $is_source_ma = $tester->{address} eq $src_addr ? 1 : 0;
@@ -729,7 +733,7 @@ my %maddash_default_check_options = (
         critical_count => 2,
         enable_combined_graphs => 0,
         filter_tool_name => 0,
-        graph_url => '/perfsonar-graphs/',
+        graph_url => '/perfsonar-traceroute-viewer/index.cgi',
         ma_filter => [],
         report_id => '',
     },
@@ -740,8 +744,8 @@ my %maddash_default_check_options = (
         retry_interval => 300,
         retry_attempts => 1,
         timeout => 60,
-        acceptable_count => 0,
-        critical_count => 0,
+        acceptable_loss_rate => 0,
+        critical_loss_rate => 0.01,
         enable_combined_graphs => 0,
         filter_tool_name => 0,
         graph_url => '/perfsonar-graphs/',
@@ -897,28 +901,28 @@ sub __build_check {
         if ($is_full_mesh && $direction eq "reverse") {
            $check->{name} = "$metric_label Alternate MA";
            $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
-           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $col_templ_var";
+           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $col_templ_var";
         }
         elsif ($is_full_mesh) {
             $check->{name} = "$metric_label";
             $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $row_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $row_templ_var";
         }
         elsif ($direction eq "reverse") {
             $check->{name} = "$metric_label Reverse";
             $check->{description} = "$metric_label from $col_templ_var to $row_templ_var";
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $col_templ_var -d $row_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $col_templ_var -d $row_templ_var";
         }
         else {
             $check->{name} = "$metric_label";
             $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $row_templ_var -d $col_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $row_templ_var -d $col_templ_var";
         }
     }
     elsif ($type eq "pinger") {
         my $metric_label = "Ping packets lost";
-        my $ok_count = __get_check_option({ option => "acceptable_count", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
-        my $critical_count = __get_check_option({ option => "critical_count", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+        my $ok_count = __get_check_option({ option => "acceptable_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
+        my $critical_count = __get_check_option({ option => "critical_loss_rate", test_type => $type, grid_name => $grid_name, maddash_options => $maddash_options });
 
         $check->{ok_description}  = "$metric_label is <= ".$ok_count;
         $check->{warning_description}  = "$metric_label is >= ".$ok_count;
@@ -927,22 +931,22 @@ sub __build_check {
         if ($is_full_mesh && $direction eq "reverse") {
            $check->{name} = "$metric_label Alternate MA";
            $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
-           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $col_templ_var";
+           $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $col_templ_var";
         }
         elsif ($is_full_mesh) {
             $check->{name} = "$metric_label";
             $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $row_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $row_templ_var -d $col_templ_var -a $row_templ_var";
         }
         elsif ($direction eq "reverse") {
             $check->{name} = "$metric_label Reverse";
             $check->{description} = "$metric_label from $col_templ_var to $row_templ_var";
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $col_templ_var -d $row_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $col_templ_var -d $row_templ_var";
         }
         else {
             $check->{name} = "$metric_label";
             $check->{description} = "$metric_label from $row_templ_var to $col_templ_var";
-            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w '.$ok_count.': -c '.$critical_count.': -r '.$check_time_range." -s $row_templ_var -d $col_templ_var";
+            $check->{params}->{command} =  $nagios_cmd.' -u %maUrl -w :'.$ok_count.' -c :'.$critical_count.' -r '.$check_time_range." -s $row_templ_var -d $col_templ_var";
         }
     }
     
