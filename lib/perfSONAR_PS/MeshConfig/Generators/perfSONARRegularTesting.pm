@@ -464,6 +464,8 @@ sub __build_tests {
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->test_interval);
             $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
+            $schedule->slip($test->parameters->slip) if(defined $test->parameters->slip);
+            $schedule->slip_randomize($test->parameters->slip_randomize) if(defined $test->parameters->slip_randomize);
         }
         elsif ($test->parameters->type eq "traceroute") {
             if($self->use_bwctl2){
@@ -492,6 +494,8 @@ sub __build_tests {
             $schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->test_interval) if $test->parameters->test_interval;
             $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
+            $schedule->slip($test->parameters->slip) if(defined $test->parameters->slip);
+            $schedule->slip_randomize($test->parameters->slip_randomize) if(defined $test->parameters->slip_randomize);
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/bwctl") {
             if($self->use_bwctl2){
@@ -534,6 +538,8 @@ sub __build_tests {
 				$schedule   = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             	$schedule->interval($test->parameters->interval) if $test->parameters->interval;
             	$schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
+            	$schedule->slip($test->parameters->slip) if(defined $test->parameters->slip);
+            	$schedule->slip_randomize($test->parameters->slip_randomize) if(defined $test->parameters->slip_randomize);
 			}
         }
         elsif ($test->parameters->type eq "perfsonarbuoy/owamp") {
@@ -571,6 +577,8 @@ sub __build_tests {
 			$schedule = perfSONAR_PS::RegularTesting::Schedulers::RegularInterval->new();
             $schedule->interval($test->parameters->interval) if $test->parameters->interval;
             $schedule->random_start_percentage($test->parameters->random_start_percentage) if(defined $test->parameters->random_start_percentage);
+            $schedule->slip($test->parameters->slip) if(defined $test->parameters->slip);
+            $schedule->slip_randomize($test->parameters->slip_randomize) if(defined $test->parameters->slip_randomize);
         }
 
         if ($target_sends and not $target_receives) {
