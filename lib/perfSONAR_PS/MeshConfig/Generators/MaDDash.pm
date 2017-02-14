@@ -452,7 +452,7 @@ sub generate_maddash_config {
                         $graph_custom_filters .= "bw-target-bandwidth:" . $test->parameters->udp_bandwidth if($test->parameters->udp_bandwidth);
                         my $filter_tool_name = __get_check_option({ option => "filter_tool_name", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
                         if($filter_tool_name && $test->parameters->tool){
-                            $graph_options .= "&tool=" . $test->parameters->tool;
+                            $graph_options .= "&tool=pscheduler/" . $test->parameters->tool;
                         }
                     } 
                     #set custom filters
@@ -827,7 +827,7 @@ sub __build_check {
         $check->{params}->{command} .= (' --udpbandwidth ' . $test_params->udp_bandwidth ) if($test_params->udp_bandwidth);
         #set tool name if needed
         if($filter_tool_name && $test_params->tool){
-            $check->{params}->{command} .= ' --tool "' . $test_params->tool . '"'; 
+            $check->{params}->{command} .= ' --tool pscheduler/"' . $test_params->tool . '"'; 
         }
     }
     elsif ($type eq "perfsonarbuoy/owamp") {
