@@ -45,7 +45,7 @@ has 'mss' => (is => 'rw', isa => 'Int');
 has 'dscp' => (is => 'rw', isa => 'Int');
 has 'no_delay' => (is => 'rw', isa => 'Bool');
 has 'congestion' => (is => 'rw', isa => 'Str');
-has 'flow_label' => (is => 'rw', isa => 'Str');
+has 'flow_label' => (is => 'rw', isa => 'Int');
 has 'client_cpu_affinity' => (is => 'rw', isa => 'Int');
 has 'server_cpu_affinity' => (is => 'rw', isa => 'Int');
 
