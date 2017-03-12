@@ -337,6 +337,16 @@ while(1){
                 $logger->error("Problem parsing measurement archive: $@");
             }
         }
+        
+        #get global bind addresses
+        my %bind_map = ();
+        foreach my $bind_address(@{ $parsed_config->bind_addresses }){
+            if($bind_address->remote_address && $bind_address->bind_address){
+                $bind_map{$bind_address->remote_address} = $bind_address->bind_address;
+            }elsif($bind_address->bind_address){
+                $bind_map{'_default'} = $bind_address->bind_address;
+            }
+        }
     
         #build tests
         my $old_task_deadline = $end + $until_next_refresh;
@@ -352,6 +362,7 @@ while(1){
                                 new_task_min_runs => $conf{"task_min_runs"},
                                 old_task_deadline => $old_task_deadline,
                                 task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
+                                bind_map => \%bind_map,
                                 debug => $DEBUGFLAG
                             );
         };
@@ -366,7 +377,7 @@ while(1){
             foreach my $test (@{ $parsed_config->tests }) {
                 next if $test->disabled;
                 eval{
-                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map);
+                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map, global_bind_map => \%bind_map);
                 };
                 if($@){
                     $logger->error("Error building pScheduler task: " . $@);

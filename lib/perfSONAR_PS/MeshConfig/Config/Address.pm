@@ -6,6 +6,7 @@ our $VERSION = 3.1;
 
 use Moose;
 use perfSONAR_PS::MeshConfig::Config::AddressMap;
+use perfSONAR_PS::MeshConfig::Config::BindMap;
 use Params::Validate qw(:all);
 
 =head1 NAME
@@ -21,7 +22,10 @@ perfSONAR_PS::MeshConfig::Config::Host;
 extends 'perfSONAR_PS::MeshConfig::Config::Base';
 
 has 'address'             => (is => 'rw', isa => 'Str');
+has 'bind_address'        => (is => 'rw', isa => 'Str');
+has 'lead_bind_address'   => (is => 'rw', isa => 'Str');
 has 'tags'                => (is => 'rw', isa => 'ArrayRef[Str]', default => sub { [] });
+has 'bind_maps'           => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::BindMap]', default => sub { [] });
 has 'maps'                => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::MeshConfig::Config::AddressMap]', default => sub { [] });
 
 has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Host');

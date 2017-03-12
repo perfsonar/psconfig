@@ -15,6 +15,7 @@ use perfSONAR_PS::MeshConfig::Generators::Base;
 use perfSONAR_PS::RegularTesting::Utils::ConfigFile qw( parse_file save_string );
 
 use perfSONAR_PS::RegularTesting::Config;
+use perfSONAR_PS::RegularTesting::BindAddress;
 use perfSONAR_PS::RegularTesting::CreatedBy;
 use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondLatency;
 use perfSONAR_PS::RegularTesting::MeasurementArchives::EsmondThroughput;
@@ -94,14 +95,21 @@ sub init {
 
         $config->tests(\@new_tests);
         
-         # Remove the existing archives that were added by the mesh configuration
+        # Remove the existing archives that were added by the mesh configuration
         my @new_archives = ();
         foreach my $archive (@{ $config->measurement_archives }) {
             next if ($archive->added_by_mesh);
             push @new_archives, $archive;
         }
+        
+        # Remove the existing bind_addresses that were added by the mesh configuration
+        my @new_bind_addresses = ();
+        foreach my $bind_address (@{ $config->bind_addresses }) {
+            next if ($bind_address->added_by_mesh);
+            push @new_bind_addresses, $bind_address;
+        }
 
-        $config->measurement_archives(\@new_archives);
+        $config->bind_addresses(\@new_bind_addresses);
     };
     if ($@) {
         my $msg = "Problem initializing pinger landmarks: ".$@;
@@ -142,6 +150,14 @@ sub add_mesh_tests {
 
     my $mesh_id = $mesh->description;
     $mesh_id =~ s/[^A-Za-z0-9_-]/_/g if($mesh_id);
+    
+    
+    #add global bind_address settings
+    my $primary_host_obj = $local_host ? $local_host : $requesting_agent;
+    if($primary_host_obj){
+        my $bind_addresses = $self->_build_global_bind_addresses(host=>$primary_host_obj);
+        push @{$self->regular_testing_conf->bind_addresses}, @{$bind_addresses};
+    }
     
     #add measurement archives that apply to all tests setup by the mesh
     my $ma_map = {
@@ -282,7 +298,7 @@ sub add_mesh_tests {
             }
 
             if ($same_targets) {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, target_sends => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives, local_host => $primary_host_obj });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -290,14 +306,14 @@ sub add_mesh_tests {
                 push @tests, @$res;
             }
             else {
-                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives  });
+                my ($status, $res) = $self->__build_tests({ test => $test, targets => \%receiver_targets, target_receives => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives, local_host => $primary_host_obj  });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
 
                 push @tests, @$res;
 
-                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives  });
+                ($status, $res) = $self->__build_tests({ test => $test, targets => \%sender_targets, target_sends => 1, created_by => $created_by, ma_map => $ma_map, configure_archives => $configure_archives, local_host => $primary_host_obj });
                 if ($status != 0) {
                     die("Problem creating tests: ".$res);
                 }
@@ -314,6 +330,147 @@ sub add_mesh_tests {
 
     push @{ $self->regular_testing_conf->tests }, @tests;
 
+    return;
+}
+
+sub _build_global_bind_addresses(){
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { host => 1 });
+    my $host = $parameters->{host};
+    my @bind_addresses = ();
+    
+    #lookup existing bind addresses so we don't override
+    my $added_default_bind = 0;
+    my %added_bind_map = ();
+    foreach my $existing_bind(@{$self->regular_testing_conf->bind_addresses}){
+        if($existing_bind->bind_address && $existing_bind->remote_address){
+            $added_bind_map{$existing_bind->remote_address} = 1;
+        }elsif($existing_bind->bind_address){
+            $added_default_bind = 1;
+        }
+    }
+    #Add bind_addresses in matching <host>
+    if(!$added_default_bind && $host->bind_address){
+        my $bind_addr_obj = new perfSONAR_PS::RegularTesting::BindAddress(
+            added_by_mesh => 1,
+            bind_address => $host->bind_address
+        );
+        push @bind_addresses, $bind_addr_obj;
+        $added_default_bind = 1;
+    }
+    #look at binding settings in address defs
+    foreach my $address(@{$host->addresses}){
+        if(!$added_default_bind && $address->bind_address){
+            my $bind_addr_obj = new perfSONAR_PS::RegularTesting::BindAddress(
+                added_by_mesh => 1,
+                bind_address => $address->bind_address
+            );
+            push @bind_addresses, $bind_addr_obj;
+            $added_default_bind = 1;
+        }
+        foreach my $bind_map(@{$address->bind_maps}){
+            #don't add the same remote address twice
+            next unless($bind_map->remote_address && $bind_map->bind_address);
+            next if($added_bind_map{$bind_map->remote_address});
+            my $bind_addr_obj = new perfSONAR_PS::RegularTesting::BindAddress(
+                added_by_mesh => 1,
+                remote_address => $bind_map->remote_address,
+                bind_address => $bind_map->bind_address
+            );
+            push @bind_addresses, $bind_addr_obj;
+            $added_bind_map{$bind_map->remote_address} = 1;
+        }
+    }
+    
+    return \@bind_addresses;
+}
+
+sub _lookup_bind_address(){
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { host => 1, address => 0, remote_address => 0 });
+    my $host = $parameters->{host};
+    my $address = $parameters->{address};
+    my $remote_address = $parameters->{remote_address};
+    my @bind_addresses = ();
+    
+    #find addr object
+    my $local_address = "";
+    foreach my $curr_addr(@{ $host->addresses }){
+        if ($curr_addr->address eq $address){
+            $local_address = $curr_addr;
+        }
+    }
+    
+    #look in map
+    if($remote_address){
+        foreach my $bind_map(@{$local_address->bind_maps}){
+            if($bind_map->remote_address && $bind_map->remote_address eq $remote_address){
+                if($bind_map->bind_address){
+                    return $bind_map->bind_address;
+                }else{
+                    #found entry but not address
+                    last;
+                }
+            }
+        }
+    }
+    #look in address
+    if($local_address && $local_address->bind_address){
+        return $local_address->bind_address;
+    }
+    
+    #look in host
+    if($host && $host->bind_address){
+        return $host->bind_address;
+    }
+    
+    return;
+}
+
+sub _lookup_lead_bind_address(){
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { host => 1, address => 0, remote_address => 0, exact_match => 0 });
+    my $host = $parameters->{host};
+    my $address = $parameters->{address};
+    my $remote_address = $parameters->{remote_address};
+    my $exact_match = $parameters->{exact_match};
+    my @bind_addresses = ();
+    
+    #find addr object
+    my $local_address = "";
+    if($address){
+        foreach my $curr_addr(@{ $host->addresses }){
+            if ($curr_addr->address eq $address){
+                $local_address = $curr_addr;
+            }
+        }
+        return if($exact_match && !$local_address)
+    }
+    
+    #look in map
+    if($remote_address){
+        foreach my $bind_map(@{$local_address->bind_maps}){
+            if($bind_map->remote_address && $bind_map->remote_address eq $remote_address){
+                if($bind_map->lead_bind_address){
+                    return $bind_map->lead_bind_address;
+                }else{
+                    #found entry but not address
+                    last;
+                }
+            }
+        }
+        return if($exact_match);
+    }
+    #look in address
+    if($local_address && $local_address->lead_bind_address){
+        return $local_address->lead_bind_address;
+    }
+    
+    #look in host
+    if($host && $host->lead_bind_address){
+        return $host->lead_bind_address;
+    }
+    
     return;
 }
 
@@ -391,7 +548,7 @@ sub __lookup_mapped_address {
 
 sub __build_tests {
     my ($self, @args) = @_;
-    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1, ma_map => 1, configure_archives => 1  });
+    my $parameters = validate( @args, { test => 1, targets => 1, target_sends => 0, target_receives => 0, created_by => 1, ma_map => 1, configure_archives => 1, local_host => 1 });
     my $test = $parameters->{test};
     my $targets = $parameters->{targets};
     my $target_sends = $parameters->{target_sends};
@@ -399,6 +556,7 @@ sub __build_tests {
     my $created_by = $parameters->{created_by};
     my $ma_map = $parameters->{ma_map};
     my $configure_archives = $parameters->{configure_archives};
+    my $local_host = $parameters->{local_host};
     
     my @tests = ();
     foreach my $local_address (keys %{ $targets }) {
@@ -407,11 +565,21 @@ sub __build_tests {
         $test_obj->added_by_mesh(1);
         $test_obj->description($test->description) if $test->description;
         $test_obj->local_address($local_address);
-
+        
+        #add bind parameters
+        $test_obj->bind_address($self->_lookup_bind_address(host => $local_host, address => $local_address));
+        $test_obj->local_lead_bind_address($self->_lookup_lead_bind_address(host => $local_host, address => $local_address));
+        
         my @targets = ();
         foreach my $target (@{ $targets->{$local_address} }) {
             my $target_obj = perfSONAR_PS::RegularTesting::Target->new();
             $target_obj->address($target);
+            $target_obj->bind_address($self->_lookup_bind_address(host => $local_host, address => $local_address, remote_address => $target));
+            my $target_host = $test->lookup_hosts(addresses => [ $target ]);
+            if($target_host && @{$target_host} > 0){
+                $target_obj->lead_bind_address($self->_lookup_lead_bind_address(host => $target_host->[0], address => $target, remote_address => $local_address));
+            }
+            $target_obj->local_lead_bind_address($self->_lookup_lead_bind_address(host => $local_host, address => $local_address, remote_address => $target, exact_match => 1));
             push @targets, $target_obj;
         }
         $test_obj->targets(\@targets);

@@ -432,6 +432,7 @@ sub __parse_hash {
                         "address" => { new_key => "addresses", except => [ "address", "addresses" ] },
                         "tag" => { new_key => "tags", except => [ "filter", "filters" ] },
                         "map" => { new_key => "maps" },
+                        "bind_map" => { new_key => "bind_maps" },
                         "field" => { new_key => "fields" },
                         "member" => { new_key => "members" },
                         "a_member" => { new_key => "a_members" },
