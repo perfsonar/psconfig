@@ -347,6 +347,16 @@ while(1){
                 $bind_map{'_default'} = $bind_address->bind_address;
             }
         }
+        
+        #get global local lead bind addresses
+        my %lead_bind_map = ();
+        foreach my $lead_bind_address(@{ $parsed_config->local_lead_bind_addresses }){
+            if($lead_bind_address->remote_address && $lead_bind_address->bind_address){
+                $lead_bind_map{$lead_bind_address->remote_address} = $lead_bind_address->bind_address;
+            }elsif($lead_bind_address->bind_address){
+                $lead_bind_map{'_default'} = $lead_bind_address->bind_address;
+            }
+        }
     
         #build tests
         my $old_task_deadline = $end + $until_next_refresh;
@@ -377,7 +387,7 @@ while(1){
             foreach my $test (@{ $parsed_config->tests }) {
                 next if $test->disabled;
                 eval{
-                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map, global_bind_map => \%bind_map);
+                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map, global_bind_map => \%bind_map, global_lead_bind_map => \%lead_bind_map);
                 };
                 if($@){
                     $logger->error("Error building pScheduler task: " . $@);
