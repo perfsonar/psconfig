@@ -448,15 +448,16 @@ sub generate_maddash_config {
                 }else{
                     my $graph_options = "";
                     my $graph_custom_filters = "";
+                    #DEPRECATED: Removed below because new graphs show ip_version much better
                     #Set IP version if needed
-                    if($test->parameters->ipv6_only){
-                        $graph_options .= "&ipversion=6";
-                    }elsif($test->parameters->ipv4_only){
-                        $graph_options .= "&ipversion=4";
-                    }
+                    #if($test->parameters->ipv6_only){
+                    #    $graph_options .= "&ipversion=6";
+                    #}elsif($test->parameters->ipv4_only){
+                    #    $graph_options .= "&ipversion=4";
+                    #}
                     #Set BWCTL options if needed
                     if($test->parameters->type eq "perfsonarbuoy/bwctl"){
-                        $graph_options .= "&protocol=" . $test->parameters->protocol if($test->parameters->protocol);
+                        #$graph_options .= "&protocol=" . $test->parameters->protocol if($test->parameters->protocol);
                         $graph_custom_filters .= "bw-target-bandwidth:" . $test->parameters->udp_bandwidth if($test->parameters->udp_bandwidth);
                         my $filter_tool_name = __get_check_option({ option => "filter_tool_name", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
                         if($filter_tool_name && $test->parameters->tool){
