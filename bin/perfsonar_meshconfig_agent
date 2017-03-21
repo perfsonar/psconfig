@@ -357,7 +357,26 @@ while(1){
                 $lead_bind_map{'_default'} = $lead_bind_address->bind_address;
             }
         }
-    
+        #get global settings for local pscheduler addresses that should be used in multi-participant tests
+        my %local_pscheduler_addr_map = ();
+        foreach my $local_pscheduler_address(@{ $parsed_config->local_pscheduler_addresses }){
+            if($local_pscheduler_address->remote_address && $local_pscheduler_address->pscheduler_address){
+                $local_pscheduler_addr_map{$local_pscheduler_address->remote_address} = $local_pscheduler_address->pscheduler_address;
+            }elsif($local_pscheduler_address->pscheduler_address){
+                $local_pscheduler_addr_map{'_default'} = $local_pscheduler_address->pscheduler_address;
+            }
+        }
+        
+        #get global settings for remote pscheduler addresses that should be used in multi-participant tests
+        my %pscheduler_addr_map = ();
+        foreach my $pscheduler_address(@{ $parsed_config->pscheduler_addresses }){
+            if($pscheduler_address->remote_address && $pscheduler_address->pscheduler_address){
+                $pscheduler_addr_map{$pscheduler_address->remote_address} = $pscheduler_address->pscheduler_address;
+            }elsif($pscheduler_address->pscheduler_address){
+                $logger->warn("Cannot specify 'pscheduler_address' withough a remote_address. Ignoring 'pscheduler_address " . $pscheduler_address->pscheduler_address . "'");
+            }
+        }
+
         #build tests
         my $old_task_deadline = $end + $until_next_refresh;
         my $task_manager;        
@@ -373,6 +392,7 @@ while(1){
                                 old_task_deadline => $old_task_deadline,
                                 task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
                                 bind_map => \%bind_map,
+                                lead_address_map => \%pscheduler_addr_map,
                                 debug => $DEBUGFLAG
                             );
         };
@@ -387,7 +407,15 @@ while(1){
             foreach my $test (@{ $parsed_config->tests }) {
                 next if $test->disabled;
                 eval{
-                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, test => $test, task_manager => $task_manager, archive_map => \%ma_map, global_bind_map => \%bind_map, global_lead_bind_map => \%lead_bind_map);
+                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, 
+                            test => $test, 
+                            task_manager => $task_manager, 
+                            archive_map => \%ma_map, 
+                            global_bind_map => \%bind_map, 
+                            global_lead_bind_map => \%lead_bind_map, 
+                            global_local_lead_addr_map => \%local_pscheduler_addr_map, 
+                            global_lead_addr_map => \%pscheduler_addr_map,
+                        );
                 };
                 if($@){
                     $logger->error("Error building pScheduler task: " . $@);

@@ -50,6 +50,7 @@ lib/perfSONAR_PS/MeshConfig/Config/MeasurementArchive.pm
 lib/perfSONAR_PS/MeshConfig/Config/Mesh.pm
 lib/perfSONAR_PS/MeshConfig/Config/Organization.pm
 lib/perfSONAR_PS/MeshConfig/Config/Reference.pm
+lib/perfSONAR_PS/MeshConfig/Config/ServiceAddressMap.pm
 lib/perfSONAR_PS/MeshConfig/Config/Site.pm
 lib/perfSONAR_PS/MeshConfig/Config/Test.pm
 lib/perfSONAR_PS/MeshConfig/Config/TestParameters/Base.pm

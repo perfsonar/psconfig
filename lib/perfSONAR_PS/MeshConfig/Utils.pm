@@ -433,6 +433,7 @@ sub __parse_hash {
                         "tag" => { new_key => "tags", except => [ "filter", "filters" ] },
                         "map" => { new_key => "maps" },
                         "bind_map" => { new_key => "bind_maps" },
+                        "pscheduler_address_map" => { new_key => "pscheduler_address_maps" },
                         "field" => { new_key => "fields" },
                         "member" => { new_key => "members" },
                         "a_member" => { new_key => "a_members" },

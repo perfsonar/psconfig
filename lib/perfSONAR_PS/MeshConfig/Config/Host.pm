@@ -43,6 +43,8 @@ has 'bind_address'        => (is => 'rw', isa => 'Str');
 
 has 'lead_bind_address'   => (is => 'rw', isa => 'Str');
 
+has 'pscheduler_address'   => (is => 'rw', isa => 'Str');
+
 has 'parent'              => (is => 'rw', isa => 'perfSONAR_PS::MeshConfig::Config::Base'); # Any of "Site", "Organization" or "Mesh"
 
 sub lookup_administrators {

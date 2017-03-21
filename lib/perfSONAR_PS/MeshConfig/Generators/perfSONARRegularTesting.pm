@@ -108,7 +108,6 @@ sub init {
             next if ($bind_address->added_by_mesh);
             push @new_bind_addresses, $bind_address;
         }
-
         $config->bind_addresses(\@new_bind_addresses);
     };
     if ($@) {
@@ -474,6 +473,53 @@ sub _lookup_lead_bind_address(){
     return;
 }
 
+sub _lookup_pscheduler_address(){
+    my ($self, @args) = @_;
+    my $parameters = validate( @args, { host => 1, address => 0, remote_address => 0, exact_match => 0 });
+    my $host = $parameters->{host};
+    my $address = $parameters->{address};
+    my $remote_address = $parameters->{remote_address};
+    my $exact_match = $parameters->{exact_match};
+    my @pscheduler_addresses = ();
+    
+    #find addr object
+    my $local_address = "";
+    if($address){
+        foreach my $curr_addr(@{ $host->addresses }){
+            if ($curr_addr->address eq $address){
+                $local_address = $curr_addr;
+            }
+        }
+        return if($exact_match && !$local_address)
+    }
+    
+    #look in map
+    if($remote_address){
+        foreach my $addr_map(@{$local_address->pscheduler_address_maps}){
+            if($addr_map->remote_address && $addr_map->remote_address eq $remote_address){
+                if($addr_map->service_address){
+                    return $addr_map->service_address;
+                }else{
+                    #found entry but not address
+                    last;
+                }
+            }
+        }
+        return if($exact_match);
+    }
+    #look in address
+    if($local_address && $local_address->pscheduler_address){
+        return $local_address->pscheduler_address;
+    }
+    
+    #look in host
+    if($host && $host->pscheduler_address){
+        return $host->pscheduler_address;
+    }
+    
+    return;
+}
+
 sub __build_archive(){
     my ($self, @args) = @_;
     my $parameters = validate( @args, { test_type => 1, archive => 1 });
@@ -569,6 +615,7 @@ sub __build_tests {
         #add bind parameters
         $test_obj->bind_address($self->_lookup_bind_address(host => $local_host, address => $local_address));
         $test_obj->local_lead_bind_address($self->_lookup_lead_bind_address(host => $local_host, address => $local_address));
+        $test_obj->local_pscheduler_address($self->_lookup_pscheduler_address(host => $local_host, address => $local_address));
         
         my @targets = ();
         foreach my $target (@{ $targets->{$local_address} }) {
@@ -578,8 +625,10 @@ sub __build_tests {
             my $target_host = $test->lookup_hosts(addresses => [ $target ]);
             if($target_host && @{$target_host} > 0){
                 $target_obj->lead_bind_address($self->_lookup_lead_bind_address(host => $target_host->[0], address => $target, remote_address => $local_address));
+                $target_obj->pscheduler_address($self->_lookup_pscheduler_address(host => $target_host->[0], address => $target, remote_address => $local_address));
             }
             $target_obj->local_lead_bind_address($self->_lookup_lead_bind_address(host => $local_host, address => $local_address, remote_address => $target, exact_match => 1));
+            $target_obj->local_pscheduler_address($self->_lookup_pscheduler_address(host => $local_host, address => $local_address, remote_address => $target, exact_match => 1));
             push @targets, $target_obj;
         }
         $test_obj->targets(\@targets);
