@@ -76,6 +76,8 @@ sub __map_arrays {
         'measurement_archive' => { 'value' => 'measurement_archives' },
         'tag' => { 'value' => 'tags' },
         'map' => { 'value' => 'maps' },
+        'bind_map' => { 'value' => 'bind_maps' },
+        'pscheduler_address_map' => { 'value' => 'pscheduler_address_maps' },
         'field' => { 'value' => 'fields' },
     );
 

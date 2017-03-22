@@ -200,8 +200,9 @@ sub generate_maddash_config {
         
         my $i = 0;
         foreach my $test (@{ $mesh->tests }) {
+            #check if test_type supported
             unless (exists $SUPPORTED_TEST_TYPES{$test->parameters->type} && $SUPPORTED_TEST_TYPES{$test->parameters->type}) {
-                $logger->debug("Skipping: ".$test->parameters->type);
+                $logger->debug("Skipping unsupported test type: ".$test->parameters->type);
                 next;
             }
 
@@ -218,6 +219,13 @@ sub generate_maddash_config {
             }
             else {
                 $grid_name .= "test".$i;
+            }
+            
+            #skip if we disabled the grid
+            my $grid_enabled = __get_check_option({ option => "enabled", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
+            unless($grid_enabled){
+                $logger->debug("Skipping disabled grid: ".$test->description);
+                next;
             }
 
             # Build the groups
@@ -440,15 +448,16 @@ sub generate_maddash_config {
                 }else{
                     my $graph_options = "";
                     my $graph_custom_filters = "";
+                    #DEPRECATED: Removed below because new graphs show ip_version much better
                     #Set IP version if needed
-                    if($test->parameters->ipv6_only){
-                        $graph_options .= "&ipversion=6";
-                    }elsif($test->parameters->ipv4_only){
-                        $graph_options .= "&ipversion=4";
-                    }
+                    #if($test->parameters->ipv6_only){
+                    #    $graph_options .= "&ipversion=6";
+                    #}elsif($test->parameters->ipv4_only){
+                    #    $graph_options .= "&ipversion=4";
+                    #}
                     #Set BWCTL options if needed
                     if($test->parameters->type eq "perfsonarbuoy/bwctl"){
-                        $graph_options .= "&protocol=" . $test->parameters->protocol if($test->parameters->protocol);
+                        #$graph_options .= "&protocol=" . $test->parameters->protocol if($test->parameters->protocol);
                         $graph_custom_filters .= "bw-target-bandwidth:" . $test->parameters->udp_bandwidth if($test->parameters->udp_bandwidth);
                         my $filter_tool_name = __get_check_option({ option => "filter_tool_name", test_type => $test->parameters->type, grid_name => $grid_name, maddash_options => $maddash_options });
                         if($filter_tool_name && $test->parameters->tool){
@@ -678,6 +687,7 @@ sub __quote_ipv6_address {
 
 my %maddash_default_check_options = (
     "perfsonarbuoy/owamp" => {
+        enabled => 1,
         check_command => "/usr/lib64/nagios/plugins/check_owdelay.pl",
         check_interval => 1800,
         check_time_range => 2700,
@@ -693,6 +703,7 @@ my %maddash_default_check_options = (
         report_id => '',
     },
     "perfsonarbuoy/bwctl" => {
+        enabled => 1,
         check_command => "/usr/lib64/nagios/plugins/check_throughput.pl",
         check_interval => 28800,
         check_time_range => 86400,
@@ -708,6 +719,7 @@ my %maddash_default_check_options = (
         report_id => '',
     },
     "simplestream" => {
+        enabled => 1,
         check_command => "/usr/lib64/nagios/plugins/check_pscheduler_raw.pl",
         check_interval => 1800,
         check_time_range => 3600,
@@ -723,6 +735,7 @@ my %maddash_default_check_options = (
         report_id => '',
     },
     "traceroute" => {
+        enabled => 1,
         check_command => "/usr/lib64/nagios/plugins/check_traceroute.pl",
         check_interval => 1800,
         check_time_range => 3600,
@@ -738,6 +751,7 @@ my %maddash_default_check_options = (
         report_id => '',
     },
     "pinger" => {
+        enabled => 1,
         check_command => "/usr/lib64/nagios/plugins/check_ping_loss.pl",
         check_interval => 1800,
         check_time_range => 3600,
