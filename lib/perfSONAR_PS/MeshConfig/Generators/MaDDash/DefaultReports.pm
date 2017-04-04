@@ -37,9 +37,9 @@ reports:
                             - "Verify that perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
-                            - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log"                            
+                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/meshconfig-agent-tasks.conf"
+                            - "Verify that perfsonar-meshconfig-agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log"                            
                 - 
                     type: rule
                     selector:
@@ -69,10 +69,10 @@ reports:
                                     message: "Site is down"
                                     solutions:
                                         - "Verify the host is up"
-                                        - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first BWCTL test to run on this host."
+                                        - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first throughput test to run on this host."
                                         - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host" 
-                                        - "Verify the local and remote sites allow access to TCP port 4823, TCP/UDP ports 6001-6200, and TCP/UDP ports 5001-5900"                           
+                                        - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP port 5101"                           
                             - 
                                 type: rule
                                 selector:
@@ -85,9 +85,9 @@ reports:
                                     category: CONFIGURATION
                                     message: "Unable to run and/or query any outgoing throughput tests."
                                     solutions:
-                                        - "Verify you are not blocking any of the required outgoing BWCTL ports in your firewall"
-                                        - "Verify the remote sites allow your host to access TCP/UDP ports 5001-5900"
-                                        - "Verify the limits defined in /etc/bwctl-server/bwctl-server.limits are properly defined and not being exceeded by the tests"
+                                        - "Verify you are not blocking any of the required outgoing throughput ports in your firewall"
+                                        - "Verify the remote sites allow your host to access TCP port 443 and TCP/UDP port 5101"
+                                        - "Verify the limits defined in /etc/pscheduler/limits.conf on each side are properly defined and not being exceeded by the tests"
                             - 
                                 type: rule
                                 selector:
@@ -100,8 +100,8 @@ reports:
                                     category: CONFIGURATION
                                     message: "Unable to run and/or query any incoming throughput tests."
                                     solutions:
-                                        - "Verify your host and router firewalls are allowing TCP/UDP 5001-5900"
-                                        - "Verify the limits defined in /etc/bwctl-server/bwctl-server.limits are properly defined and not being exceeded by the tests"
+                                        - "Verify your host and router firewalls are allowing TCP port 443 and TCP/UDP port 5101"
+                                        - "Verify the limits defined in /etc/pscheduler/limits.conf are properly defined and not being exceeded by the tests"
                             - 
                                 type: matchAll
                                 rules:
@@ -124,9 +124,9 @@ reports:
                                                     solutions:
                                                         - "Verify that your measurement archive(s) are running"
                                                         - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                                                        - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
-                                                        - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log" 
+                                                        - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/meshconfig-agent-tasks.conf"
+                                                        - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log" 
                                             - 
                                                 type: rule
                                                 selector:
@@ -142,10 +142,10 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "A majority (but not all) of tests initiated by this site are failing in both incoming and outgoing directions"
                                                     solutions:
-                                                        - "Check if the sites that are failing are blocking TCP port 4823."
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Check if the sites that are failing are blocking TCP port 443 or TCP/UDP port 5101."
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                                         
                                             - 
                                                 type: rule
@@ -161,9 +161,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated at this site are failing in the outgoing direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                             - 
                                                 type: rule
                                                 selector:
@@ -178,9 +178,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated at this site are failing in the incoming direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                     - 
                                         type: matchFirst
                                         rules: 
@@ -198,9 +198,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated by remote sites are failing in both incoming and outgoing directions"
                                                     solutions:
-                                                        - "Verify that the local site has TCP port 4823 open on the host and router firewalls"
-                                                        - "Verify that bwctl-server is running on the host with '/etc/init.d/bwctl-server status'"
-                                                        - "Verify the limits defined in /etc/bwctl-server/bwctl-server.limits are properly defined and not being exceeded by the tests"
+                                                        - "Verify that the local site has TCP port 443 is open on the host and router firewalls"
+                                                        - "Verify that pscheduler is running on the host with '/etc/init.d/pscheduler status'"
+                                                        - "Verify the limits defined in /etc/pscheduler/limits.conf are properly defined and not being exceeded by the tests"
                                             - 
                                                 type: rule
                                                 selector:
@@ -216,8 +216,8 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "A majority (but not all) of tests initiated by remote sites are failing in both incoming and outgoing directions"
                                                     solutions:
-                                                        - "Verify that the local site has TCP port 4823 open on the host and router firewalls to all hosts in the mesh"
-                                                        - "Verify the limits defined in /etc/bwctl-server/bwctl-server.limits are properly defined and not being exceeded by the tests"
+                                                        - "Verify that the local site has TCP port 443 open on the host and router firewalls to all hosts in the mesh"
+                                                        - "Verify the limits defined in /etc/pscheduler/limits.conf are properly defined and not being exceeded by the tests"
                                             - 
                                                 type: rule
                                                 selector:
@@ -232,9 +232,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated by remote sites are failing in the outgoing direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                             - 
                                                 type: rule
                                                 selector:
@@ -249,9 +249,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated by remote sites are failing in the incoming direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                     -
                                         type: rule
                                         selector:
@@ -306,9 +306,9 @@ reports:
                             - "Verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
-                            - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log"                            
+                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/meshconfig-agent-tasks.conf"
+                            - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log"                            
                 - 
                     type: rule
                     selector:
@@ -338,14 +338,14 @@ reports:
                                     message: "Site is down"
                                     solutions:
                                         - "Verify the host is up"
-                                        - "Verify the local and remote sites allow access to TCP port 4823, TCP/UDP ports 6001-6200, and TCP/UDP ports 5001-5900" 
+                                        - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP port 5101" 
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first BWCTL test to run on this host."
                                         - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host"                                                                   
                                         - "Verify that your measurement archive(s) are running"
                                         - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                                        - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log" 
+                                        - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log" 
                             - 
                                 type: matchAll
                                 rules:
@@ -364,7 +364,7 @@ reports:
                                             category: CONFIGURATION
                                             message: "Tests are failing in the outgoing direction"
                                             solutions:
-                                                - "Verify the local and remote sites allow access to TCP port 4823, TCP/UDP ports 6001-6200, and TCP/UDP ports 5001-5900 in their host and router firewalls"
+                                                - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP ports 5101 in their host and router firewalls"
                                     - 
                                         type: rule
                                         selector:
@@ -380,7 +380,7 @@ reports:
                                             category: CONFIGURATION
                                             message: "Tests are failing in the incoming direction"
                                             solutions:
-                                                - "Verify the local and remote sites allow access to TCP port 4823, TCP/UDP ports 6001-6200, and TCP/UDP ports 5001-5900 in their host and router firewalls"
+                                                - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP ports 5101 in their host and router firewalls"
                                     -
                                         type: rule
                                         selector:
@@ -439,9 +439,9 @@ reports:
                             - "Verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
-                            - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log"                            
+                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/meshconfig-agent-tasks.conf"
+                            - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log"                            
                 - 
                     type: rule
                     selector:
@@ -523,9 +523,9 @@ reports:
                                                     solutions:
                                                         - "Verify that your measurement archive(s) are running"
                                                         - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                                                        - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
-                                                        - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log" 
+                                                        - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/meshconfig-agent-tasks.conf"
+                                                        - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log" 
                                             - 
                                                 type: rule
                                                 selector:
@@ -542,9 +542,9 @@ reports:
                                                     message: "A majority (but not all) of tests initiated by this site are failing in both incoming and outgoing directions"
                                                     solutions:
                                                         - "Check if the sites that are failing are blocking TCP port 861."
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                                         
                                             - 
                                                 type: rule
@@ -560,9 +560,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated at this site are failing in the outgoing direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                             - 
                                                 type: rule
                                                 selector:
@@ -577,9 +577,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated at this site are failing in the incoming direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                     - 
                                         type: matchFirst
                                         rules: 
@@ -598,7 +598,7 @@ reports:
                                                     message: "Tests initiated by remote sites are failing in both incoming and outgoing directions"
                                                     solutions:
                                                         - "Verify that the local site has TCP port 861 open on the host and router firewalls"
-                                                        - "Verify that owamp-server is running on the host with '/etc/init.d/owamp-server status'"
+                                                        - "Verify that owamp-server is running on the host with '/etc/init.d/owamp-server status' or 'systemctl status owamp-server'"
                                             - 
                                                 type: rule
                                                 selector:
@@ -629,9 +629,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated by remote sites are failing in the outgoing direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                             - 
                                                 type: rule
                                                 selector:
@@ -646,9 +646,9 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "Tests initiated by remote sites are failing in the incoming direction"
                                                     solutions:
-                                                        - "Verify that /usr/lib/perfsonar/bin/generate_configuration doesn't throw any errors."
-                                                        - "Verify that /etc/perfsonar/regulartesting.conf contains the proper tests"
-                                                        - "Restart perfsonar-regulartesting, it may not have picked-up configuration changes (/etc/init.d/perfsonar-regulartesting restart)"
+                                                        - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
+                                                        - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
+                                                        - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
                                     -
                                         type: rule
                                         selector:
@@ -703,9 +703,9 @@ reports:
                             - "Verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"                            
                             - "Verify that your measurement archive(s) are running"
                             - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/regulartesting.conf"
-                            - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log"                            
+                            - "Verify your hosts are downloading the mesh configuration file and that there are tests defined in /etc/perfsonar/meshconfig-agent-tasks.conf"
+                            - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                            - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log"                            
                 - 
                     type: rule
                     selector:
@@ -741,8 +741,8 @@ reports:
                                         - "Verify NTP is synced on this host"                                                                   
                                         - "Verify that your measurement archive(s) are running"
                                         - "Verify no firewall is blocking maddash from reaching your measurement archive(s)"
-                                        - "Verify that regular testing is running (/etc/init.d/perfsonar-regulartesting status)"
-                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/regulartesting.log" 
+                                        - "Verify that MeshConfig Agent is running ('/etc/init.d/perfsonar-meshconfig-agent status' or 'systemctl status perfsonar-meshconfig-agent')"
+                                        - "Verify your hosts are able to reach their configured measurement archive and that there are no errors in /var/log/perfsonar/meshconfig-agent.log" 
                             - 
                                 type: matchAll
                                 rules:                                    
