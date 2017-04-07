@@ -284,9 +284,22 @@ sub __write_file {
     my $parameters = validate( @args, { file => 1, contents => 1 } );
     my $file  = $parameters->{file};
     my $contents = $parameters->{contents};
-
+    
+    my $orig_contents = "";
     eval {
-        open(FILE, ">".$file) or die("Couldn't open $file");
+        local $/ = undef;
+        open(FILE, "<".$file) or die("Couldn't open $file");
+        binmode FILE;
+        $orig_contents = <FILE>;
+        close(FILE);
+    };
+    if($orig_contents eq $contents){
+        $logger->debug("No changes to configuration, so not updating");
+        return (0, "");
+    }
+    
+    eval {
+        open(FILE, ">".$file) or die("Couldn't open $file for writing");
         print FILE $contents;
         close(FILE);
     };
