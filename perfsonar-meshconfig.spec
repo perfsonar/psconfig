@@ -193,6 +193,8 @@ if [ "$1" = "2" ]; then
     if [ -e "/etc/perfsonar/regulartesting.conf" ]; then
         mv %{config_base}/meshconfig-agent-tasks.conf %{config_base}/meshconfig-agent-tasks.conf.default
         mv /etc/perfsonar/regulartesting.conf %{config_base}/meshconfig-agent-tasks.conf
+        #remove old summaries
+        sed -i '/<summary>/,/<\/summary>/d' %{config_base}/meshconfig-agent-tasks.conf
         #make sure this gets started on its first update to version with agent
         /sbin/service perfsonar-meshconfig-agent restart &>/dev/null || :
     fi
