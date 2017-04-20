@@ -401,7 +401,7 @@ sub _lookup_bind_address(){
     }
     
     #look in map
-    if($remote_address){
+    if($local_address && $remote_address){
         foreach my $bind_map(@{$local_address->bind_maps}){
             if($bind_map->remote_address && $bind_map->remote_address eq $remote_address){
                 if($bind_map->bind_address){
