@@ -237,17 +237,7 @@ sub generate_maddash_config {
             my $is_full_mesh = 0;
             
             my $columnAlgorithm = "all";
-            if ($test->members->type eq "star") {
-                $test->members->center_address(__normalize_addr($test->members->center_address));
-                push @row_members, $test->members->center_address;
-                foreach my $member (@{__normalize_addrs($test->members->members)}) {
-                    push @column_members, $member unless $member eq $test->members->center_address;
-                }
-
-                $column_id = __generate_yaml_key($grid_name)."-column";
-                $row_id = __generate_yaml_key($grid_name)."-row";
-            }
-            elsif ($test->members->type eq "disjoint") {
+            if ($test->members->type eq "star" || $test->members->type eq "disjoint") {
                 foreach my $a_member (@{__normalize_addrs($test->members->a_members)}) {
                     push @row_members, $a_member;
                 }
