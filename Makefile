@@ -1,7 +1,7 @@
 PACKAGE=perfsonar-meshconfig
 ROOTPATH=/usr/lib/perfsonar
 CONFIGPATH=/etc/perfsonar
-VERSION=4.0.0.1
+VERSION=4.0.0.2
 RELEASE=1
 
 default:
