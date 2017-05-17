@@ -101,6 +101,7 @@ sub init {
             next if ($archive->added_by_mesh);
             push @new_archives, $archive;
         }
+        $config->measurement_archives(\@new_archives);
         
         # Remove the existing bind_addresses that were added by the mesh configuration
         my @new_bind_addresses = ();
