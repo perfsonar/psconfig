@@ -112,7 +112,7 @@ sub init {
         $config->bind_addresses(\@new_bind_addresses);
     };
     if ($@) {
-        my $msg = "Problem initializing pinger landmarks: ".$@;
+        my $msg = "Problem initializing $config_file: ".$@;
         $logger->error($msg);
         return (-1, $msg);
     }
