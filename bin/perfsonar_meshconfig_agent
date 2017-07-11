@@ -37,6 +37,11 @@ use perfSONAR_PS::Utils::Host qw(get_interface_addresses_by_type);
 # set the process name
 $0 = "perfsonar_meshconfig_agent.pl";
 
+#subprocess handling
+my @child_pids = ();
+$SIG{INT}  = \&signalHandler;
+$SIG{TERM} = \&signalHandler;
+
 my $CONFIG_FILE;
 my $LOGOUTPUT;
 my $LOGGER_CONF;
@@ -378,67 +383,82 @@ while(1){
         }
 
         #build tests
-        my $old_task_deadline = $end + $until_next_refresh;
-        my $task_manager;        
-        eval{
-            $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
-            $task_manager->init(
-                                pscheduler_url => $conf{pscheduler_url},
-                                tracker_file => $conf{pscheduler_tracker_file},
-                                client_uuid_file => $conf{client_uuid_file},
-                                user_agent => "perfsonar-meshconfig",
-                                new_task_min_ttl => $conf{"task_min_ttl"},
-                                new_task_min_runs => $conf{"task_min_runs"},
-                                old_task_deadline => $old_task_deadline,
-                                task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
-                                bind_map => \%bind_map,
-                                lead_address_map => \%pscheduler_addr_map,
-                                debug => $DEBUGFLAG
-                            );
-        };
-        if($@){
-            $logger->error("Problem initializing task_manager: $@");
-        }elsif(!$task_manager->check_assist_server()){
-            $logger->error("Problem contacting pScheduler, will try again later.");
-            $pscheduler_fails++;
+        my $pid = fork();
+        if( $pid != 0 ){
+            push @child_pids, $pid;
         }else{
-            $logger->info("pScheduler is back up, resuming normal operation") if($pscheduler_fails);
-            $pscheduler_fails = 0;
-            foreach my $test (@{ $parsed_config->tests }) {
-                next if $test->disabled;
-                eval{
-                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, 
-                            test => $test, 
-                            task_manager => $task_manager, 
-                            archive_map => \%ma_map, 
-                            global_bind_map => \%bind_map, 
-                            global_lead_bind_map => \%lead_bind_map, 
-                            global_local_lead_addr_map => \%local_pscheduler_addr_map, 
-                            global_lead_addr_map => \%pscheduler_addr_map,
-                        );
-                };
-                if($@){
-                    $logger->error("Error building pScheduler task: " . $@);
+            #fork to avoid memory leaks and conflicts between threads and inotify
+            my $old_task_deadline = $end + $until_next_refresh;
+            my $task_manager;        
+            eval{
+                $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
+                $task_manager->init(
+                                    pscheduler_url => $conf{pscheduler_url},
+                                    tracker_file => $conf{pscheduler_tracker_file},
+                                    client_uuid_file => $conf{client_uuid_file},
+                                    user_agent => "perfsonar-meshconfig",
+                                    new_task_min_ttl => $conf{"task_min_ttl"},
+                                    new_task_min_runs => $conf{"task_min_runs"},
+                                    old_task_deadline => $old_task_deadline,
+                                    task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
+                                    bind_map => \%bind_map,
+                                    lead_address_map => \%pscheduler_addr_map,
+                                    debug => $DEBUGFLAG
+                                );
+            };
+            if($@){
+                $logger->error("Problem initializing task_manager: $@");
+            }elsif(!$task_manager->check_assist_server()){
+                $logger->error("Problem contacting pScheduler, will try again later.");
+                $pscheduler_fails++;
+            }else{
+                $logger->info("pScheduler is back up, resuming normal operation") if($pscheduler_fails);
+                $pscheduler_fails = 0;
+                foreach my $test (@{ $parsed_config->tests }) {
+                    next if $test->disabled;
+                    eval{
+                        $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, 
+                                test => $test, 
+                                task_manager => $task_manager, 
+                                archive_map => \%ma_map, 
+                                global_bind_map => \%bind_map, 
+                                global_lead_bind_map => \%lead_bind_map, 
+                                global_local_lead_addr_map => \%local_pscheduler_addr_map, 
+                                global_lead_addr_map => \%pscheduler_addr_map,
+                            );
+                    };
+                    if($@){
+                        $logger->error("Error building pScheduler task: " . $@);
+                    }
+                }
+    
+                #commit tasks
+                $task_manager->commit();
+            
+                #Log results
+                foreach my $error(@{$task_manager->errors()}){
+                   $logger->warn($error);
+                }
+                foreach my $deleted_task(@{$task_manager->deleted_tasks()}){
+                   $logger->debug("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url);
+                }
+                foreach my $added_task(@{$task_manager->added_tasks()}){
+                   $logger->debug("Created task " . $added_task->uuid . " on server " . $added_task->url);
+                }
+                if(@{$task_manager->added_tasks()} || @{$task_manager->deleted_tasks()}){
+                    $logger->info("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks");
                 }
             }
-    
-            #commit tasks
-            $task_manager->commit();
             
-            #Log results
-            foreach my $error(@{$task_manager->errors()}){
-               $logger->warn($error);
-            }
-            foreach my $deleted_task(@{$task_manager->deleted_tasks()}){
-               $logger->debug("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url);
-            }
-            foreach my $added_task(@{$task_manager->added_tasks()}){
-               $logger->debug("Created task " . $added_task->uuid . " on server " . $added_task->url);
-            }
-            if(@{$task_manager->added_tasks()} || @{$task_manager->deleted_tasks()}){
-                $logger->info("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks");
-            }
+            #exit child process
+            exit(0);
         }
+        
+        #wait for child pids
+        foreach my $pid ( @child_pids ) {
+            waitpid( $pid, 0 );
+        }
+        @child_pids = (); #clear pids
     }
 
     ##
@@ -462,5 +482,29 @@ while(1){
         }
     }
 }
+
+=head2 killChildren
+Kills all the children for this process off. It uses global variables
+because this function is used by the signal handler to kill off all
+child processes.
+=cut
+
+sub killChildren {
+    foreach my $pid ( @child_pids ) {
+        kill( "SIGINT", $pid );
+    }
+
+    return;
+}
+
+=head2 signalHandler
+Kills all the children for the process and then exits
+=cut
+
+sub signalHandler {
+    killChildren;
+    exit( 0 );
+}
+
 
 exit(0);
