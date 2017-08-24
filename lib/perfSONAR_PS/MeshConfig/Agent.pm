@@ -469,7 +469,7 @@ sub __write_file {
     $logger->debug("Writing ".$file);
 
     eval {
-        open(FILE, ">".$file) or die("Couldn't open $file");
+        open(FILE, ">:encoding(UTF-8)", $file) or die("Couldn't open $file");
         print FILE $contents;
         close(FILE);
     };
@@ -497,7 +497,7 @@ sub __compare_file {
 
     my $differ = 1;
 
-    if (open(FILE, $file)) {
+    if (open(FILE, "<:encoding(UTF-8)", $file)) {
         $logger->debug("Reading ".$file);
         my $file_contents = do { local $/; <FILE> };
         $differ = 0 if ($file_contents eq $contents);
