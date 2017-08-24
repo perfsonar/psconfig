@@ -1,0 +1,606 @@
+{
+    "archives": {
+        "iu-central-archive": {
+            "archiver": "esmond",
+            "data": {
+                "url": "https://perfsonar-testbed-ma.grnoc.iu.edu/esmond/perfsonar/archive/",
+                "measurement-agent": "$requesting-agent"
+            }
+        }
+    },
+    
+    "addresses": {
+        "perfsonar-dev5.grnoc.iu.edu": { 
+            "address": "perfsonar-dev5.grnoc.iu.edu",
+            "_meta": {
+                "display-name": "perfsonar-dev5.grnoc (Debian7, 3.5)",
+                "organization": "GlobalNOC"
+            }
+        },
+        "ma-dev2.bldc.grnoc.iu.edu": { 
+            "disabled": true,
+            "address": "ma-dev2.bldc.grnoc.iu.edu",
+            "_meta": {
+                "display-name": "ma-dev2.bldc (EL6, 4.0)",
+                "organization": "GlobalNOC"
+            }
+        },
+        "perfsonar-dev.grnoc.iu.edu": { 
+            "address": "perfsonar-dev.grnoc.iu.edu",
+            "_meta": {
+                "display-name": "perfsonar-dev.grnoc (EL7, 4.0)",
+                "organization": "GlobalNOC"
+            }
+        },
+        "ps-deb.es.net": { 
+            "address": "ps-deb.es.net",
+            "_meta": {
+                "display-name": "ps-deb.es.net (Debian8, 3.5)",
+                "organization": "ESnet"
+            }
+        },
+        "antg-dev.es.net": { 
+            "address": "antg-dev.es.net",
+            "_meta": {
+                "display-name": "antg-dev.es.net (EL6, 4.0)",
+                "organization": "ESnet"
+            }
+        },
+        "antg-staging.es.net": { 
+            "address": "antg-staging.es.net",
+            "labels": {
+                "ipv6": { "address": "2001:400:210:151::25" }
+            },
+            "_meta": {
+                "display-name": "antg-staging.es.net (EL7 4.0)",
+                "organization": "ESnet"
+            }
+        },
+        "ps-deb-2.es.net": { 
+            "address": "ps-deb-2.es.net",
+            "_meta": {
+                "display-name": "ps-deb.es.net (Debian8, 4.0)",
+                "organization": "ESnet"
+            }
+        },
+        "perfsonar-liva.lbl.gov": { 
+            "address": "perfsonar-liva.lbl.gov",
+            "_meta": {
+                "display-name": "perfsonar-liva.lbl.gov (Docker Testpoint, 4.0)",
+                "organization": "ESnet"
+            }
+        },
+        "test-pt1.es.net": { 
+            "address": "test-pt1.es.net",
+            "_meta": {
+                "display-name": "test-pt1.es.net (CentOS7, 4.0)",
+                "organization": "ESnet"
+            }
+        },
+        "test-owamp.es.net": { 
+            "address": "test-owamp.es.net",
+            "_meta": {
+                "display-name": "test-owamp.es.net (CentOS7, 4.0)",
+                "organization": "ESnet"
+            }
+        },
+        "lbl-pt1.es.net": { 
+            "address": "lbl-pt1.es.net",
+            "_meta": {
+                "display-name": "lbl-pt1.es.net (CentOS6, 4.0-production)",
+                "organization": "ESnet"
+            }
+        },
+        "lbl-owamp.es.net": { 
+            "address": "lbl-owamp.es.net",
+            "_meta": {
+                "display-name": "lbl-owamp.es.net (CentOS6, 4.0-production)",
+                "organization": "ESnet"
+            }
+        },
+        "lbl-pt1-v6.es.net": { 
+            "address": "lbl-pt1-v6.es.net",
+            "_meta": {
+                "display-name": "lbl-pt1-v6.es.net (CentOS6, 4.0-production)",
+                "organization": "ESnet"
+            }
+        },
+        "lbl-owamp-v6.es.net": { 
+            "address": "lbl-owamp-v6.es.net",
+            "_meta": {
+                "display-name": "lbl-owamp-v6.es.net (CentOS6, 4.0-production)",
+                "organization": "ESnet"
+            }
+        },
+        "perfsonardev0.internet2.edu": { 
+            "address": "perfsonardev0.internet2.edu",
+            "_meta": {
+                "display-name": "perfsonardev0.internet2.edu (EL6, 4.0)",
+                "organization": "Internet2"
+            }
+        },
+        "t2-psdev.rrze.uni-erlangen.de": { 
+            "address": "t2-psdev.rrze.uni-erlangen.de",
+            "_meta": {
+                "display-name": "t2-psdev.rrze.uni-erlangen.de (EL6, 4.0)",
+                "organization": "GEANT"
+            }
+        },
+        "pstest.geant.carnet.hr": { 
+            "address": "pstest.geant.carnet.hr",
+            "_meta": {
+                "display-name": "pstest.geant.carnet.hr (Debian7, 4.0)",
+                "organization": "GEANT"
+            }
+        },
+        "ps-4-0.qalab.geant.net": { 
+            "address": "ps-4-0.qalab.geant.net",
+            "_meta": {
+                "display-name": "ps-4-0.qalab.geant.net (Ubuntu14, 4.0)",
+                "organization": "GEANT"
+            }
+        },
+        "ps-4-0-xenial.qalab.geant.net": { 
+            "address": "ps-4-0-xenial.qalab.geant.net",
+            "_meta": {
+                "display-name": "ps-4-0-xenial.qalab.geant.net (Ubuntu16, 4.0)",
+                "organization": "GEANT"
+            }
+        },
+        "perfsonar-lab-vm.ilab.umnet.umich.edu": { 
+            "address": "perfsonar-lab-vm.ilab.umnet.umich.edu",
+            "_meta": {
+                "display-name": "perfsonar-lab-vm.ilab.umnet.umich.edu (EL7, 4.0)",
+                "organization": "UMich"
+            }
+        }
+    },
+    
+    "groups": {
+        "testbed_latency_hosts": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "perfsonar-dev5.grnoc.iu.edu" },
+                { "name": "ps-deb.es.net" },
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" },
+                { "name": "perfsonardev0.internet2.edu" },
+                { "name": "ma-dev2.bldc.grnoc.iu.edu" },
+                { "name": "perfsonar-dev.grnoc.iu.edu"},
+                { "name": "ps-deb-2.es.net" },
+                { "name": "perfsonar-liva.lbl.gov" },
+                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
+                { "name": "ps-4-0.qalab.geant.net" },
+                { "name": "ps-4-0-xenial.qalab.geant.net" },
+                { "name": "pstest.geant.carnet.hr" },
+                { "name": "pstest2.geant.carnet.hr" },
+                { "name": "test-owamp1.es.net" }
+            ]
+        },
+        
+        "testbed_throughput_hosts": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "perfsonar-dev5.grnoc.iu.edu" },
+                { "name": "ps-deb.es.net" },
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" },
+                { "name": "perfsonardev0.internet2.edu" },
+                { "name": "ma-dev2.bldc.grnoc.iu.edu" },
+                { "name": "perfsonar-dev.grnoc.iu.edu"},
+                { "name": "ps-deb-2.es.net" },
+                { "name": "perfsonar-liva.lbl.gov" },
+                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
+                { "name": "ps-4-0.qalab.geant.net" },
+                { "name": "ps-4-0-xenial.qalab.geant.net" },
+                { "name": "pstest.geant.carnet.hr" },
+                { "name": "pstest2.geant.carnet.hr" },
+                { "name": "test-pt1.es.net" }
+            ]
+        },
+        
+        "testbed_traceroute_hosts": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "perfsonar-dev5.grnoc.iu.edu" },
+                { "name": "ps-deb.es.net" },
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" },
+                { "name": "perfsonardev0.internet2.edu" },
+                { "name": "ma-dev2.bldc.grnoc.iu.edu" },
+                { "name": "perfsonar-dev.grnoc.iu.edu"},
+                { "name": "ps-deb-2.es.net" },
+                { "name": "perfsonar-liva.lbl.gov" },
+                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
+                { "name": "ps-4-0.qalab.geant.net" },
+                { "name": "ps-4-0-xenial.qalab.geant.net" },
+                { "name": "pstest.geant.carnet.hr" },
+                { "name": "pstest2.geant.carnet.hr" },
+                { "name": "test-pt1.es.net" }
+            ]
+        },
+        
+        "pscheduler_hosts": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" },
+                { "name": "perfsonardev0.internet2.edu" },
+                { "name": "ma-dev2.bldc.grnoc.iu.edu" },
+                { "name": "perfsonar-dev.grnoc.iu.edu" },
+                { "name": "ps-deb-2.es.net" },
+                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
+                { "name": "ps-4-0.qalab.geant.net" },
+                { "name": "ps-4-0-xenial.qalab.geant.net" },
+                { "name": "pstest.geant.carnet.hr" },
+                { "name": "pstest2.geant.carnet.hr" },
+                { "name": "test-pt1.es.net" }
+            ]
+        },
+        
+        "pscheduler_hosts_minusi2": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" },
+                { "name": "ma-dev2.bldc.grnoc.iu.edu" },
+                { "name": "perfsonar-dev.grnoc.iu.edu" },
+                { "name": "ps-deb-2.es.net" },
+                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
+                { "name": "ps-4-0.qalab.geant.net" },
+                { "name": "ps-4-0-xenial.qalab.geant.net" },
+                { "name": "pstest.geant.carnet.hr" },
+                { "name": "pstest2.geant.carnet.hr" },
+                { "name": "test-pt1.es.net" }
+            ]
+        },
+        
+        "testbed_throughput_hosts_minusi2": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "perfsonar-dev5.grnoc.iu.edu" },
+                { "name": "ps-deb.es.net" },
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" },
+                { "name": "ma-dev2.bldc.grnoc.iu.edu" },
+                { "name": "perfsonar-dev.grnoc.iu.edu"},
+                { "name": "ps-deb-2.es.net" },
+                { "name": "perfsonar-liva.lbl.gov" },
+                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
+                { "name": "ps-4-0.qalab.geant.net" },
+                { "name": "ps-4-0-xenial.qalab.geant.net" },
+                { "name": "pstest.geant.carnet.hr" },
+                { "name": "pstest2.geant.carnet.hr" },
+                { "name": "test-pt1.es.net" }
+            ]
+        },
+        
+        "v6_hosts_throughput": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net", "label": "ipv6" },
+                { "name": "ps-deb.es.net" },
+                { "name": "ps-deb-2.es.net" },
+                { "name": "test-pt1.es.net" },
+                { "name": "lbl-pt1-v6.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" }
+            ]
+        },
+        
+        "v6_hosts_latency": {
+            "type": "mesh",
+            "force-bidirectional": true,
+            "addresses": [
+                { "name": "antg-dev.es.net" },
+                { "name": "antg-staging.es.net", "label": "ipv6" },
+                { "name": "ps-deb.es.net" },
+                { "name": "ps-deb-2.es.net" },
+                { "name": "test-owamp1.es.net" },
+                { "name": "lbl-owamp-v6.es.net" },
+                { "name": "t2-psdev.rrze.uni-erlangen.de" }
+            ]
+        }
+    },
+    
+    "hosts": {
+        "test-pt1.es.net": {
+            "addresses": [ "test-pt1.es.net", "test-owamp.es.net" ]
+        },
+        "lbl-pt1.es.net": {
+            "addresses": [ "lbl-pt1.es.net", "lbl-owamp.es.net", "lbl-pt1-v6.es.net", "lbl-owamp-v6.es.net" ]
+        }
+    },
+    
+    "tests": {
+        "throughput_iperf3_tcp_test_v4": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT20S",
+                "ip-version": 4
+            }
+        },
+        "throughput_iperf3_tcp_test_v6": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT10S",
+                "ip-version": 6
+            }
+        },
+        "throughput_iperf3_udp_test_v4": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT10S",
+                "ip-version": 4,
+                "udp": true,
+                "bandwidth": 50000000,
+                "window_size": 1024000
+            }
+        },
+        "throughput_iperf3_udp_test_v6": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT10S",
+                "ip-version": 6,
+                "udp": true,
+                "bandwidth": 50000000,
+                "window_size": 1024000
+            }
+        },
+        "throughput_nuttcp_udp_test_v4": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT10S",
+                "ip-version": 4,
+                "udp": true,
+                "bandwidth": 50000000,
+                "interval": "PT1S"
+            }
+        },
+        "throughput_nuttcp_udp_test_v6": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT10S",
+                "ip-version": 6,
+                "udp": true,
+                "bandwidth": 50000000,
+                "interval": "PT1S"
+            }
+        },
+        "latencybg_test_v4": {
+            "type": "latencybg",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "packet-timeout": "PT10S",
+                "packet-interval": 0.1,
+                "packet-count": 600,
+                "packet-padding": 0,
+                "bucket-width": 0.001,
+                "ip-version": 4
+            }
+        },
+        "latencybg_test_v6": {
+            "type": "latencybg",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "packet-timeout": "PT10S",
+                "packet-interval": 0.1,
+                "packet-count": 600,
+                "packet-padding": 0,
+                "bucket-width": 0.001,
+                "ip-version": 6
+            }
+        },
+        "trace_test_v4": {
+            "type": "trace",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "wait": "PT5S",
+                "sendwait": "PT30S",
+                "ip-version": 4
+            }
+        },
+        "trace_test_v6": {
+            "type": "trace",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "wait": "PT5S",
+                "sendwait": "PT30S",
+                "ip-version": 6
+            }
+        },
+        "rtt_test_v4": {
+            "type": "rtt",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "count": 10,
+                "interval": "PT1S",
+                "length": 1000,
+                "ip-version": 4
+            }
+        },
+        "rtt_test_v6": {
+            "type": "rtt",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "count": 10,
+                "interval": "PT1S",
+                "length": 1000,
+                "ip-version": 6
+            }
+        }
+    },
+    
+    "schedules": {
+        "repeat-PT4H": {
+            "repeat": "PT4H",
+            "sliprand": true,
+            "slip": "PT4H"
+        },
+        "repeat-PT10M": {
+            "repeat": "PT10M",
+            "sliprand": true,
+            "slip": "PT10M"
+        },
+        "repeat-PT15M": {
+            "repeat": "PT4H",
+            "sliprand": true,
+            "slip": "PT15M"
+        }
+    },
+    
+    "tasks": {
+        "throughput-tcp-iperf3-v4": {
+            "group": "testbed_throughput_hosts",
+            "test": "throughput_iperf3_tcp_test_v4",
+            "schedule": "repeat-PT4H",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "iperf3" ],
+            "_meta": {
+                "display-name": "iperf3 TCP Test Between Testbeds"
+            }
+        },
+        "throughput-udp-iperf3-v4": {
+            "group": "testbed_throughput_hosts_minusi2",
+            "test": "throughput_iperf3_udp_test_v4",
+            "schedule": "repeat-PT4H",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "iperf3" ],
+            "_meta": {
+                "display-name": "iperf3 UDP Test Between Testbeds"
+            }
+        },
+        "throughput-udp-nuttcp-v4": {
+            "group": "pscheduler_hosts_minusi2",
+            "test": "throughput_nuttcp_udp_test_v4",
+            "schedule": "repeat-PT4H",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "nuttcp" ],
+            "_meta": {
+                "display-name": "nuttcp UDP Test Between pScheduler Hosts"
+            }
+        },
+        "trace-v4": {
+            "group": "testbed_traceroute_hosts",
+            "test": "trace_test_v4",
+            "schedule": "repeat-PT10M",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "traceroute" ],
+            "_meta": {
+                "display-name": "Traceroute Between Testbeds"
+            }
+        },
+        "latencybg-v4": {
+            "group": "testbed_latency_hosts",
+            "test": "latencybg_test_v4",
+            "archives": [ "iu-central-archive" ],
+            "_meta": {
+                "display-name": "Powstream Between Testbeds"
+            }
+        },
+        "rtt-v4": {
+            "group": "pscheduler_hosts",
+            "test": "latencybg_test_v4",
+            "schedule": "repeat-PT15M",
+            "archives": [ "iu-central-archive" ],
+            "_meta": {
+                "display-name": "Ping Between Testbeds"
+            }
+        },
+        "throughput-tcp-iperf3-v6": {
+            "disabled": true,
+            "group": "v6_hosts_throughput",
+            "test": "throughput_iperf3_tcp_test_v6",
+            "schedule": "repeat-PT4H",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "iperf3" ],
+            "_meta": {
+                "display-name": "IPv6 iperf3 TCP Test Between Testbeds"
+            }
+        },
+        "throughput-udp-iperf3-v6": {
+            "disabled": true,
+            "group": "v6_hosts_throughput",
+            "test": "throughput_iperf3_udp_test_v6",
+            "schedule": "repeat-PT4H",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "iperf3" ],
+            "_meta": {
+                "display-name": "IPv6 iperf3 UDP Test Between Testbeds"
+            }
+        },
+        "throughput-udp-nuttcp-v6": {
+            "disabled": true,
+            "group": "v6_hosts_throughput",
+            "test": "throughput_nuttcp_udp_test_v6",
+            "schedule": "repeat-PT4H",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "nuttcp" ],
+            "_meta": {
+                "display-name": "IPv6 nuttcp UDP Test Between pScheduler Hosts"
+            }
+        },
+        "trace-v6": {
+            "disabled": true,
+            "group": "v6_hosts_latency",
+            "test": "trace_test_v6",
+            "schedule": "repeat-PT10M",
+            "archives": [ "iu-central-archive" ],
+            "tools": [ "traceroute" ],
+            "_meta": {
+                "display-name": "IPv6 Traceroute Between Testbeds"
+            }
+        },
+        "latencybg-v6": {
+            "disabled": true,
+            "group": "v6_hosts_latency",
+            "test": "latencybg_test_v6",
+            "archives": [ "iu-central-archive" ],
+            "_meta": {
+                "display-name": "IPv6 Powstream Between Testbeds"
+            }
+        },
+        "rtt-v6": {
+            "disabled": true,
+            "group": "v6_hosts_latency",
+            "test": "latencybg_test_v6",
+            "schedule": "repeat-PT15M",
+            "archives": [ "iu-central-archive" ],
+            "_meta": {
+                "display-name": "IPv6 Ping Between Testbeds"
+            }
+        }
+    }
+    
+}

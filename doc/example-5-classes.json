@@ -1,0 +1,110 @@
+{
+    "archives": {
+        "example-archive-central": {
+            "archiver": "esmond",
+            "data": {
+                "url": "https://archive.example/esmond/perfsonar/archive/",
+                "measurement-agent": "$requesting-agent"
+            }
+        }
+    },
+    
+    "addresses": {
+        "host-a-thr.example": { "address": "host-a-thr.example", "tags": [ "throughput" ] },
+        "host-a-lat.example": { "address": "host-a-lat.example", "tags": [ "latency" ] },
+        "host-b-thr.example": { "address": "host-b-thr.example", "tags": [ "throughput" ] },
+        "host-b-lat.example": { "address": "host-b-lat.example", "tags": [ "latency" ] },
+        "host-c-thr.example": { "address": "host-c-thr.example", "tags": [ "throughput" ] },
+        "host-c-lat.example": { "address": "host-c-lat.example", "tags": [ "latency" ] }
+    },
+        
+    "address-classes": {
+        "throughput": {
+            "data-source": { "type": "current-config" },
+            "match-filters": [
+                { "type": "tag", "tag": "throughput"}
+            ]
+        },
+        "latency": {
+            "data-source": { "type": "current-config" },
+            "match-filters": [
+                { "type": "tag", "tag": "latency"}
+            ]
+        }
+    },
+    
+    
+    "groups": {
+        "example-group-throughput": {
+            "type": "mesh",
+            "addresses": [
+                { "class": "throughput" }
+            ]
+        },
+        "example-group-latency": {
+            "type": "mesh",
+            "addresses": [
+                { "class": "latency" }
+            ]
+        }
+    },
+    
+    "tests": {
+        "example-test-throughput": {
+            "type": "throughput",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1",
+                "duration": "PT30S"
+            }
+        },
+        "example-test-latencybg": {
+            "type": "latencybg",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1"
+            }
+        },
+        "example-test-trace": {
+            "type": "trace",
+            "spec": {
+                "source": "$group::0",
+                "dest": "$group::1"
+            }
+        }
+    },
+    
+    "schedules": {
+         "example-schedule-PT4H": {
+            "repeat": "PT4H",
+            "sliprand": true,
+            "slip": "PT4H"
+        },
+        "example-schedule-PT10M": {
+            "repeat": "PT10M",
+            "sliprand": true,
+            "slip": "PT10M"
+        }
+    },
+    
+    "tasks": {
+        "example-task-throughput": {
+            "group": "example-group-throughput",
+            "test": "example-test-throughput",
+            "schedule": "example-schedule-PT4H",
+            "archives": [ "example-archive-central" ]
+        },
+        "example-task-latencybg": {
+            "group": "example-group-latency",
+            "test": "example-test-latencybg",
+            "archives": [ "example-archive-central" ]
+        },
+        "example-task-trace": {
+            "group": "example-group-latency",
+            "test": "example-test-trace",
+            "schedule": "example-schedule-PT10M",
+            "archives": [ "example-archive-central" ]
+        }
+    }
+    
+}
