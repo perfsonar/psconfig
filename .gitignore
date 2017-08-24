@@ -2,3 +2,6 @@
 .DS_Store
 # Ignore quilt cache directory
 .pc/
+# Ignore vagrant files
+.vagrant
+vagrant-data
