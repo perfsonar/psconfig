@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
   # Build up to 10 el7 machines. psconfig-el7-0 is the default that will be the primary and 
   # autostart. Subsequent machines will not autostart. Each will have a full pscheduler 
   # install and maddash-server. The souce will live under /vagrant. You can access 
-  # /etc/perfsonar in the shared directory /vagrant/vagrant/{hostname}/etc/perfsonar. 
+  # /etc/perfsonar in the shared directory /vagrant-data/vagrant/{hostname}/etc/perfsonar. 
   # Port forwarding is setup and hosts are on a private network with static IPv4 and IPv6 
   # addresses
   (0..9).each do |i|
