@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
 
-  # Build up to 9 el7 machines. psconfig-el7-1is the default that will be the primary and 
+  # Build up to 10 el7 machines. psconfig-el7-0 is the default that will be the primary and 
   # autostart. Subsequent machines will not autostart. Each will have a full pscheduler 
   # install and maddash-server. The souce will live under /vagrant. You can access 
   # /etc/perfsonar in the shared directory /vagrant/vagrant/{hostname}/etc/perfsonar. 
@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
         
         # Enable IPv6. Currently only supports setting via static IP. Address below in the
         # reserved local address range for IPv6
-        psconfig.vm.network "private_network", ip: "fdac:218a:75e5:69c8::#{i}"
+        psconfig.vm.network "private_network", ip: "fdac:218a:75e5:69c8::1#{i}"
         
         #Install all requirements and perform initial setup
         psconfig.vm.provision "shell", inline: <<-SHELL
