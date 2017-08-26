@@ -10,7 +10,7 @@ The process involves:
 1. Optionally running a script on a host running [MaDDash](http://software.es.net/maddash) to build dashboards of the tests you have defined. 
 
 
-##Getting the Code
+## Getting the Code
 You may checkout the code with the following command:
 
 ```
@@ -19,7 +19,7 @@ git clone --recursive https://github.com/perfsonar/mesh-config.git
 
 Note the use of the `--recursive` option to ensure any submodule trees are included in the clone.
 
-##Building and Installing
+## Building and Installing
 
 To install the code on your system run:
 
@@ -27,13 +27,13 @@ To install the code on your system run:
 make install
 ```
 
-##Packaging
+## Packaging
 You may create a source tarball of this code with the following:
 
 ```bash
 make dist
 ```
-##Running 
+## Running 
 
 To build a JSON file run:
 
@@ -53,7 +53,7 @@ To generate a MaDDash configuration run:
 /usr/lib/perfsonar/bin/generate_gui_configuration
 ```
 
-##Using the *shared* Submodule
+## Using the *shared* Submodule
 This repository contains a [git submodule](http://git-scm.com/book/en/v2/Git-Tools-Submodules) to the perfSONAR [shared](https://github.com/perfsonar/perl-shared) repository. This submodule is used to access common perfSONAR libraries. You will find a number of symbolic links to these modules under *lib*. The use of a submodule has a few implications when working with the code in this repository:
 
 * As previously noted, when you clone the repository for the first time, you will want to use the `--recursive` option to make sure the submodule tree is included. If you do not, any symbolic links under *lib* will be broken in your local copy. If you forget the `--recursive` option, you can pull the submodule tree with the following commands:
