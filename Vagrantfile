@@ -46,6 +46,8 @@ Vagrant.configure("2") do |config|
                 make\
                 bzip2\
                 perl\
+                perl-devel\
+                perl-ExtUtils-MakeMaker\
                 pscheduler-bundle-full\
                 GeoIP-data\
                 perl-AppConfig\
@@ -211,8 +213,8 @@ Vagrant.configure("2") do |config|
                 perl-String-CRC32\
                 perl-Task-Weaken\
                 perl-YAML
-            if ! [ -d /vagrant/vagrant/psconfig-el7-#{i}/etc/perfsonar ]; then
-                rm -rf /vagrant/vagrant/psconfig-el7-#{i}/etc/perfsonar
+            if ! [ -d /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar ]; then
+                rm -rf /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar
             fi
             if ! [ -L /etc/perfsonar ]; then
                 rm -rf /etc/perfsonar
