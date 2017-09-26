@@ -5,10 +5,10 @@
 %define script_agent perfsonar-meshconfig-agent
 %define script_guiagent perfsonar-meshconfig-guiagent
 
-%define relnum 1 
+%define relnum 0.1.b1 
 
 Name:			perfsonar-meshconfig
-Version:		4.0.1
+Version:		4.0.2
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR Mesh Configuration Agent
 License:		Distributable, see LICENSE
