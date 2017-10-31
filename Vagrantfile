@@ -118,6 +118,7 @@ Vagrant.configure("2") do |config|
                 perl-Image-Xbm\
                 perl-Image-Xpm\
                 perl-JSON\
+                perl-JSON-Validator\
                 perl-JSON-XS\
                 perl-LWP-MediaTypes\
                 perl-LWP-Protocol-https\
