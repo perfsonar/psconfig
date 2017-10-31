@@ -21,15 +21,11 @@
     "address-classes": {
         "throughput": {
             "data-source": { "type": "current-config" },
-            "match-filters": [
-                { "type": "tag", "tag": "throughput"}
-            ]
+            "match-filter": { "type": "tag", "tag": "throughput"}
         },
         "latency": {
             "data-source": { "type": "current-config" },
-            "match-filters": [
-                { "type": "tag", "tag": "latency"}
-            ]
+            "match-filter": { "type": "tag", "tag": "latency"}
         }
     },
     

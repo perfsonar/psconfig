@@ -72,6 +72,7 @@
         },
         "test-pt1.es.net": { 
             "address": "test-pt1.es.net",
+            "host": "test-pt1.es.net",
             "_meta": {
                 "display-name": "test-pt1.es.net (CentOS7, 4.0)",
                 "organization": "ESnet"
@@ -79,6 +80,7 @@
         },
         "test-owamp.es.net": { 
             "address": "test-owamp.es.net",
+            "host": "test-pt1.es.net",
             "_meta": {
                 "display-name": "test-owamp.es.net (CentOS7, 4.0)",
                 "organization": "ESnet"
@@ -86,6 +88,7 @@
         },
         "lbl-pt1.es.net": { 
             "address": "lbl-pt1.es.net",
+            "host": "lbl-pt1.es.net",
             "_meta": {
                 "display-name": "lbl-pt1.es.net (CentOS6, 4.0-production)",
                 "organization": "ESnet"
@@ -93,6 +96,7 @@
         },
         "lbl-owamp.es.net": { 
             "address": "lbl-owamp.es.net",
+            "host": "lbl-pt1.es.net",
             "_meta": {
                 "display-name": "lbl-owamp.es.net (CentOS6, 4.0-production)",
                 "organization": "ESnet"
@@ -100,6 +104,7 @@
         },
         "lbl-pt1-v6.es.net": { 
             "address": "lbl-pt1-v6.es.net",
+            "host": "lbl-pt1.es.net",
             "_meta": {
                 "display-name": "lbl-pt1-v6.es.net (CentOS6, 4.0-production)",
                 "organization": "ESnet"
@@ -107,6 +112,7 @@
         },
         "lbl-owamp-v6.es.net": { 
             "address": "lbl-owamp-v6.es.net",
+            "host": "lbl-pt1.es.net",
             "_meta": {
                 "display-name": "lbl-owamp-v6.es.net (CentOS6, 4.0-production)",
                 "organization": "ESnet"
@@ -317,12 +323,8 @@
     },
     
     "hosts": {
-        "test-pt1.es.net": {
-            "addresses": [ "test-pt1.es.net", "test-owamp.es.net" ]
-        },
-        "lbl-pt1.es.net": {
-            "addresses": [ "lbl-pt1.es.net", "lbl-owamp.es.net", "lbl-pt1-v6.es.net", "lbl-owamp-v6.es.net" ]
-        }
+        "test-pt1.es.net": {},
+        "lbl-pt1.es.net": {}
     },
     
     "tests": {

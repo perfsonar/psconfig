@@ -1,7 +1,7 @@
 {
     "archives": {
         "archive-snmp": {
-            "archive": "snmptrap",
+            "archiver": "snmptrap",
             "data": {
                 "dest": "monitor.example",
                 "security-name": "perfsonar",
