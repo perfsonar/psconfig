@@ -3,7 +3,7 @@
         "archive-snmp": {
             "archiver": "snmptrap",
             "data": {
-                "dest": "monitor.example",
+                "dest": "monitor.perfsonar.net",
                 "security-name": "perfsonar",
                 "trap-oid": "1.2.3.4.5.6.7.8"
             }   
@@ -12,18 +12,18 @@
     },
     
    "addresses": {
-        "host-a.example": { "address": "host-a.example" },
-        "host-b.example": { "address": "host-b.example" },
-        "host-c.example": { "address": "host-c.example" }
+        "host-a.perfsonar.net": { "address": "host-a.perfsonar.net" },
+        "host-b.perfsonar.net": { "address": "host-b.perfsonar.net" },
+        "host-c.perfsonar.net": { "address": "host-c.perfsonar.net" }
     },
     
     "groups": {
         "group-snmp": {
             "type": "list",
             "addresses": [
-                { "name": "host-a.example" },
-                { "name": "host-b.example" },
-                { "name": "host-c.example" }
+                { "name": "host-a.perfsonar.net" },
+                { "name": "host-b.perfsonar.net" },
+                { "name": "host-c.perfsonar.net" }
             ]
         }
     },

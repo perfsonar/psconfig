@@ -1,7 +1,7 @@
 {
     "archives": {
         "example-archive-central": {
-            "archiver": "esmond",
+            "archive": "esmond",
             "data": {
                 "url": "https://archive.perfsonar.net/esmond/perfsonar/archive/",
                 "measurement-agent": "$requesting-agent"

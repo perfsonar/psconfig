@@ -3,19 +3,19 @@
         "example-archive-central": {
             "archiver": "esmond",
             "data": {
-                "url": "https://archive.example/esmond/perfsonar/archive/",
+                "url": "https://archive.perfsonar.net/esmond/perfsonar/archive/",
                 "measurement-agent": "$requesting-agent"
             }
         }
     },
     
     "addresses": {
-        "host-a-thr.example": { "address": "host-a-thr.example", "tags": [ "throughput" ] },
-        "host-a-lat.example": { "address": "host-a-lat.example", "tags": [ "latency" ] },
-        "host-b-thr.example": { "address": "host-b-thr.example", "tags": [ "throughput" ] },
-        "host-b-lat.example": { "address": "host-b-lat.example", "tags": [ "latency" ] },
-        "host-c-thr.example": { "address": "host-c-thr.example", "tags": [ "throughput" ] },
-        "host-c-lat.example": { "address": "host-c-lat.example", "tags": [ "latency" ] }
+        "host-a-thr.perfsonar.net": { "address": "host-a-thr.perfsonar.net", "tags": [ "throughput" ] },
+        "host-a-lat.perfsonar.net": { "address": "host-a-lat.perfsonar.net", "tags": [ "latency" ] },
+        "host-b-thr.perfsonar.net": { "address": "host-b-thr.perfsonar.net", "tags": [ "throughput" ] },
+        "host-b-lat.perfsonar.net": { "address": "host-b-lat.perfsonar.net", "tags": [ "latency" ] },
+        "host-c-thr.perfsonar.net": { "address": "host-c-thr.perfsonar.net", "tags": [ "throughput" ] },
+        "host-c-lat.perfsonar.net": { "address": "host-c-lat.perfsonar.net", "tags": [ "latency" ] }
     },
         
     "address-classes": {
