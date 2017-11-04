@@ -390,7 +390,8 @@
             "type": "object",
             "properties": {
                 "default-address-label": { "type": "string" },
-                "force-bidirectional": { "type": "boolean" },
+                "flip": { "type": "boolean" },
+                "unidirectional": { "type": "boolean" },
                 "type": { 
                     "type": "string",
                     "enum": ["disjoint"]
@@ -424,7 +425,7 @@
             "type": "object",
             "properties": {
                 "default-address-label": { "type": "string" },
-                "force-bidirectional": { "type": "boolean" },
+                "flip": { "type": "boolean" },
                 "type": { 
                     "type": "string",
                     "enum": ["mesh"]
