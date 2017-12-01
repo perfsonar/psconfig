@@ -349,7 +349,6 @@
     "groups": {
         "backup-paths-pt": {
             "type": "disjoint",
-            "force-bidirectional": true,
             "default-address-label": "backup-path",
             "a-addresses": [
                 { "name": "lsvn-pt1.es.net" },
@@ -367,7 +366,6 @@
         },
         "backup-paths-owamp": {
             "type": "disjoint",
-            "force-bidirectional": true,
             "default-address-label": "backup-path",
             "a-addresses": [
                 { "name": "lsvn-owamp.es.net" },
