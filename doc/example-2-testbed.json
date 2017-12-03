@@ -4,7 +4,7 @@
             "archiver": "esmond",
             "data": {
                 "url": "https://perfsonar-testbed-ma.grnoc.iu.edu/esmond/perfsonar/archive/",
-                "measurement-agent": "$requesting-agent"
+                "measurement-agent": "{% scheduled_by_address %}"
             }
         }
     },
@@ -331,8 +331,8 @@
         "throughput_iperf3_tcp_test_v4": {
             "type": "throughput",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "duration": "PT20S",
                 "ip-version": 4
             }
@@ -340,8 +340,8 @@
         "throughput_iperf3_tcp_test_v6": {
             "type": "throughput",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "duration": "PT10S",
                 "ip-version": 6
             }
@@ -349,8 +349,8 @@
         "throughput_iperf3_udp_test_v4": {
             "type": "throughput",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "duration": "PT10S",
                 "ip-version": 4,
                 "udp": true,
@@ -361,8 +361,8 @@
         "throughput_iperf3_udp_test_v6": {
             "type": "throughput",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "duration": "PT10S",
                 "ip-version": 6,
                 "udp": true,
@@ -373,8 +373,8 @@
         "throughput_nuttcp_udp_test_v4": {
             "type": "throughput",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "duration": "PT10S",
                 "ip-version": 4,
                 "udp": true,
@@ -385,8 +385,8 @@
         "throughput_nuttcp_udp_test_v6": {
             "type": "throughput",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "duration": "PT10S",
                 "ip-version": 6,
                 "udp": true,
@@ -397,8 +397,8 @@
         "latencybg_test_v4": {
             "type": "latencybg",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "packet-timeout": "PT10S",
                 "packet-interval": 0.1,
                 "packet-count": 600,
@@ -410,8 +410,8 @@
         "latencybg_test_v6": {
             "type": "latencybg",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "packet-timeout": "PT10S",
                 "packet-interval": 0.1,
                 "packet-count": 600,
@@ -423,8 +423,8 @@
         "trace_test_v4": {
             "type": "trace",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "wait": "PT5S",
                 "sendwait": "PT30S",
                 "ip-version": 4
@@ -433,8 +433,8 @@
         "trace_test_v6": {
             "type": "trace",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "wait": "PT5S",
                 "sendwait": "PT30S",
                 "ip-version": 6
@@ -443,8 +443,8 @@
         "rtt_test_v4": {
             "type": "rtt",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "count": 10,
                 "interval": "PT1S",
                 "length": 1000,
@@ -454,8 +454,8 @@
         "rtt_test_v6": {
             "type": "rtt",
             "spec": {
-                "source": "$group::0",
-                "dest": "$group::1",
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
                 "count": 10,
                 "interval": "PT1S",
                 "length": 1000,

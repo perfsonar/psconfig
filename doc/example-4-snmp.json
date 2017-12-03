@@ -33,7 +33,7 @@
             "type": "snmpget",
             "spec": {
                 "version": 3,
-                "dest": "$group::0",
+                "dest": "{% address[0] %}",
                 "polls": 1,
                 "oid": "1.3.6.1.2.1.2.2.1.14"
             }
