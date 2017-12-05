@@ -93,7 +93,6 @@
                 "data-source": { "$ref": "#/pSConfig/AddressClassDataSourceSpecification" },
                 "match-filter": { "$ref": "#/pSConfig/AddressClassFilterSpecification" },
                 "exclude-filter": { "$ref": "#/pSConfig/AddressClassFilterSpecification" },
-                "archives": { "type": "array", "items": { "$ref": "#/pSConfig/NameType" } },
                 "_meta": { "$ref": "#/pSConfig/AnyJSON" }
             },
             "additionalProperties": false,
