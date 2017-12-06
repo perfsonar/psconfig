@@ -34,6 +34,9 @@ use perfSONAR_PS::Client::PScheduler::Task;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 use perfSONAR_PS::Utils::Host qw(get_interface_addresses_by_type);
 
+use perfSONAR_PS::Client::PSConfig::ApiConnect;
+use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
+
 # set the process name
 $0 = "perfsonar_meshconfig_agent.pl";
 
@@ -268,176 +271,155 @@ while(1){
         }
     }
     
-    ##
-    # Check remote test definitions
+    #init start time
     my $start = time;
-    eval{
-        my $agent = perfSONAR_PS::MeshConfig::Agent->new();
-        $agent->init({
-                     meshes => $conf{mesh},
-                     tasks_conf => $tasks_conf_file,
-                     validate_certificate => $conf{validate_certificate},
-                     ca_certificate_file => $conf{ca_certificate_file},
-                     ca_certificate_path => $conf{ca_certificate_path},
-                     configure_archives   => $conf{configure_archives},  
-                     skip_redundant_tests => $conf{skip_redundant_tests},
-                     addresses => $addresses,
-                     requesting_agent_config => $conf{local_host},
-                     from_address => $conf{from_address},
-                     administrator_emails => $conf{administrator_emails},
-                     send_error_emails    => $conf{send_error_emails},
-        });
-        $agent->run();
-        $inotify->poll(); #clear out any events caused by changes from above
-    };
-    if($@){
-        $logger->error("Problem reading remote meshes: $@");
-    }
     
-    ##
-    # Load tasks_conf and interact with pScheduler
+#    ##
+#    # Check remote test definitions
+#     eval{
+#         my $agent = perfSONAR_PS::MeshConfig::Agent->new();
+#         $agent->init({
+#                      meshes => $conf{mesh},
+#                      tasks_conf => $tasks_conf_file,
+#                      validate_certificate => $conf{validate_certificate},
+#                      ca_certificate_file => $conf{ca_certificate_file},
+#                      ca_certificate_path => $conf{ca_certificate_path},
+#                      configure_archives   => $conf{configure_archives},  
+#                      skip_redundant_tests => $conf{skip_redundant_tests},
+#                      addresses => $addresses,
+#                      requesting_agent_config => $conf{local_host},
+#                      from_address => $conf{from_address},
+#                      administrator_emails => $conf{administrator_emails},
+#                      send_error_emails    => $conf{send_error_emails},
+#         });
+#         $agent->run();
+#         $inotify->poll(); #clear out any events caused by changes from above
+#     };
+#     if($@){
+#         $logger->error("Problem reading remote meshes: $@");
+#     }
     
-    #parse into hash
-    my $parsed_config;
-    my ($status, $res);
-    eval{
-        ($status, $res) = parse_file(file => $tasks_conf_file);
-    };
-    if($@){
-        #probably shouldn't happen, but just in case
-        $logger->error("Error reading tasks configuration file: $@");
-    }elsif ($status != 0) {
-        #errors should be here
-        $logger->error("Problem reading tasks configuration file: $res");
-    }else{    
-        #able to read file, parse into objects
-        eval {
-            $parsed_config = perfSONAR_PS::RegularTesting::Config->parse($res, 1);
-        };
-        if ($@) {
-            $logger->error("Problem parsing tasks configuration file: $@");
-        }
-    }
+    
+    
     
     
     #initialize our timing variables
     my $end = time;
     my $until_next_refresh = $conf{"check_interval"} - ($end - $start);
     $start = $end;
-    #if we were able to read the file, do stuff with it
-    if($parsed_config){
-        #get global measurement archives
-        my %ma_map = ();
-        foreach my $ma(@{ $parsed_config->measurement_archives }){
-            $ma_map{$ma->type()} = [] unless($ma_map{$ma->type()});
-            eval {
-                push @{$ma_map{$ma->type()}}, $ma;
-            };
-            if($@){
-                $logger->error("Problem parsing measurement archive: $@");
-            }
+    #build tests
+    my $old_task_deadline = $end + $until_next_refresh;
+    my $task_manager;        
+    eval{
+        $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
+        $task_manager->init(
+                            pscheduler_url => $conf{pscheduler_url},
+                            tracker_file => $conf{pscheduler_tracker_file},
+                            client_uuid_file => $conf{client_uuid_file},
+                            user_agent => "perfsonar-meshconfig",
+                            new_task_min_ttl => $conf{"task_min_ttl"},
+                            new_task_min_runs => $conf{"task_min_runs"},
+                            old_task_deadline => $old_task_deadline,
+                            task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
+                            bind_map => {},#\%bind_map,
+                            lead_address_map => {},#\%pscheduler_addr_map,
+                            debug => $DEBUGFLAG
+                        );
+    };
+    if($@){
+        $logger->error("Problem initializing task_manager: $@");
+    }elsif(!$task_manager->check_assist_server()){
+        $logger->error("Problem contacting pScheduler, will try again later.");
+        $pscheduler_fails++;
+    }else{
+        $logger->info("pScheduler is back up, resuming normal operation") if($pscheduler_fails);
+        $pscheduler_fails = 0;
+        
+        my $match_addresses = &get_addresses();
+        foreach my $match_address(@{$match_addresses}){
+            print "Match Address: $match_address\n";
         }
         
-        #get global bind addresses
-        my %bind_map = ();
-        foreach my $bind_address(@{ $parsed_config->bind_addresses }){
-            if($bind_address->remote_address && $bind_address->bind_address){
-                $bind_map{$bind_address->remote_address} = $bind_address->bind_address;
-            }elsif($bind_address->bind_address){
-                $bind_map{'_default'} = $bind_address->bind_address;
-            }
-        }
+        foreach my $mesh(@{$conf{mesh}}) {
+            my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
+                url => $mesh->{configuration_url}
+            );
         
-        #get global local lead bind addresses
-        my %lead_bind_map = ();
-        foreach my $lead_bind_address(@{ $parsed_config->local_lead_bind_addresses }){
-            if($lead_bind_address->remote_address && $lead_bind_address->bind_address){
-                $lead_bind_map{$lead_bind_address->remote_address} = $lead_bind_address->bind_address;
-            }elsif($lead_bind_address->bind_address){
-                $lead_bind_map{'_default'} = $lead_bind_address->bind_address;
+            #get config
+            my $psconfig = $psconfig_client->get_config();
+            if($psconfig_client->error()){
+                print $psconfig_client->error() . "\n";
+                next;
+            } 
+            print $psconfig->json() . "\n";
+            
+            #validate
+            my @errors = $psconfig->validate();
+            if(@errors){
+                foreach my $error(@errors){
+                    print "Error: " . $error->message . "\n";
+                    print "Path: " . $error->path . "\n\n";
+                }
+                print "Invalid JSON (pre-expansion)\n";
+                next;
             }
-        }
-        #get global settings for local pscheduler addresses that should be used in multi-participant tests
-        my %local_pscheduler_addr_map = ();
-        foreach my $local_pscheduler_address(@{ $parsed_config->local_pscheduler_addresses }){
-            if($local_pscheduler_address->remote_address && $local_pscheduler_address->pscheduler_address){
-                $local_pscheduler_addr_map{$local_pscheduler_address->remote_address} = $local_pscheduler_address->pscheduler_address;
-            }elsif($local_pscheduler_address->pscheduler_address){
-                $local_pscheduler_addr_map{'_default'} = $local_pscheduler_address->pscheduler_address;
-            }
-        }
         
-        #get global settings for remote pscheduler addresses that should be used in multi-participant tests
-        my %pscheduler_addr_map = ();
-        foreach my $pscheduler_address(@{ $parsed_config->pscheduler_addresses }){
-            if($pscheduler_address->remote_address && $pscheduler_address->pscheduler_address){
-                $pscheduler_addr_map{$pscheduler_address->remote_address} = $pscheduler_address->pscheduler_address;
-            }elsif($pscheduler_address->pscheduler_address){
-                $logger->warn("Cannot specify 'pscheduler_address' withough a remote_address. Ignoring 'pscheduler_address " . $pscheduler_address->pscheduler_address . "'");
+            #expand
+            $psconfig_client->expand_config($psconfig);
+            if($psconfig_client->error()){
+                print $psconfig_client->error() . "\n";
+                next;
+            }
+        
+            #validate
+            @errors = $psconfig->validate();
+            if(@errors){
+                foreach my $error(@errors){
+                    print "Error: " . $error->message . "\n";
+                    print "Path: " . $error->path . "\n\n";
+                }
+                print "Invalid JSON (post-expansion)\n";
+                next;
+            }
+        
+            #walk through tasks
+            foreach my $task_name(@{$psconfig->task_names()}){
+                print "Task Name: $task_name\n";
+                my $tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
+                    psconfig => $psconfig,
+                    pscheduler_url => $conf{pscheduler_url},
+                    task_name => $task_name,
+                    match_addresses => $match_addresses
+                );
+                $tg->start() or die($tg->error());
+                my @pair;
+                while(@pair = $tg->next()){
+                    my $psc_task = $tg->pscheduler_task();
+                    unless($psc_task){
+                        print "Error converting task to pscheduler: " . $tg->error() . "\n";
+                        next;
+                    }
+                    $task_manager->add_task(task => $psc_task);
+                }
+                $tg->stop();
             }
         }
 
-        #build tests
-        my $old_task_deadline = $end + $until_next_refresh;
-        my $task_manager;        
-        eval{
-            $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
-            $task_manager->init(
-                                pscheduler_url => $conf{pscheduler_url},
-                                tracker_file => $conf{pscheduler_tracker_file},
-                                client_uuid_file => $conf{client_uuid_file},
-                                user_agent => "perfsonar-meshconfig",
-                                new_task_min_ttl => $conf{"task_min_ttl"},
-                                new_task_min_runs => $conf{"task_min_runs"},
-                                old_task_deadline => $old_task_deadline,
-                                task_renewal_fudge_factor => $conf{"task_renewal_fudge_factor"},
-                                bind_map => \%bind_map,
-                                lead_address_map => \%pscheduler_addr_map,
-                                debug => $DEBUGFLAG
-                            );
-        };
-        if($@){
-            $logger->error("Problem initializing task_manager: $@");
-        }elsif(!$task_manager->check_assist_server()){
-            $logger->error("Problem contacting pScheduler, will try again later.");
-            $pscheduler_fails++;
-        }else{
-            $logger->info("pScheduler is back up, resuming normal operation") if($pscheduler_fails);
-            $pscheduler_fails = 0;
-            foreach my $test (@{ $parsed_config->tests }) {
-                next if $test->disabled;
-                eval{
-                    $test->parameters()->to_pscheduler( url => $conf{pscheduler_url}, 
-                            test => $test, 
-                            task_manager => $task_manager, 
-                            archive_map => \%ma_map, 
-                            global_bind_map => \%bind_map, 
-                            global_lead_bind_map => \%lead_bind_map, 
-                            global_local_lead_addr_map => \%local_pscheduler_addr_map, 
-                            global_lead_addr_map => \%pscheduler_addr_map,
-                        );
-                };
-                if($@){
-                    $logger->error("Error building pScheduler task: " . $@);
-                }
-            }
-    
-            #commit tasks
-            $task_manager->commit();
-            
-            #Log results
-            foreach my $error(@{$task_manager->errors()}){
-               $logger->warn($error);
-            }
-            foreach my $deleted_task(@{$task_manager->deleted_tasks()}){
-               $logger->debug("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url);
-            }
-            foreach my $added_task(@{$task_manager->added_tasks()}){
-               $logger->debug("Created task " . $added_task->uuid . " on server " . $added_task->url);
-            }
-            if(@{$task_manager->added_tasks()} || @{$task_manager->deleted_tasks()}){
-                $logger->info("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks");
-            }
+        #commit tasks
+        $task_manager->commit();
+        
+        #Log results
+        foreach my $error(@{$task_manager->errors()}){
+           $logger->warn($error);
+        }
+        foreach my $deleted_task(@{$task_manager->deleted_tasks()}){
+           $logger->debug("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url);
+        }
+        foreach my $added_task(@{$task_manager->added_tasks()}){
+           $logger->debug("Created task " . $added_task->uuid . " on server " . $added_task->url);
+        }
+        if(@{$task_manager->added_tasks()} || @{$task_manager->deleted_tasks()}){
+            $logger->info("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks");
         }
     }
 
@@ -464,3 +446,47 @@ while(1){
 }
 
 exit(0);
+
+use perfSONAR_PS::Utils::Host qw(get_ips);
+use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
+use Data::Validate::Domain qw(is_hostname);
+use Data::Validate::IP qw(is_ipv4 is_ipv6);
+
+
+sub get_addresses {
+    my $hostname = `hostname -f 2> /dev/null`;
+    chomp($hostname);
+
+    my @ips = get_ips();
+
+    my %ret_addresses = ();
+
+    my @all_addressses = ();
+    @all_addressses = @ips;
+    push @all_addressses, $hostname if ($hostname);
+
+    foreach my $address (@all_addressses) {
+        next if ($ret_addresses{$address});
+
+        $ret_addresses{$address} = 1;
+
+        if ( is_ipv4( $address ) or 
+             is_ipv6( $address ) ) {
+            my @hostnames = reverse_dns($address);
+
+            push @all_addressses, @hostnames;
+        }
+        elsif ( is_hostname( $address ) ) {
+            my $hostname = $address;
+
+            my @addresses = resolve_address($hostname);
+
+            push @all_addressses, @addresses;
+        }
+    }
+
+    my @ret_addresses = keys %ret_addresses;
+
+    return \@ret_addresses;
+}
+
