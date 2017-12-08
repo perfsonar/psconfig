@@ -1,0 +1,1 @@
+../shared/t/client-psconfig-circuits.t
