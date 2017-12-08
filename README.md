@@ -1,12 +1,11 @@
-# perfSONAR Mesh Config
+# pSConfig
 
-The Mesh Config software is a framework for centrally configuring tests. It is designed to make managing a large set of testers (possibly distributed across multiple organizations) easier than managing each by hand. 
+The pSConfig software is a framework for centrally configuring tests. It is designed to make managing a large set of testers (possibly distributed across multiple organizations) easier than managing each by hand. 
 The process involves:
 
-1. Building a configuration file that defines the tests you want run between a set of hosts
-1. Running a script to convert the file to JSON
+1. Building a JSON file that defines the tests you want run between a set of hosts
 1. Publishing the JSON file to a web server
-1. Running a script on each endpoint to read the JSON file from the web server and decide which tests to run
+1. Running an agent on each endpoint to read the JSON file from the web server and decide which tests to run
 1. Optionally running a script on a host running [MaDDash](http://software.es.net/maddash) to build dashboards of the tests you have defined. 
 
 
@@ -14,7 +13,7 @@ The process involves:
 You may checkout the code with the following command:
 
 ```
-git clone --recursive https://github.com/perfsonar/mesh-config.git
+git clone --recursive https://github.com/perfsonar/psconfig.git
 ```
 
 Note the use of the `--recursive` option to ensure any submodule trees are included in the clone.
@@ -32,25 +31,6 @@ You may create a source tarball of this code with the following:
 
 ```bash
 make dist
-```
-## Running 
-
-To build a JSON file run:
-
-```bash
-/usr/lib/perfsonar/bin/build_json --input <path-to-config-file> --output <path-to-json-output-file>
-```
-
-To generate a test configuration run:
-
-```bash
-/usr/lib/perfsonar/bin/generate_configuration
-```
-
-To generate a MaDDash configuration run: 
-
-```bash
-/usr/lib/perfsonar/bin/generate_gui_configuration
 ```
 
 ## Using the *shared* Submodule

@@ -5,14 +5,14 @@ use warnings;
 
 =head1 NAME
 
-perfsonar_meshconfig_agent.pl - Cooridnates various test definitions and manages them in
+psconfig_pscheduler_agent - Cooridnates various test definitions and manages them in
 pScheduler
 
 =head1 DESCRIPTION
 
 This daemon does the following:
-    * Reads test definitions from a local file on disk
-    * Reads remote test definitions and combines them with any remote definitions
+    * Reads test definitions from an include directory
+    * Reads remote test definitions and combines with local settings
     * Manages creation, deletion and maintenance all test definitions in pScheduler
 =cut
 
@@ -22,23 +22,18 @@ use lib "$Bin/../lib";
 use Data::Validate::IP qw(is_ipv4);
 use Data::Validate::Domain qw(is_hostname);
 use Getopt::Long;
-use Config::General;
 use Linux::Inotify2;
 use Log::Log4perl qw/:easy/;
 
-use perfSONAR_PS::MeshConfig::Agent;
-use perfSONAR_PS::RegularTesting::Config;
-use perfSONAR_PS::RegularTesting::Utils::ConfigFile qw(parse_file);
 use perfSONAR_PS::Client::PScheduler::TaskManager;
 use perfSONAR_PS::Client::PScheduler::Task;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
-use perfSONAR_PS::Utils::Host qw(get_interface_addresses_by_type);
 
 use perfSONAR_PS::Client::PSConfig::ApiConnect;
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 
 # set the process name
-$0 = "perfsonar_meshconfig_agent.pl";
+$0 = "psconfig_pscheduler_agent";
 
 my $CONFIG_FILE;
 my $LOGOUTPUT;
@@ -48,7 +43,6 @@ my $DEBUGFLAG;
 my $HELP;
 my $RUNAS_USER;
 my $RUNAS_GROUP;
-my $DEFAULT_TASKS_FILE = '/etc/perfsonar/meshconfig-agent-tasks.conf';
 
 my ( $status, $res );
 
@@ -75,7 +69,7 @@ if ( not $PIDFILE ) {
 }
 
 if ( not $PIDFILE ) {
-    $PIDFILE = "/var/run/perfsonar-meshconfig-agent.pid";
+    $PIDFILE = "/var/run/psconfig-pscheduler-agent.pid";
 }
 
 ( $status, $res ) = lockPIDFile( $PIDFILE );
@@ -204,7 +198,7 @@ while(1){
     }
     
     unless ($conf{"client_uuid_file"}) {
-        my $default = "/var/lib/perfsonar/meshconfig/client_uuid";
+        my $default = "/var/lib/perfsonar/psconfig/client_uuid";
         $logger->debug( "No client UUID file specified. Defaulting to $default" );
         $conf{"client_uuid_file"} = $default;
     }
@@ -216,7 +210,7 @@ while(1){
     }
     
     unless ($conf{"pscheduler_tracker_file"}) {
-        my $default = "/var/lib/perfsonar/meshconfig/psc_tracker";
+        my $default = "/var/lib/perfsonar/psconfig/psc_tracker";
         $logger->debug( "No pScheduler tracker file specified. Defaulting to $default" );
         $conf{"pscheduler_tracker_file"} = $default;
     }
@@ -316,7 +310,7 @@ while(1){
                             pscheduler_url => $conf{pscheduler_url},
                             tracker_file => $conf{pscheduler_tracker_file},
                             client_uuid_file => $conf{client_uuid_file},
-                            user_agent => "perfsonar-meshconfig",
+                            user_agent => "psconfig-pscheduler-agent",
                             new_task_min_ttl => $conf{"task_min_ttl"},
                             new_task_min_runs => $conf{"task_min_runs"},
                             old_task_deadline => $old_task_deadline,

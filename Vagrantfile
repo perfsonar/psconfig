@@ -226,10 +226,10 @@ Vagrant.configure("2") do |config|
       end
   end
   
-  # Runs on all hosts before they are provisioned. Inits /var/lib/perfsonar/meshconfig
+  # Runs on all hosts before they are provisioned. Inits /var/lib/psconfig
   # and creates a perfsonar user/group
   config.vm.provision "shell", inline: <<-SHELL
-    mkdir -p /var/lib/perfsonar/meshconfig
+    mkdir -p /var/lib/perfsonar/psconfig
     /usr/sbin/groupadd perfsonar 2> /dev/null || :
     /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
   SHELL

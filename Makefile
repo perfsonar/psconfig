@@ -1,8 +1,8 @@
-PACKAGE=perfsonar-meshconfig
+PACKAGE=perfsonar-psconfig
 ROOTPATH=/usr/lib/perfsonar
-CONFIGPATH=/etc/perfsonar
-VERSION=4.0.2
-RELEASE=0.1.b1
+CONFIGPATH=/etc/perfsonar/psconfig
+VERSION=4.1
+RELEASE=0.1.a1
 
 default:
 	@echo No need to build the package. Just run \"make install\"
@@ -19,8 +19,10 @@ dist:
 
 install:
 	mkdir -p ${ROOTPATH}
+	mkdir -p ${CONFIGPATH}/pscheduler.d
+	mkdir -p ${CONFIGPATH}/maddash.d
+	mkdir -p ${CONFIGPATH}/archives.d
 	tar ch --exclude=etc/* --exclude=*spec --exclude=dependencies --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
-	sed -i 's:.RealBin/\.\./etc:/etc/perfsonar:g' ${ROOTPATH}/bin/*
 	for i in `cat MANIFEST | grep ^etc/ | sed "s/^etc\///"`; do  mkdir -p `dirname $(CONFIGPATH)/$${i}`; if [ -e $(CONFIGPATH)/$${i} ]; then install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}.new; else install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}; fi; done
 
 test:

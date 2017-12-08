@@ -1,3 +1,0 @@
-MAILTO=root
-# change the --input and --output file paths as needed for your system
-0 1 * * * root /usr/lib/perfsonar/bin/lookup_hosts --input /etc/perfsonar/meshconfig-lookuphosts.conf --output /var/www/html/dynamic_host_list.json

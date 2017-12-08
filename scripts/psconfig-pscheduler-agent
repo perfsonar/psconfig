@@ -1,0 +1,98 @@
+#!/bin/bash
+#
+# Init file for pSConfig pScheduler Agent Daemon
+#
+# chkconfig: 2345 92 20
+# description: pSConfig pScheduler Agent Daemon
+#
+
+PREFIX=/usr/lib/perfsonar
+BINDIR=${PREFIX}/bin
+CONFDIR=/etc/perfsonar/psconfig
+RUNDIR=/var/run
+
+CONFFILE=${CONFDIR}/pscheduler-agent.conf
+LOGGERFILE=${CONFDIR}/pscheduler-agent-logger.conf
+PIDFILE=${RUNDIR}/psconfig-pscheduler-agent.pid
+
+USER=perfsonar
+GROUP=perfsonar
+
+PERFSONAR="${BINDIR}/psconfig_pscheduler_agent --config=${CONFFILE} --pidfile=${PIDFILE} --logger=${LOGGERFILE} --user=${USER} --group=${GROUP}"
+
+ERROR=0
+ARGV="$@"
+if [ "x$ARGV" = "x" ] ; then 
+    ARGS="help"
+fi
+
+for ARG in $@ $ARGS
+do
+    # check for pidfile
+    if [ -f $PIDFILE ] ; then
+        PID=`cat $PIDFILE`
+        if [ "x$PID" != "x" ] && kill -0 $PID 2>/dev/null ; then
+            STATUS="pSConfig pScheduler Agent (pid $PID) running"
+            RUNNING=1
+        else
+            STATUS="pSConfig pScheduler Agent (pid $PID?) not running"
+            RUNNING=0
+        fi
+    else
+        STATUS="pSConfig pScheduler Agent (no pid file) not running"
+        RUNNING=0
+    fi 
+
+    case $ARG in
+    start)
+	echo $PERFSONAR
+
+	if $PERFSONAR ; then
+	    echo "$0 $ARG: pSConfig pScheduler Agent started"
+	    touch /var/lock/subsys/psconfig-pscheduler-agent
+        ERROR=0
+	else
+	    echo "$0 $ARG: pSConfig pScheduler Agent could not be started"
+	    ERROR=3
+	fi
+	;;
+    stop)
+	if [ $RUNNING -eq 0 ]; then
+	    echo "$0 $ARG: $STATUS"
+	    continue
+	fi
+	if kill $PID ; then
+	    echo "$0 $ARG: pSConfig pScheduler Agent stopped"
+	    rm /var/lock/subsys/psconfig-pscheduler-agent
+	else
+	    echo "$0 $ARG: pSConfig pScheduler Agent could not be stopped"
+	    ERROR=4
+	fi
+	;;
+    restart)
+    	$0 stop; echo "waiting..."; sleep 10; $0 start;
+	;;
+    status)
+	    echo $STATUS
+	    [ $RUNNING -eq 0 ] && ERROR=3
+	;;
+    *)
+	echo "usage: $0 (start|stop|restart|help)"
+	cat <<EOF
+
+start      - start pSConfig pScheduler Agent
+stop       - stop pSConfig pScheduler Agent
+restart    - restart pSConfig pScheduler Agent if running by sending a SIGHUP or start if 
+             not running
+status     - Indicates if the service is running
+help       - this screen
+
+EOF
+	ERROR=2
+    ;;
+
+    esac
+
+done
+
+exit $ERROR
