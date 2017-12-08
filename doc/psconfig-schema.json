@@ -4,6 +4,7 @@
     "title": "pSConfig Schema",
     "description": "Schema for pSConfig test configuration files",
     "type": "object",
+    "additionalProperties": false,
     "required": [ "addresses", "groups", "tests", "tasks" ],
     "properties": {
         
