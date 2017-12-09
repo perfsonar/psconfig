@@ -30,11 +30,6 @@
             "description": "List of IP addresses and/or hostnames to use when determining which tests this agent should configure. Default is all the addresses found on interfaces on this host."
         },
         
-        "allow-private-match-addresses": {
-            "type": "boolean",
-            "description": "If true than will use an match-addresses in the private IP range. If false, will ignore those addresses. Default is true."
-        },
-        
         "include-directory": {
             "type": "string",
             "description": "Directory with local pSConfig files to be processed. Default is /etc/psconfig/pscheduler.d"

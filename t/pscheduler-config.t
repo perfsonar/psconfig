@@ -55,7 +55,6 @@ is($pscconfig->add_match_address('&1'), undef);
 ok($pscconfig->add_match_address("fe80::1"), "fe80::1");
 is(@{$pscconfig->match_addresses()}, 2);
 is($pscconfig->match_address(1), "fe80::1");
-is($pscconfig->allow_private_match_addresses(1), 1);
 is($pscconfig->include_directory('/etc/psconfig/pscheduler.d'), '/etc/psconfig/pscheduler.d');
 is($pscconfig->archive_directory('/etc/psconfig/archives.d'), '/etc/psconfig/archives.d');
 is($pscconfig->requesting_agent_file('/etc/psconfig/requesting_agent.json'), '/etc/psconfig/requesting_agent.json');
