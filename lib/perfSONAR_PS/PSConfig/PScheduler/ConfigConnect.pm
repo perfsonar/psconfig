@@ -2,7 +2,7 @@ package perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 
 =head1 NAME
 
-perfSONAR_PS::Client::PSConfig::ConfigConnect - A client for interacting pSConfig pScheduler agent configuration file
+perfSONAR_PS::PSConfig::PScheduler::ConfigConnect - A client for interacting pSConfig pScheduler agent configuration file
 
 =head1 DESCRIPTION
 

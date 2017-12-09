@@ -22,7 +22,9 @@ use perfSONAR_PS::Client::PScheduler::TaskManager;
 use perfSONAR_PS::Client::PScheduler::Task;
 use perfSONAR_PS::Client::PSConfig::ApiConnect;
 use perfSONAR_PS::Client::PSConfig::ApiFilters;
+use perfSONAR_PS::Client::PSConfig::Archive;
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
+use perfSONAR_PS::PSConfig::ArchiveConnect;
 use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::PScheduler::Config;
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
@@ -35,6 +37,7 @@ has 'config_file' => (is => 'rw', isa => 'Str');
 has 'include_directory' => (is => 'rw', isa => 'Str');
 has 'archive_directory' => (is => 'rw', isa => 'Str');
 has 'config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::PScheduler::Config');
+has 'default_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::Archive]', default => sub { [] });
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
 has 'check_config_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 60 });
 has 'pscheduler_fails' => (is => 'rw', isa => 'Int', default => sub { 0 });
@@ -199,9 +202,7 @@ sub run {
         $logger->debug("Match Address: $match_address");
     }
     $self->match_addresses($match_addresses);
-
-#     #todo: handle default archives and configure_archives -probably need a $self->default_archives()
-#     
+    
 #     #todo: handle requesting agent  -probably need a $self->requesting_agent()
 #     
 #     #todo handle jq
@@ -242,6 +243,36 @@ sub run {
         $self->pscheduler_fails(0);
         
         ##
+        # Process default archives directory
+        #todo: make sure we handle this die correctly
+        opendir(ARCHIVE_FILES,  $self->archive_directory()) or die "Could not open " . $self->archive_directory();
+        while (my $archive_file = readdir(ARCHIVE_FILES)) {
+            next unless($archive_file =~ /\.json$/);
+            my $abs_file = $self->archive_directory() . "/$archive_file";
+            $logger->debug("Loading include file $abs_file");
+            my $archive_client = new perfSONAR_PS::PSConfig::ArchiveConnect(url => $abs_file);
+            my $archive = $archive_client->get_config();
+            if($archive_client->error()){
+                print STDERR $archive_client->error() . "\n";
+                next;
+            } 
+            #validate
+            my @errors = $archive->validate();
+            if(@errors){
+                print STDERR "Invalid default archive specification from file $abs_file:\n\n";
+                foreach my $error(@errors){
+                    my $path = $error->path;
+                    $path =~ s/^\/archives//; #makes prettier error message
+                    print STDERR "   Error: " . $error->message . "\n";
+                    print STDERR "   Path: " . $path . "\n\n";
+                }
+                next;
+            }
+
+            push @{$self->default_archives()}, $archive;
+        }
+        
+        ##
         # Process remotes
         foreach my $remote(@{$agent_conf->remotes()}){
             #create api filters 
@@ -256,7 +287,8 @@ sub run {
                 filters =>  $filters
             );
             #process tasks
-            $self->_process_tasks($psconfig_client, $task_manager);
+            my $configure_archives = $remote->configure_archives() ? 1 : 0; #makesure defined
+            $self->_process_tasks($psconfig_client, $task_manager, $configure_archives);
         }
         
         ##
@@ -272,7 +304,7 @@ sub run {
                 url => $abs_file
             );
             #process tasks
-            $self->_process_tasks($psconfig_client, $task_manager);
+            $self->_process_tasks($psconfig_client, $task_manager, 1);
         }
         
         ##
@@ -376,7 +408,7 @@ sub _build_pscheduler_url {
 }
 
 sub _process_tasks {
-    my ($self, $psconfig_client, $task_manager) = @_;
+    my ($self, $psconfig_client, $task_manager, $configure_archives) = @_;
     
     #get config
     my $psconfig = $psconfig_client->get_config();
@@ -422,7 +454,9 @@ sub _process_tasks {
             psconfig => $psconfig,
             pscheduler_url => $self->pscheduler_url(),
             task_name => $task_name,
-            match_addresses => $self->match_addresses()
+            match_addresses => $self->match_addresses(),
+            default_archives => $self->default_archives(),
+            use_psconfig_archives => $configure_archives
         );
         $tg->start() or die($tg->error());
         my @pair;
