@@ -149,11 +149,13 @@ $agent->init($CONFIG_FILE);
 
 ##########
 # Setup Inotify2 on config files and directories
+# NOTE: These do not work in /vagrant directory on vagrant VM or the /etc/perfsonar/psconfig symlink
+#   If you need to test, set config to something outside of /vagrant shared directory.
 my $inotify = new Linux::Inotify2 or die "Unable to create new inotify object: $!" ;
 $inotify->blocking(0);
 $inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation failed" ;
-$inotify->watch($agent->config()->include_directory(), IN_MODIFY) or die $agent->config()->include_directory() . " watcher creation failed" ;
-$inotify->watch($agent->config()->archive_directory(), IN_MODIFY) or die $agent->config()->archive_directory() . " watcher creation failed" ;
+$inotify->watch($agent->include_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->include_directory() . " watcher creation failed" ;
+$inotify->watch($agent->archive_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->archive_directory() . " watcher creation failed" ;
 
 ##
 # Start main program loop

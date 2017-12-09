@@ -32,6 +32,8 @@ use perfSONAR_PS::Utils::ISO8601 qw/duration_to_seconds/;
 our $VERSION = 4.1;
 
 has 'config_file' => (is => 'rw', isa => 'Str');
+has 'include_directory' => (is => 'rw', isa => 'Str');
+has 'archive_directory' => (is => 'rw', isa => 'Str');
 has 'config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::PScheduler::Config');
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
 has 'check_config_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 60 });
@@ -68,13 +70,17 @@ sub init {
 
     ##
     # Grab properties and set defaults
-    unless($agent_conf->include_directory()) {
+    if($agent_conf->include_directory()) {
+        $self->include_directory($agent_conf->include_directory());
+    }else{
         $logger->debug("No include directory specified. Defaulting to $DEFAULT_INCLUDE_DIR");
-        $agent_conf->include_directory($DEFAULT_INCLUDE_DIR);
+        $self->include_directory($DEFAULT_INCLUDE_DIR);
     }
-    unless($agent_conf->archive_directory()) {
+    if($agent_conf->archive_directory()) {
+        $self->archive_directory($agent_conf->archive_directory());
+    }else{
         $logger->debug("No archives directory specified. Defaulting to $DEFAULT_ARCHIVES_DIR");
-        $agent_conf->archive_directory($DEFAULT_ARCHIVES_DIR);
+        $self->archive_directory($DEFAULT_ARCHIVES_DIR);
     }
     
     ##
@@ -194,8 +200,6 @@ sub run {
     }
     $self->match_addresses($match_addresses);
 
-#     #todo: handle includes
-#     
 #     #todo: handle default archives and configure_archives -probably need a $self->default_archives()
 #     
 #     #todo: handle requesting agent  -probably need a $self->requesting_agent()
@@ -205,6 +209,8 @@ sub run {
 #     #todo: check binding options - even when downloading meshes
 #      
 #     #todo: make sure timeouts are set correctly
+#
+#     #todo: make sure i am happy with error reporting
 #    
     ##
     #Init the TaskManager
@@ -244,13 +250,27 @@ sub run {
                 ca_certificate_path => $remote->ssl_ca_path(),
                 verify_hostname => $remote->ssl_validate_certificate(),
             );
-              
             #create client
             my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
                 url => $remote->url(),
                 filters =>  $filters
             );
-            
+            #process tasks
+            $self->_process_tasks($psconfig_client, $task_manager);
+        }
+        
+        ##
+        # Process include directory
+        #todo: make sure we handle this die correctly
+        opendir(INCLUDE_FILES,  $self->include_directory()) or die "Could not open " . $self->include_directory();
+        while (my $include_file = readdir(INCLUDE_FILES)) {
+            next unless($include_file =~ /\.json$/);
+            my $abs_file = $self->include_directory() . "/$include_file";
+            $logger->debug("Loading include file $abs_file");
+            #create client
+            my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
+                url => $abs_file
+            );
             #process tasks
             $self->_process_tasks($psconfig_client, $task_manager);
         }
