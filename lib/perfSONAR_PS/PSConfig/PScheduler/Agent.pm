@@ -27,6 +27,7 @@ use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 use perfSONAR_PS::PSConfig::ArchiveConnect;
 use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::PScheduler::Config;
+use perfSONAR_PS::PSConfig::RequestingAgentConnect;
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 use perfSONAR_PS::Utils::ISO8601 qw/duration_to_seconds/;
@@ -36,6 +37,7 @@ our $VERSION = 4.1;
 has 'config_file' => (is => 'rw', isa => 'Str');
 has 'include_directory' => (is => 'rw', isa => 'Str');
 has 'archive_directory' => (is => 'rw', isa => 'Str');
+has 'requesting_agent_file' => (is => 'rw', isa => 'Str');
 has 'config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::PScheduler::Config');
 has 'default_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::Archive]', default => sub { [] });
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
@@ -44,6 +46,7 @@ has 'pscheduler_fails' => (is => 'rw', isa => 'Int', default => sub { 0 });
 has 'max_pscheduler_attempts' => (is => 'rw', isa => 'Int', default => sub { 5 });
 has 'pscheduler_url' => (is => 'rw', isa => 'Str');
 has 'match_addresses' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
+has 'requesting_agent_addresses' => (is => 'rw', isa => 'HashRef');
 has 'debug' => (is => 'rw', isa => 'Bool', default => sub { 0 });
 has 'error' => (is => 'ro', isa => 'Str', writer => '_set_error');
 
@@ -61,7 +64,8 @@ sub init {
     my $CONFIG_DIR = dirname($config_file);
     my $DEFAULT_INCLUDE_DIR = "${CONFIG_DIR}/pscheduler.d";
     my $DEFAULT_ARCHIVES_DIR = "${CONFIG_DIR}/archives.d";
-
+    my $DEFAULT_RA_FILE = "${CONFIG_DIR}/requesting-agent.json";
+    
     ##
     #Load configuration file
     my $agent_conf;
@@ -73,17 +77,23 @@ sub init {
 
     ##
     # Grab properties and set defaults
-    if($agent_conf->include_directory()) {
+    if($agent_conf->include_directory()){
         $self->include_directory($agent_conf->include_directory());
     }else{
         $logger->debug("No include directory specified. Defaulting to $DEFAULT_INCLUDE_DIR");
         $self->include_directory($DEFAULT_INCLUDE_DIR);
     }
-    if($agent_conf->archive_directory()) {
+    if($agent_conf->archive_directory()){
         $self->archive_directory($agent_conf->archive_directory());
     }else{
         $logger->debug("No archives directory specified. Defaulting to $DEFAULT_ARCHIVES_DIR");
         $self->archive_directory($DEFAULT_ARCHIVES_DIR);
+    }
+    if($agent_conf->requesting_agent_file()){
+        $self->requesting_agent_file($agent_conf->requesting_agent_file());
+    }else{
+        $logger->debug("No requesting agent file specified. Defaulting to $DEFAULT_RA_FILE");
+        $self->requesting_agent_file($DEFAULT_RA_FILE);
     }
     
     ##
@@ -194,16 +204,31 @@ sub run {
 
     ###
     #Determine match addresses
+    my $auto_detected_addresses; #for efficiency so we don't do twice
     my $match_addresses = $agent_conf->match_addresses();
     unless($match_addresses && @{$match_addresses}) {
-        $match_addresses = $self->_get_addresses();
+        $auto_detected_addresses = $self->_get_addresses();
+        $match_addresses = $auto_detected_addresses;
     }
     foreach my $match_address(@{$match_addresses}){
         $logger->debug("Match Address: $match_address");
     }
     $self->match_addresses($match_addresses);
     
-#     #todo: handle requesting agent  -probably need a $self->requesting_agent()
+    ##
+    # Build requesting_address which is used in address classes
+    $self->requesting_agent_addresses($self->_requesting_agent_from_file($self->requesting_agent_file()));
+    unless($self->requesting_agent_addresses()){
+        ##
+        # Build requesting agent from all addresses on local machine
+        $auto_detected_addresses = $self->_get_addresses() unless($auto_detected_addresses);
+        my %requesting_agent = map {$_ => {'address' => $_ }} @{$auto_detected_addresses};
+        $self->requesting_agent_addresses(\%requesting_agent);
+        $logger->debug("Auto-detected requesting agent");
+    }
+    
+    
+    
 #     
 #     #todo handle jq
 #     
@@ -446,7 +471,14 @@ sub _process_tasks {
         print STDERR "Invalid JSON (post-expansion)\n";
         next;
     }
-
+    
+    #set requesting agent
+    print "Requesting agent is: \n";
+    use Data::Dumper;
+    print Dumper($self->requesting_agent_addresses());
+    
+    $psconfig->requesting_agent_addresses($self->requesting_agent_addresses());
+    
     #walk through tasks
     foreach my $task_name(@{$psconfig->task_names()}){
         print "Task Name: $task_name\n";
@@ -472,6 +504,43 @@ sub _process_tasks {
     }
 }
 
+sub _requesting_agent_from_file {
+    my ($self, $requesting_agent_file) = @_;
+    
+    #if no file, return
+    unless($requesting_agent_file){
+        return;
+    }
+    
+    #if file does not exist then return
+    unless(-e $requesting_agent_file){
+        return;
+    }
+    
+    #try loading from file
+    my $ra_client = new perfSONAR_PS::PSConfig::RequestingAgentConnect(url => $requesting_agent_file);
+    my $requesting_agent = $ra_client->get_config();
+    if($ra_client->error()){
+        print STDERR $ra_client->error() . "\n";
+        return;
+    } 
+    #validate
+    my @errors = $requesting_agent->validate();
+    if(@errors){
+        print STDERR "Invalid default requesting agent specification from file $requesting_agent_file:\n\n";
+        foreach my $error(@errors){
+            my $path = $error->path;
+            $path =~ s/^\/addresses//; #makes prettier error message
+            print STDERR "   Error: " . $error->message . "\n";
+            print STDERR "   Path: " . $path . "\n\n";
+        }
+        return;
+    }
+    
+    #return data
+    $logger->debug("Loaded requesting agent from file $requesting_agent_file");
+    return $requesting_agent->data();
+}
 
 
 __PACKAGE__->meta->make_immutable;

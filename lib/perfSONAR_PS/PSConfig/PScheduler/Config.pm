@@ -49,11 +49,6 @@ sub add_match_address {
     return $self->_add_field_host('match-addresses', $val);
 }
 
-sub allow_private_match_addresses {
-    my ($self, $val) = @_;
-    return $self->_field_bool('allow-private-match-addresses', $val);
-}
-
 sub include_directory {
     my ($self, $val) = @_;
     return $self->_field('include-directory', $val);

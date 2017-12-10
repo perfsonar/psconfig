@@ -156,6 +156,7 @@ $inotify->blocking(0);
 $inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation failed" ;
 $inotify->watch($agent->include_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->include_directory() . " watcher creation failed" ;
 $inotify->watch($agent->archive_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->archive_directory() . " watcher creation failed" ;
+$inotify->watch($agent->requesting_agent_file(), IN_MODIFY) or die $agent->requesting_agent_file() . " watcher creation failed" ;
 
 ##
 # Start main program loop
