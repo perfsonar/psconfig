@@ -13,7 +13,8 @@ Agent that loads config, grabs meshes and submits to pscheduler
 use Mouse;
 
 use Data::Validate::Domain qw(is_hostname);
-use Data::Validate::IP qw(is_ipv4 is_ipv6);
+use Data::Validate::IP qw(is_ipv4 is_ipv6 is_loopback_ipv4);
+use Net::CIDR qw(cidrlookup);
 use File::Basename;
 use Log::Log4perl qw(get_logger);
 use URI;
@@ -392,11 +393,14 @@ sub _get_addresses {
 
     my %ret_addresses = ();
 
-    my @all_addressses = ();
-    @all_addressses = @ips;
-    push @all_addressses, $hostname if ($hostname);
+    my @all_addresses = ();
+    foreach my $ip(@ips){
+        push @all_addresses, $ip unless(is_loopback_ipv4($ip) || (is_ipv6($ip) && cidrlookup($ip, "::1/128")));
+    }
+    
+    push @all_addresses, $hostname if ($hostname);
 
-    foreach my $address (@all_addressses) {
+    foreach my $address (@all_addresses) {
         next if ($ret_addresses{$address});
 
         $ret_addresses{$address} = 1;
@@ -405,14 +409,14 @@ sub _get_addresses {
              is_ipv6( $address ) ) {
             my @hostnames = reverse_dns($address);
 
-            push @all_addressses, @hostnames;
+            push @all_addresses, @hostnames;
         }
         elsif ( is_hostname( $address ) ) {
             my $hostname = $address;
 
             my @addresses = resolve_address($hostname);
 
-            push @all_addressses, @addresses;
+            push @all_addresses, @addresses;
         }
     }
 
