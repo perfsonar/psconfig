@@ -24,6 +24,7 @@ use Linux::Inotify2;
 use Log::Log4perl qw/:easy/;
 
 use perfSONAR_PS::PSConfig::PScheduler::Agent;
+use perfSONAR_PS::PSConfig::Logging;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 
 ##########
@@ -88,6 +89,7 @@ if($RUNAS_USER && $RUNAS_GROUP){
 ##########
 # Now that we've dropped privileges, create the logger. If we do it in reverse
 # order, the daemon won't be able to write to the logger.
+my $logf = new perfSONAR_PS::PSConfig::Logging();
 my $logger;
 if(!defined $LOGGER_CONF || $LOGGER_CONF eq q{}) {
     use Log::Log4perl qw(:easy);
@@ -99,7 +101,7 @@ if(!defined $LOGGER_CONF || $LOGGER_CONF eq q{}) {
 
     my %logger_opts = (
         level  => $output_level,
-        layout => '%d (%P) %p> %F{1}:%L %M - %m%n',
+        layout => $logf->log4perl_format(),
     );
 
     if(defined $LOGOUTPUT and $LOGOUTPUT ne q{}){
@@ -118,7 +120,7 @@ if(!defined $LOGGER_CONF || $LOGGER_CONF eq q{}) {
 # warnings make it into the logs.
 my $insig = 0;
 $SIG{__WARN__} = sub {
-    $logger->warn("Warned: ".join( '', @_ ));
+    $logger->warn($logf->format("Warned: ".join( '', @_ )));
     return;
 };
 
@@ -126,7 +128,7 @@ $SIG{__DIE__} = sub {                       ## still dies upon return
     die @_ if $^S;                      ## see perldoc -f die perlfunc
     die @_ if $insig;                   ## protect against reentrance.
     $insig = 1;
-    $logger->error("Died: ".join( '', @_ ));
+    $logger->error($logf->format("Died: ".join( '', @_ )));
     $insig = 0;
     return;
 };
@@ -134,7 +136,7 @@ $SIG{__DIE__} = sub {                       ## still dies upon return
 if(!$DEBUGFLAG){
     ($status, $res) = daemonize();
     if($status != 0){
-        $logger->error( "Couldn't daemonize: " . $res );
+        $logger->error($logf->format("Couldn't daemonize: " . $res ));
         exit(-1);
     }
 }
@@ -145,7 +147,7 @@ unlockPIDFile($fileHandle);
 # Create agent
 my $agent = new  perfSONAR_PS::PSConfig::PScheduler::Agent();
 $agent->debug($DEBUGFLAG);
-$agent->init($CONFIG_FILE);
+$agent->init($CONFIG_FILE) or die("Error initializing agent: " . $agent->error());
 
 ##########
 # Setup Inotify2 on config files and directories
@@ -168,7 +170,9 @@ while(1){
     
     #############
     #refresh configs
+    $logger->info($logf->format("Running agent..."));
     $agent->run();
+    $logger->info($logf->format("Agent completed running"));
     
     ###########
     # Sleep until its time to look for file updates or time to refesh
@@ -177,18 +181,18 @@ while(1){
     my $until_next_file_check = $agent->check_config_interval_seconds();
     my $sleep_time = $until_next_refresh < $until_next_file_check ? $until_next_refresh : $until_next_file_check;
     if($agent->will_retry_pscheduler()){
-        $logger->info("Retrying pscheduler in $sleep_time seconds...");
+        $logger->info($logf->format("Retrying pscheduler in $sleep_time seconds..."));
     }else{
-        $logger->info("Time until next record refresh is $until_next_refresh seconds");
+        $logger->info($logf->format("Time until next record refresh is $until_next_refresh seconds"));
     }
     $start = $end;
     while($until_next_refresh > 0){
         sleep($sleep_time);
         if($inotify->poll()){
-            $logger->info("Configuration file change detected, refreshing records.");
+            $logger->info($logf->format("Configuration file change detected, refreshing records."));
             last;
         }elsif($agent->will_retry_pscheduler()){
-            $logger->info("Retrying pscheduler after failure");
+            $logger->info($logf->format("Retrying pscheduler after failure"));
             last;
         }else{
             $end = time;

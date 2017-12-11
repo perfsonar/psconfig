@@ -27,6 +27,7 @@ use perfSONAR_PS::Client::PSConfig::ApiFilters;
 use perfSONAR_PS::Client::PSConfig::Archive;
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 use perfSONAR_PS::PSConfig::ArchiveConnect;
+use perfSONAR_PS::PSConfig::Logging;
 use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::PScheduler::Config;
 use perfSONAR_PS::PSConfig::RequestingAgentConnect;
@@ -54,6 +55,7 @@ has 'match_addresses' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'requesting_agent_addresses' => (is => 'rw', isa => 'HashRef');
 has 'debug' => (is => 'rw', isa => 'Bool', default => sub { 0 });
 has 'error' => (is => 'ro', isa => 'Str', writer => '_set_error');
+has 'logf' => (is => 'ro', isa => 'perfSONAR_PS::PSConfig::Logging', writer => '_set_logf', default => sub{ new perfSONAR_PS::PSConfig::Logging() });
 
 my $logger = get_logger(__PACKAGE__);
 
@@ -80,31 +82,35 @@ sub init {
         $self->_set_error($@);
         return;
     }
-
+    
+    ##
+    # init local logging context
+    my $log_ctx = { "agent_conf_file" => "$config_file" };
+    
     ##
     # Grab properties and set defaults
     if($agent_conf->include_directory()){
         $self->include_directory($agent_conf->include_directory());
     }else{
-        $logger->debug("No include directory specified. Defaulting to $DEFAULT_INCLUDE_DIR");
+        $logger->debug($self->logf()->format("No include directory specified. Defaulting to $DEFAULT_INCLUDE_DIR", $log_ctx));
         $self->include_directory($DEFAULT_INCLUDE_DIR);
     }
     if($agent_conf->archive_directory()){
         $self->archive_directory($agent_conf->archive_directory());
     }else{
-        $logger->debug("No archives directory specified. Defaulting to $DEFAULT_ARCHIVES_DIR");
+        $logger->debug($self->logf()->format("No archives directory specified. Defaulting to $DEFAULT_ARCHIVES_DIR", $log_ctx));
         $self->archive_directory($DEFAULT_ARCHIVES_DIR);
     }
     if($agent_conf->transform_directory()){
         $self->transform_directory($agent_conf->transform_directory());
     }else{
-        $logger->debug("No transform directory specified. Defaulting to $DEFAULT_TRANSFORM_DIR");
+        $logger->debug($self->logf()->format("No transform directory specified. Defaulting to $DEFAULT_TRANSFORM_DIR", $log_ctx));
         $self->transform_directory($DEFAULT_TRANSFORM_DIR);
     }
     if($agent_conf->requesting_agent_file()){
         $self->requesting_agent_file($agent_conf->requesting_agent_file());
     }else{
-        $logger->debug("No requesting agent file specified. Defaulting to $DEFAULT_RA_FILE");
+        $logger->debug($self->logf()->format("No requesting agent file specified. Defaulting to $DEFAULT_RA_FILE", $log_ctx));
         $self->requesting_agent_file($DEFAULT_RA_FILE);
     }
     
@@ -117,7 +123,6 @@ sub init {
     ##
     # Set the config
     $self->config($agent_conf);
-
 }
 
 sub run {
@@ -125,12 +130,13 @@ sub run {
     
     ##
     # Load configuration
+    $self->logf()->global_context({'agent_conf_file' => $self->config_file()});
     my $agent_conf;
     eval{
         $agent_conf = $self->_load_config($self->config_file());
     };
     if($@){
-        $logger->error("Error reading " . $self->config_file() . ", proceeding with defaults. Caused by: $@");
+        $logger->error($self->logf()->format("Error reading " . $self->config_file() . ", proceeding with defaults. Caused by: $@"));
         $agent_conf = new perfSONAR_PS::PSConfig::PScheduler::Config();
     }
     
@@ -142,13 +148,13 @@ sub run {
     # Set defaults for minimal values requiring no transformation
     unless($agent_conf->client_uuid_file()){
         my $default = "/var/lib/perfsonar/psconfig/client_uuid";
-        $logger->debug("No client-uuid-file specified. Defaulting to $default");
+        $logger->debug($self->logf()->format("No client-uuid-file specified. Defaulting to $default"));
         $agent_conf->client_uuid_file($default);
     }
     
     unless($agent_conf->pscheduler_tracker_file()){
         my $default = "/var/lib/perfsonar/psconfig/psc_tracker";
-        $logger->debug("No pscheduler-tracker-file specified. Defaulting to $default");
+        $logger->debug($self->logf()->format("No pscheduler-tracker-file specified. Defaulting to $default"));
         $agent_conf->pscheduler_tracker_file($default);
     }
     
@@ -156,11 +162,11 @@ sub run {
     # Set assist server - Host/Post to URL
     unless($agent_conf->pscheduler_assist_server()){
         my $default = "localhost";
-        $logger->debug( "No pscheduler-assist-server specified. Defaulting to $default" );
+        $logger->debug($self->logf()->format( "No pscheduler-assist-server specified. Defaulting to $default" ));
         $agent_conf->pscheduler_assist_server($default);
     }
     $self->pscheduler_url($self->_build_pscheduler_url($agent_conf->pscheduler_assist_server()));
-    $logger->debug("pscheduler_url is " . $self->pscheduler_url());
+    $logger->debug($self->logf()->format("pscheduler_url is " . $self->pscheduler_url()));
     
     ##
     # Set intervals which have instance values used by daemon
@@ -168,49 +174,49 @@ sub run {
         my $check_interval;
         eval{ $check_interval = duration_to_seconds($agent_conf->check_interval()) };
         if($@){
-            $logger->error("Error parsing check-interval. Defaulting to " . $self->check_interval_seconds() . " seconds: $@");
+            $logger->error($self->logf()->format("Error parsing check-interval. Defaulting to " . $self->check_interval_seconds() . " seconds: $@"));
         }elsif(!$check_interval){
-            $logger->error("check_interval has no value, sticking with default ". $self->check_interval_seconds() . " seconds");
+            $logger->error($self->logf()->format("check_interval has no value, sticking with default ". $self->check_interval_seconds() . " seconds"));
         }else{
             $self->check_interval_seconds($check_interval);
         }
-        $logger->debug("check_interval is " . $self->check_interval_seconds() . " seconds");
+        $logger->debug($self->logf()->format("check_interval is " . $self->check_interval_seconds() . " seconds"));
     }
     if($agent_conf->check_config_interval()) {
         my $check_config_interval;
         eval{ $check_config_interval = duration_to_seconds($agent_conf->check_config_interval()) };
         if($@){
-            $logger->error("Error parsing check-config-interval. Defaulting to " . $self->check_config_interval_seconds() . " seconds: $@");
+            $logger->error($self->logf()->format("Error parsing check-config-interval. Defaulting to " . $self->check_config_interval_seconds() . " seconds: $@"));
         }elsif(!$check_config_interval){
-            $logger->error("check-config-interval has no value, sticking with default ". $self->check_config_interval_seconds() . " seconds");
+            $logger->error($self->logf()->format("check-config-interval has no value, sticking with default ". $self->check_config_interval_seconds() . " seconds"));
         }else{
             $self->check_config_interval_seconds($check_config_interval);
         }
-        $logger->debug("check_config_interval is " . $self->check_config_interval_seconds() . " seconds");
+        $logger->debug($self->logf()->format("check_config_interval is " . $self->check_config_interval_seconds() . " seconds"));
     }
     my $task_min_ttl_seconds = 86400;
     if($agent_conf->task_min_ttl()) {
         my $task_min_ttl;
         eval{ $task_min_ttl = duration_to_seconds($agent_conf->task_min_ttl()) };
         if($@){
-            $logger->error("Error parsing task-min-ttl. Defaulting to " . $self->task_min_ttl() . " seconds: $@");
+            $logger->error($self->logf()->format("Error parsing task-min-ttl. Defaulting to " . $self->task_min_ttl() . " seconds: $@"));
         }elsif(!$task_min_ttl){
-            $logger->error("task_min_ttl has no value, sticking with default ". $self->task_min_ttl() . " seconds");
+            $logger->error($self->logf()->format("task_min_ttl has no value, sticking with default ". $self->task_min_ttl() . " seconds"));
         }else{
             $task_min_ttl_seconds = $task_min_ttl;
         }
-        $logger->debug("task_min_ttl is $task_min_ttl_seconds seconds");
+        $logger->debug($self->logf()->format("task_min_ttl is $task_min_ttl_seconds seconds"));
     }
     
     unless ($agent_conf->task_min_runs()) {
         my $default = 2;
-        $logger->debug( "No task-min-runs specified. Defaulting to $default" );
+        $logger->debug($self->logf()->format( "No task-min-runs specified. Defaulting to $default" ));
         $agent_conf->task_min_runs($default);
     }
     
     unless ($agent_conf->task_renewal_fudge_factor()) {
         my $default = .25;
-        $logger->debug( "No task-renewal-fudge-factor specified. Defaulting to $default" );
+        $logger->debug($self->logf()->format( "No task-renewal-fudge-factor specified. Defaulting to $default" ));
         $agent_conf->task_renewal_fudge_factor($default);
     }
 
@@ -221,9 +227,9 @@ sub run {
     unless($match_addresses && @{$match_addresses}) {
         $auto_detected_addresses = $self->_get_addresses();
         $match_addresses = $auto_detected_addresses;
-    }
-    foreach my $match_address(@{$match_addresses}){
-        $logger->debug("Match Address: $match_address");
+        $logger->debug($self->logf()->format("Auto-detected match addresses", {"match_addresses" => $match_addresses}));
+    }else{
+        $logger->debug($self->logf()->format("Loaded match addresses from config file", {"match_addresses" => $match_addresses}));
     }
     $self->match_addresses($match_addresses);
     
@@ -236,7 +242,7 @@ sub run {
         $auto_detected_addresses = $self->_get_addresses() unless($auto_detected_addresses);
         my %requesting_agent = map {$_ => {'address' => $_ }} @{$auto_detected_addresses};
         $self->requesting_agent_addresses(\%requesting_agent);
-        $logger->debug("Auto-detected requesting agent");
+        $logger->debug($self->logf()->format("Auto-detected requesting agent", {"requesting_agent" => \%requesting_agent}));
     }
 #     
 #     #todo: check binding options - even when downloading meshes
@@ -245,6 +251,11 @@ sub run {
 #
 #     #todo: make sure i am happy with error reporting
 #    
+
+    ##
+    # Reset logging context, done with config file
+    $self->logf()->global_context({'pscheduler_assist_url' => $self->pscheduler_url()});
+    
     ##
     #Init the TaskManager
     my $old_task_deadline = time + $self->check_interval_seconds();
@@ -266,38 +277,46 @@ sub run {
                         );
     };
     if($@){
-        $logger->error("Problem initializing task_manager: $@");
+        $logger->error($self->logf()->format("Problem initializing task_manager: $@"));
     }elsif(!$task_manager->check_assist_server()){
-        $logger->error("Problem contacting pScheduler, will try again later.");
+        $logger->error($self->logf()->format("Problem contacting pScheduler, will try again later."));
         $self->pscheduler_fails($self->pscheduler_fails() + 1);
     }else{
-        $logger->info("pScheduler is back up, resuming normal operation") if($self->pscheduler_fails());
+        $logger->info($self->logf()->format("pScheduler is back up, resuming normal operation")) if($self->pscheduler_fails());
         $self->pscheduler_fails(0);
         
         ##
         # Process default archives directory
         #todo: make sure we handle this die correctly
+        $self->logf()->global_context({}); #reset logging context
         my @default_archives = ();
-        opendir(ARCHIVE_FILES,  $self->archive_directory()) or die "Could not open " . $self->archive_directory();
+        unless(opendir(ARCHIVE_FILES,  $self->archive_directory())){
+            $logger->error($self->logf()->format("Could not open " . $self->archive_directory()));
+            return;
+        }
         while (my $archive_file = readdir(ARCHIVE_FILES)) {
             next unless($archive_file =~ /\.json$/);
             my $abs_file = $self->archive_directory() . "/$archive_file";
-            $logger->debug("Loading include file $abs_file");
+            my $log_ctx = {"archive_file" => $abs_file};
+            $logger->debug($self->logf()->format("Loading default archive file $abs_file", $log_ctx));
             my $archive_client = new perfSONAR_PS::PSConfig::ArchiveConnect(url => $abs_file);
             my $archive = $archive_client->get_config();
             if($archive_client->error()){
-                print STDERR $archive_client->error() . "\n";
+                $logger->error($self->logf()->format("Error reading default archive file: " . $archive_client->error(), $log_ctx));
                 next;
             } 
             #validate
             my @errors = $archive->validate();
             if(@errors){
-                print STDERR "Invalid default archive specification from file $abs_file:\n\n";
+                my $cat = "archive_schema_validation_error";
                 foreach my $error(@errors){
                     my $path = $error->path;
                     $path =~ s/^\/archives//; #makes prettier error message
-                    print STDERR "   Error: " . $error->message . "\n";
-                    print STDERR "   Path: " . $path . "\n\n";
+                    $logger->error($self->logf()->format($error->message, {
+                        'category' => $cat,
+                        'json_path' => $path
+                        
+                    }));
                 }
                 next;
             }
@@ -308,28 +327,34 @@ sub run {
         
         ##
         # Process default transforms directory
-        #todo: make sure we handle this die correctly
         my @default_transforms = ();
-        opendir(TRANSFORM_FILES,  $self->transform_directory()) or die "Could not open " . $self->transform_directory();
+        unless(opendir(TRANSFORM_FILES,  $self->transform_directory())){
+            $logger->error($self->logf()->format("Could not open " . $self->transform_directory()));
+            return;
+        }
         while (my $transform_file = readdir(TRANSFORM_FILES)) {
             next unless($transform_file =~ /\.json$/);
             my $abs_file = $self->transform_directory() . "/$transform_file";
-            $logger->debug("Loading transform file $abs_file");
+            my $log_ctx = {"transform_file" => $abs_file};
+            $logger->debug($self->logf()->format("Loading transform file $abs_file", $log_ctx));
             my $transform_client = new perfSONAR_PS::PSConfig::TransformConnect(url => $abs_file);
             my $transform = $transform_client->get_config();
             if($transform_client->error()){
-                print STDERR $transform_client->error() . "\n";
+                $logger->error($self->logf()->format("Error reading default transform file: " . $transform_client->error(), $log_ctx));
                 next;
             } 
             #validate
             my @errors = $transform->validate();
             if(@errors){
-                print STDERR "Invalid default transform specification from file $abs_file:\n\n";
+                my $cat = "transform_schema_validation_error";
                 foreach my $error(@errors){
                     my $path = $error->path;
                     $path =~ s/^\/transform//; #makes prettier error message
-                    print STDERR "   Error: " . $error->message . "\n";
-                    print STDERR "   Path: " . $path . "\n\n";
+                    $logger->error($self->logf()->format($error->message, {
+                        'category' => $cat,
+                        'json_path' => $path
+                        
+                    }));
                 }
                 next;
             }
@@ -354,23 +379,30 @@ sub run {
             );
             #process tasks
             my $configure_archives = $remote->configure_archives() ? 1 : 0; #makesure defined
+            $self->logf()->global_context({"config_src" => 'remote', 'config_url' => $remote->url()});
             $self->_process_tasks($psconfig_client, $task_manager, $configure_archives, $remote->transform());
+            $self->logf()->global_context({});
         }
         
         ##
         # Process include directory
-        #todo: make sure we handle this die correctly
-        opendir(INCLUDE_FILES,  $self->include_directory()) or die "Could not open " . $self->include_directory();
+        unless(opendir(INCLUDE_FILES,  $self->include_directory())){
+            $logger->error($self->logf()->format("Could not open " . $self->include_directory()));
+            return;
+        }
         while (my $include_file = readdir(INCLUDE_FILES)) {
             next unless($include_file =~ /\.json$/);
             my $abs_file = $self->include_directory() . "/$include_file";
-            $logger->debug("Loading include file $abs_file");
+            my $log_ctx = {"transform_file" => $abs_file};
+            $logger->debug($self->logf()->format("Loading include file $abs_file", $log_ctx));
             #create client
             my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
                 url => $abs_file
             );
             #process tasks
+            $self->logf()->global_context({"config_src" => 'include', 'config_file' => $abs_file});
             $self->_process_tasks($psconfig_client, $task_manager, 1);
+            $self->logf()->global_context({});
         }
         
         ##
@@ -380,16 +412,16 @@ sub run {
         ##
         #Log results
         foreach my $error(@{$task_manager->errors()}){
-           $logger->warn($error);
+           $logger->warn($self->logf()->format($error));
         }
         foreach my $deleted_task(@{$task_manager->deleted_tasks()}){
-           $logger->debug("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url);
+           $logger->debug($self->logf()->format("Deleted task " . $deleted_task->uuid . " on server " . $deleted_task->url));
         }
         foreach my $added_task(@{$task_manager->added_tasks()}){
-           $logger->debug("Created task " . $added_task->uuid . " on server " . $added_task->url);
+           $logger->debug($self->logf()->format("Created task " . $added_task->uuid . " on server " . $added_task->url));
         }
         if(@{$task_manager->added_tasks()} || @{$task_manager->deleted_tasks()}){
-            $logger->info("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks");
+            $logger->info($self->logf()->format("Added " . @{$task_manager->added_tasks()} . " new tasks, and deleted " . @{$task_manager->deleted_tasks()} . " old tasks"));
         }
     }
 
@@ -482,54 +514,62 @@ sub _process_tasks {
     #get config
     my $psconfig = $psconfig_client->get_config();
     if($psconfig_client->error()){
-        print STDERR $psconfig_client->error() . "\n";
+        $logger->error($self->logf()->format("Error loading psconfig: " . $psconfig_client->error()));
         return;
     } 
-    print $psconfig->json() . "\n";
+    $logger->debug($self->logf()->format('Loaded pSConfig JSON', {'json' => $psconfig->json()}));
     
     #validate
     my @errors = $psconfig->validate();
     if(@errors){
+        my $cat = "psconfig_schema_validation_error";
         foreach my $error(@errors){
-            print STDERR "Error: " . $error->message . "\n";
-            print STDERR "Path: " . $error->path . "\n\n";
+            $logger->error($self->logf()->format($error->message, {
+                'category' => $cat,
+                'expanded' => 0,
+                'transformed' => 0,
+                'json_path' => $error->path
+            }));
         }
-        print STDERR "Invalid JSON (pre-expansion)\n";
         return;
     }
 
     #expand
     $psconfig_client->expand_config($psconfig);
     if($psconfig_client->error()){
-        print STDERR $psconfig_client->error() . "\n";
+        $logger->error($self->logf()->format("Error expanding include directives in JSON: " . $psconfig_client->error()));
         return;
     }
 
     #validate
     @errors = $psconfig->validate();
     if(@errors){
+        my $cat = "psconfig_schema_validation_error";
         foreach my $error(@errors){
-            print STDERR "Error: " . $error->message . "\n";
-            print STDERR "Path: " . $error->path . "\n\n";
+           $logger->error($self->logf()->format($error->message, {
+                'category' => $cat,
+                'expanded' => 1,
+                'transformed' => 0,
+                'json_path' => $error->path
+            }));
         }
-        print STDERR "Invalid JSON (post-expansion)\n";
         return;
     }
     
     #apply default transforms
     foreach my $default_transform(@{$self->default_transforms()}){
-        $self->_apply_transform($default_transform, $psconfig);
+        $self->_apply_transform($default_transform, $psconfig, 'include');
     }
     
     #apply local transform
-    $self->_apply_transform($transform, $psconfig);
+    $self->_apply_transform($transform, $psconfig, 'remote_spec');
     
     #set requesting agent
     $psconfig->requesting_agent_addresses($self->requesting_agent_addresses());
     
     #walk through tasks
     foreach my $task_name(@{$psconfig->task_names()}){
-        print "Task Name: $task_name\n";
+        $self->logf->global_context()->{'task_name'} = $task_name;
         my $tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
             psconfig => $psconfig,
             pscheduler_url => $self->pscheduler_url(),
@@ -538,22 +578,27 @@ sub _process_tasks {
             default_archives => $self->default_archives(),
             use_psconfig_archives => $configure_archives
         );
-        $tg->start() or die($tg->error());
+        unless($tg->start()){
+             $logger->error($self->logf()->format("Error initializing task iterator: " . $tg->error()));
+             return;
+        }
         my @pair;
         while(@pair = $tg->next()){
             my $psc_task = $tg->pscheduler_task();
             unless($psc_task){
-                print STDERR "Error converting task to pscheduler: " . $tg->error() . "\n";
+                $logger->error($self->logf()->format("Error converting task to pscheduler: " . $tg->error()));
                 next;
             }
             $task_manager->add_task(task => $psc_task);
         }
         $tg->stop();
     }
+    $logger->info($self->logf()->format('Successfully processed pSConfig JSON.'));
 }
 
 sub _requesting_agent_from_file {
     my ($self, $requesting_agent_file) = @_;
+    my $log_ctx = {'requesting_agent_file' => $requesting_agent_file};
     
     #if no file, return
     unless($requesting_agent_file){
@@ -569,48 +614,55 @@ sub _requesting_agent_from_file {
     my $ra_client = new perfSONAR_PS::PSConfig::RequestingAgentConnect(url => $requesting_agent_file);
     my $requesting_agent = $ra_client->get_config();
     if($ra_client->error()){
-        print STDERR $ra_client->error() . "\n";
+        $logger->error($self->logf()->format("Error reading requesting agent file: " . $ra_client->error(), $log_ctx));
         return;
     } 
     #validate
     my @errors = $requesting_agent->validate();
     if(@errors){
-        print STDERR "Invalid default requesting agent specification from file $requesting_agent_file:\n\n";
+        my $cat = "requesting_agent_schema_validation_error";
         foreach my $error(@errors){
             my $path = $error->path;
             $path =~ s/^\/addresses//; #makes prettier error message
-            print STDERR "   Error: " . $error->message . "\n";
-            print STDERR "   Path: " . $path . "\n\n";
+            $logger->error($self->logf()->format($error->message, {
+                'category' => $cat,
+                'json_path' => $path,
+                'requesting_agent_file' => $requesting_agent_file
+            }));
         }
         return;
     }
     
     #return data
-    $logger->debug("Loaded requesting agent from file $requesting_agent_file");
+    $log_ctx->{"requesting_agent"} = $requesting_agent->data();
+    $logger->debug($self->logf()->format("Loaded requesting agent from file $requesting_agent_file", $log_ctx));
     return $requesting_agent->data();
 }
 
 sub _apply_transform {
-    my ($self, $transform, $psconfig) = @_;
+    my ($self, $transform, $psconfig, $transform_src) = @_;
     
     #make sure we got params we need
-    unless($transform && $psconfig){
+    unless($transform && $psconfig && $transform_src){
         return;
     }
+    
+    #set log context
+    my $log_ctx = {'transform_src' => "$transform_src"};
     
     #try to apply transformation
     my $new_data = $transform->apply($psconfig->data());
     if(!$new_data && $transform->error()){
         # error applying script
-        print STDERR "Error applying transform: " . $transform->error();
+        $logger->error($self->logf()->format("Error applying transform: " . $transform->error(), $log_ctx));
         return;
     }elsif(!$new_data){
         #jq returned undefined value
-        print STDERR "Transform returned undefined value with no error. Check your JQ script logic.";
+        $logger->error($self->logf()->format("Transform returned undefined value with no error. Check your JQ script logic.", $log_ctx));
         return;
     }elsif(ref $new_data ne 'HASH'){
         #jq returned non hash value
-        print STDERR "Transform returned a value that is not a JSON object. Check your JQ script logic.";
+        $logger->error($self->logf()->format("Transform returned a value that is not a JSON object. Check your JQ script logic.", $log_ctx));
         return;
     }
     
@@ -619,15 +671,21 @@ sub _apply_transform {
     my @errors = $psconfig->validate();
     if(@errors){
         #validation errors
+        my $cat = "psconfig_schema_validation_error";
         foreach my $error(@errors){
-            print STDERR "Error: " . $error->message . "\n";
-            print STDERR "Path: " . $error->path . "\n\n";
+            $logger->error($self->logf()->format($error->message, {
+                'category' => $cat,
+                'json_path' => $error->path,
+                'expanded' => 1,
+                'transformed' => 1,
+                'transform_src' => "$transform_src"
+            }));
         }
-        print STDERR "Invalid pSConfig JSON after applying transform\n";
         return;
     }
     
-    print "Post-transform: " . $psconfig->json() . "\n";
+    $log_ctx->{'json'} = $psconfig->json();
+    $logger->debug($self->logf()->format("Transform completed", $log_ctx));
 }
 
 sub will_retry_pscheduler {
