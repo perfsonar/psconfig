@@ -14,5 +14,6 @@ lib/perfSONAR_PS/PSConfig/PScheduler/Schema.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConfig.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConnect.pm
 lib/perfSONAR_PS/PSConfig/Remote.pm
+lib/perfSONAR_PS/PSConfig/TransformConnect.pm
 scripts/psconfig-pscheduler-agent
 scripts/psconfig-pscheduler-agent.service

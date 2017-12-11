@@ -59,6 +59,11 @@ sub archive_directory {
     return $self->_field('archive-directory', $val);
 }
 
+sub transform_directory {
+    my ($self, $val) = @_;
+    return $self->_field('transform-directory', $val);
+}
+
 sub requesting_agent_file {
     my ($self, $val) = @_;
     return $self->_field('requesting-agent-file', $val);

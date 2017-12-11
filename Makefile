@@ -22,6 +22,7 @@ install:
 	mkdir -p ${CONFIGPATH}/pscheduler.d
 	mkdir -p ${CONFIGPATH}/maddash.d
 	mkdir -p ${CONFIGPATH}/archives.d
+	mkdir -p ${CONFIGPATH}/transforms.d
 	tar ch --exclude=etc/* --exclude=*spec --exclude=dependencies --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
 	for i in `cat MANIFEST | grep ^etc/ | sed "s/^etc\///"`; do  mkdir -p `dirname $(CONFIGPATH)/$${i}`; if [ -e $(CONFIGPATH)/$${i} ]; then install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}.new; else install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}; fi; done
 

@@ -30,6 +30,7 @@ use perfSONAR_PS::PSConfig::ArchiveConnect;
 use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::PScheduler::Config;
 use perfSONAR_PS::PSConfig::RequestingAgentConnect;
+use perfSONAR_PS::PSConfig::TransformConnect;
 use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
 use perfSONAR_PS::Utils::Host qw(get_ips);
 use perfSONAR_PS::Utils::ISO8601 qw/duration_to_seconds/;
@@ -39,9 +40,11 @@ our $VERSION = 4.1;
 has 'config_file' => (is => 'rw', isa => 'Str');
 has 'include_directory' => (is => 'rw', isa => 'Str');
 has 'archive_directory' => (is => 'rw', isa => 'Str');
+has 'transform_directory' => (is => 'rw', isa => 'Str');
 has 'requesting_agent_file' => (is => 'rw', isa => 'Str');
 has 'config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::PScheduler::Config');
 has 'default_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::Archive]', default => sub { [] });
+has 'default_transforms' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::PSConfig::JQTransform]', default => sub { [] });
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
 has 'check_config_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 60 });
 has 'pscheduler_fails' => (is => 'rw', isa => 'Int', default => sub { 0 });
@@ -66,6 +69,7 @@ sub init {
     my $CONFIG_DIR = dirname($config_file);
     my $DEFAULT_INCLUDE_DIR = "${CONFIG_DIR}/pscheduler.d";
     my $DEFAULT_ARCHIVES_DIR = "${CONFIG_DIR}/archives.d";
+    my $DEFAULT_TRANSFORM_DIR = "${CONFIG_DIR}/transforms.d";
     my $DEFAULT_RA_FILE = "${CONFIG_DIR}/requesting-agent.json";
     
     ##
@@ -90,6 +94,12 @@ sub init {
     }else{
         $logger->debug("No archives directory specified. Defaulting to $DEFAULT_ARCHIVES_DIR");
         $self->archive_directory($DEFAULT_ARCHIVES_DIR);
+    }
+    if($agent_conf->transform_directory()){
+        $self->transform_directory($agent_conf->transform_directory());
+    }else{
+        $logger->debug("No transform directory specified. Defaulting to $DEFAULT_TRANSFORM_DIR");
+        $self->transform_directory($DEFAULT_TRANSFORM_DIR);
     }
     if($agent_conf->requesting_agent_file()){
         $self->requesting_agent_file($agent_conf->requesting_agent_file());
@@ -228,11 +238,6 @@ sub run {
         $self->requesting_agent_addresses(\%requesting_agent);
         $logger->debug("Auto-detected requesting agent");
     }
-    
-    
-    
-#     
-#     #todo: jq includes directory
 #     
 #     #todo: check binding options - even when downloading meshes
 #      
@@ -272,6 +277,7 @@ sub run {
         ##
         # Process default archives directory
         #todo: make sure we handle this die correctly
+        my @default_archives = ();
         opendir(ARCHIVE_FILES,  $self->archive_directory()) or die "Could not open " . $self->archive_directory();
         while (my $archive_file = readdir(ARCHIVE_FILES)) {
             next unless($archive_file =~ /\.json$/);
@@ -296,8 +302,41 @@ sub run {
                 next;
             }
 
-            push @{$self->default_archives()}, $archive;
+            push @default_archives, $archive;
         }
+        $self->default_archives(\@default_archives);
+        
+        ##
+        # Process default transforms directory
+        #todo: make sure we handle this die correctly
+        my @default_transforms = ();
+        opendir(TRANSFORM_FILES,  $self->transform_directory()) or die "Could not open " . $self->transform_directory();
+        while (my $transform_file = readdir(TRANSFORM_FILES)) {
+            next unless($transform_file =~ /\.json$/);
+            my $abs_file = $self->transform_directory() . "/$transform_file";
+            $logger->debug("Loading transform file $abs_file");
+            my $transform_client = new perfSONAR_PS::PSConfig::TransformConnect(url => $abs_file);
+            my $transform = $transform_client->get_config();
+            if($transform_client->error()){
+                print STDERR $transform_client->error() . "\n";
+                next;
+            } 
+            #validate
+            my @errors = $transform->validate();
+            if(@errors){
+                print STDERR "Invalid default transform specification from file $abs_file:\n\n";
+                foreach my $error(@errors){
+                    my $path = $error->path;
+                    $path =~ s/^\/transform//; #makes prettier error message
+                    print STDERR "   Error: " . $error->message . "\n";
+                    print STDERR "   Path: " . $path . "\n\n";
+                }
+                next;
+            }
+
+            push @default_transforms, $transform;
+        }
+        $self->default_transforms(\@default_transforms);
         
         ##
         # Process remotes
@@ -477,34 +516,13 @@ sub _process_tasks {
         return;
     }
     
-    #transform
-    if($transform){
-        my $new_data = $transform->apply($psconfig->data());
-        if(!$new_data && $transform->error()){
-            # error applying script
-            print STDERR "Error applying transform: " . $transform->error();
-            return;
-        }elsif(!$new_data){
-            #jq returned undefined value
-            print STDERR "Transform returned undefined value with no error. Check your JQ script logic.";
-            return;
-        }elsif(ref $new_data ne 'HASH'){
-            #jq returned non hash value
-            print STDERR "Transform returned a value that is not a JSON object. Check your JQ script logic.";
-            return;
-        }
-        $psconfig->data($new_data);
-        @errors = $psconfig->validate();
-        if(@errors){
-            foreach my $error(@errors){
-                print STDERR "Error: " . $error->message . "\n";
-                print STDERR "Path: " . $error->path . "\n\n";
-            }
-            print STDERR "Invalid pSConfig JSON after applying transform\n";
-            return;
-        }
-        print "Post-transform: " . $psconfig->json() . "\n";
+    #apply default transforms
+    foreach my $default_transform(@{$self->default_transforms()}){
+        $self->_apply_transform($default_transform, $psconfig);
     }
+    
+    #apply local transform
+    $self->_apply_transform($transform, $psconfig);
     
     #set requesting agent
     $psconfig->requesting_agent_addresses($self->requesting_agent_addresses());
@@ -570,6 +588,46 @@ sub _requesting_agent_from_file {
     #return data
     $logger->debug("Loaded requesting agent from file $requesting_agent_file");
     return $requesting_agent->data();
+}
+
+sub _apply_transform {
+    my ($self, $transform, $psconfig) = @_;
+    
+    #make sure we got params we need
+    unless($transform && $psconfig){
+        return;
+    }
+    
+    #try to apply transformation
+    my $new_data = $transform->apply($psconfig->data());
+    if(!$new_data && $transform->error()){
+        # error applying script
+        print STDERR "Error applying transform: " . $transform->error();
+        return;
+    }elsif(!$new_data){
+        #jq returned undefined value
+        print STDERR "Transform returned undefined value with no error. Check your JQ script logic.";
+        return;
+    }elsif(ref $new_data ne 'HASH'){
+        #jq returned non hash value
+        print STDERR "Transform returned a value that is not a JSON object. Check your JQ script logic.";
+        return;
+    }
+    
+    #validate JSON after applying
+    $psconfig->data($new_data);
+    my @errors = $psconfig->validate();
+    if(@errors){
+        #validation errors
+        foreach my $error(@errors){
+            print STDERR "Error: " . $error->message . "\n";
+            print STDERR "Path: " . $error->path . "\n\n";
+        }
+        print STDERR "Invalid pSConfig JSON after applying transform\n";
+        return;
+    }
+    
+    print "Post-transform: " . $psconfig->json() . "\n";
 }
 
 

@@ -1,6 +1,8 @@
 package perfSONAR_PS::PSConfig::JQTransform;
 
 use Mouse;
+use JSON::Validator;
+use perfSONAR_PS::PSConfig::PScheduler::Schema qw( psconfig_pscheduler_json_schema );
 use perfSONAR_PS::Utils::JQ qw( jq );
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
@@ -27,6 +29,24 @@ sub apply {
     }
     
     return $transformed;
+}
+
+sub validate {
+    my $self = shift;
+    my $validator = new JSON::Validator();
+    my $schema = psconfig_pscheduler_json_schema();
+    #tweak it so we just look at JQTransformSpecification
+    $schema->{'properties'} = {
+        'transform' => { 
+            '$ref' => '#/pSConfig/JQTransformSpecification',
+            'description' => 'JQ script to transform downloaded pSConfig JSON'
+        }
+    };
+    $schema->{'required'} = [ 'transform' ];
+    $validator->schema($schema);
+    
+    #plug-in archive in a way that will validate
+    return $validator->validate({'transform' =>  $self->data()});
 }
 
 

@@ -51,7 +51,12 @@ sub psconfig_pscheduler_json_schema() {
         
         "archive-directory": {
             "type": "string",
-            "description": "Directory with default archives to be added to all tasks. Default is /etc/psconfig/archive.d"
+            "description": "Directory with default archives to be added to all tasks. Default is /etc/psconfig/archives.d"
+        },
+        
+        "transform-directory": {
+            "type": "string",
+            "description": "Directory with default transformations to apply to JSON processed by agent. Default is /etc/psconfig/transforms.d"
         },
         
         "requesting-agent-file": {
@@ -141,8 +146,7 @@ sub psconfig_pscheduler_json_schema() {
         "JQTransformSpecification": {
             "type": "object",
             "properties": {
-                "script":    { "type": "string" },
-                "output-raw": { "type": "boolean" }
+                "script":    { "type": "string" }
             },
             "additionalProperties": false,
             "required": [ "script" ]
