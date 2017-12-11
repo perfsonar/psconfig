@@ -6,6 +6,7 @@ bin/psconfig_pscheduler_agent
 etc/pscheduler-agent.json
 etc/pscheduler-agent-logger.conf
 lib/perfSONAR_PS/PSConfig/ArchiveConnect.pm
+lib/perfSONAR_PS/PSConfig/JQTransform.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Config.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/ConfigConnect.pm

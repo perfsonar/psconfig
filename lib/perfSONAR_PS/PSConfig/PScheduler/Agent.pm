@@ -12,6 +12,7 @@ Agent that loads config, grabs meshes and submits to pscheduler
 
 use Mouse;
 
+use Data::Dumper;
 use Data::Validate::Domain qw(is_hostname);
 use Data::Validate::IP qw(is_ipv4 is_ipv6 is_loopback_ipv4);
 use Net::CIDR qw(cidrlookup);
@@ -231,7 +232,7 @@ sub run {
     
     
 #     
-#     #todo handle jq
+#     #todo: jq includes directory
 #     
 #     #todo: check binding options - even when downloading meshes
 #      
@@ -314,7 +315,7 @@ sub run {
             );
             #process tasks
             my $configure_archives = $remote->configure_archives() ? 1 : 0; #makesure defined
-            $self->_process_tasks($psconfig_client, $task_manager, $configure_archives);
+            $self->_process_tasks($psconfig_client, $task_manager, $configure_archives, $remote->transform());
         }
         
         ##
@@ -437,13 +438,13 @@ sub _build_pscheduler_url {
 }
 
 sub _process_tasks {
-    my ($self, $psconfig_client, $task_manager, $configure_archives) = @_;
+    my ($self, $psconfig_client, $task_manager, $configure_archives, $transform) = @_;
     
     #get config
     my $psconfig = $psconfig_client->get_config();
     if($psconfig_client->error()){
         print STDERR $psconfig_client->error() . "\n";
-        next;
+        return;
     } 
     print $psconfig->json() . "\n";
     
@@ -455,14 +456,14 @@ sub _process_tasks {
             print STDERR "Path: " . $error->path . "\n\n";
         }
         print STDERR "Invalid JSON (pre-expansion)\n";
-        next;
+        return;
     }
 
     #expand
     $psconfig_client->expand_config($psconfig);
     if($psconfig_client->error()){
         print STDERR $psconfig_client->error() . "\n";
-        next;
+        return;
     }
 
     #validate
@@ -473,14 +474,39 @@ sub _process_tasks {
             print STDERR "Path: " . $error->path . "\n\n";
         }
         print STDERR "Invalid JSON (post-expansion)\n";
-        next;
+        return;
+    }
+    
+    #transform
+    if($transform){
+        my $new_data = $transform->apply($psconfig->data());
+        if(!$new_data && $transform->error()){
+            # error applying script
+            print STDERR "Error applying transform: " . $transform->error();
+            return;
+        }elsif(!$new_data){
+            #jq returned undefined value
+            print STDERR "Transform returned undefined value with no error. Check your JQ script logic.";
+            return;
+        }elsif(ref $new_data ne 'HASH'){
+            #jq returned non hash value
+            print STDERR "Transform returned a value that is not a JSON object. Check your JQ script logic.";
+            return;
+        }
+        $psconfig->data($new_data);
+        @errors = $psconfig->validate();
+        if(@errors){
+            foreach my $error(@errors){
+                print STDERR "Error: " . $error->message . "\n";
+                print STDERR "Path: " . $error->path . "\n\n";
+            }
+            print STDERR "Invalid pSConfig JSON after applying transform\n";
+            return;
+        }
+        print "Post-transform: " . $psconfig->json() . "\n";
     }
     
     #set requesting agent
-    print "Requesting agent is: \n";
-    use Data::Dumper;
-    print Dumper($self->requesting_agent_addresses());
-    
     $psconfig->requesting_agent_addresses($self->requesting_agent_addresses());
     
     #walk through tasks

@@ -127,8 +127,7 @@
         "JQTransformSpecification": {
             "type": "object",
             "properties": {
-                "script":    { "type": "string" },
-                "output-raw": { "type": "boolean" }
+                "script":    { "type": "string" }
             },
             "additionalProperties": false,
             "required": [ "script" ]

@@ -1,6 +1,7 @@
 package perfSONAR_PS::PSConfig::Remote;
 
 use Mouse;
+use perfSONAR_PS::PSConfig::JQTransform;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
@@ -29,10 +30,9 @@ sub ssl_ca_path {
     return $self->_field('ssl-ca-path', $val);
 }
 
-#TODO: Implement JQ support
 sub transform {
     my ($self, $val) = @_;
-    return $self->_field_anyobj('transform', $val);
+    return $self->_field_class('transform', 'perfSONAR_PS::PSConfig::JQTransform', $val);
 }
 
 
