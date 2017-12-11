@@ -630,6 +630,15 @@ sub _apply_transform {
     print "Post-transform: " . $psconfig->json() . "\n";
 }
 
+sub will_retry_pscheduler {
+    my ($self) = @_;
+    
+    if($self->pscheduler_fails() > 0 && $self->pscheduler_fails() < $self->max_pscheduler_attempts()){
+        return 1;
+    }
+    return 0;
+}
+
 
 __PACKAGE__->meta->make_immutable;
 

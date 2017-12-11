@@ -76,7 +76,7 @@ my $fileHandle = $res;
 # that user/group.
 if($RUNAS_USER && $RUNAS_GROUP){
     if(setids(USER => $RUNAS_USER, GROUP => $RUNAS_GROUP) != 0){
-        print STDERR "Error: Couldn't drop privileges\n";
+        print STDERR "Error: Could not drop privileges\n";
         exit( -1 );
     }
 }elsif($RUNAS_USER || $RUNAS_GROUP){
@@ -156,6 +156,7 @@ $inotify->blocking(0);
 $inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation failed" ;
 $inotify->watch($agent->include_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->include_directory() . " watcher creation failed" ;
 $inotify->watch($agent->archive_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->archive_directory() . " watcher creation failed" ;
+$inotify->watch($agent->transform_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->transform_directory() . " watcher creation failed" ;
 $inotify->watch($agent->requesting_agent_file(), IN_MODIFY) or die $agent->requesting_agent_file() . " watcher creation failed" ;
 
 ##
@@ -174,14 +175,19 @@ while(1){
     my $end = time;
     my $until_next_refresh = $agent->check_interval_seconds() - ($end - $start);
     my $until_next_file_check = $agent->check_config_interval_seconds();
-    $logger->debug("Time until next record refresh is $until_next_refresh seconds");
+    my $sleep_time = $until_next_refresh < $until_next_file_check ? $until_next_refresh : $until_next_file_check;
+    if($agent->will_retry_pscheduler()){
+        $logger->info("Retrying pscheduler in $sleep_time seconds...");
+    }else{
+        $logger->info("Time until next record refresh is $until_next_refresh seconds");
+    }
     $start = $end;
     while($until_next_refresh > 0){
-        sleep($until_next_refresh < $until_next_file_check ? $until_next_refresh : $until_next_file_check);
+        sleep($sleep_time);
         if($inotify->poll()){
             $logger->info("Configuration file change detected, refreshing records.");
             last;
-        }elsif($agent->pscheduler_fails() > 0 && $agent->pscheduler_fails() < $agent->max_pscheduler_attempts()){
+        }elsif($agent->will_retry_pscheduler()){
             $logger->info("Retrying pscheduler after failure");
             last;
         }else{
