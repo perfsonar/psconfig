@@ -24,7 +24,7 @@ use Linux::Inotify2;
 use Log::Log4perl qw/:easy/;
 
 use perfSONAR_PS::PSConfig::PScheduler::Agent;
-use perfSONAR_PS::PSConfig::Logging;
+use perfSONAR_PS::Utils::Logging;
 use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
 
 ##########
@@ -89,7 +89,7 @@ if($RUNAS_USER && $RUNAS_GROUP){
 ##########
 # Now that we've dropped privileges, create the logger. If we do it in reverse
 # order, the daemon won't be able to write to the logger.
-my $logf = new perfSONAR_PS::PSConfig::Logging();
+my $logf = new perfSONAR_PS::Utils::Logging();
 my $logger;
 if(!defined $LOGGER_CONF || $LOGGER_CONF eq q{}) {
     use Log::Log4perl qw(:easy);
@@ -151,6 +151,7 @@ $agent->init($CONFIG_FILE) or die("Error initializing agent: " . $agent->error()
 
 ##########
 # Setup Inotify2 on config files and directories
+# NOTE: Don't watch requesting agent file because it may not exist
 # NOTE: These do not work in /vagrant directory on vagrant VM or the /etc/perfsonar/psconfig symlink
 #   If you need to test, set config to something outside of /vagrant shared directory.
 my $inotify = new Linux::Inotify2 or die "Unable to create new inotify object: $!" ;
@@ -159,10 +160,10 @@ $inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation
 $inotify->watch($agent->include_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->include_directory() . " watcher creation failed" ;
 $inotify->watch($agent->archive_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->archive_directory() . " watcher creation failed" ;
 $inotify->watch($agent->transform_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->transform_directory() . " watcher creation failed" ;
-$inotify->watch($agent->requesting_agent_file(), IN_MODIFY) or die $agent->requesting_agent_file() . " watcher creation failed" ;
 
 ##
 # Start main program loop
+$logger->info($logf->format("Starting pSConfig pScheduler agent"));
 while(1){
     ###########
     #Initialize start
@@ -170,6 +171,8 @@ while(1){
     
     #############
     #refresh configs
+    $logf->generate_guid(); #generate new log id for run
+    $agent->logf()->guid($logf->guid()); #pass to agent so guid consistent
     $logger->info($logf->format("Running agent..."));
     $agent->run();
     $logger->info($logf->format("Agent completed running"));

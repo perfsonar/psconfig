@@ -27,7 +27,7 @@ use perfSONAR_PS::Client::PSConfig::ApiFilters;
 use perfSONAR_PS::Client::PSConfig::Archive;
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 use perfSONAR_PS::PSConfig::ArchiveConnect;
-use perfSONAR_PS::PSConfig::Logging;
+use perfSONAR_PS::Utils::Logging;
 use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::PScheduler::Config;
 use perfSONAR_PS::PSConfig::RequestingAgentConnect;
@@ -55,9 +55,11 @@ has 'match_addresses' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'requesting_agent_addresses' => (is => 'rw', isa => 'HashRef');
 has 'debug' => (is => 'rw', isa => 'Bool', default => sub { 0 });
 has 'error' => (is => 'ro', isa => 'Str', writer => '_set_error');
-has 'logf' => (is => 'ro', isa => 'perfSONAR_PS::PSConfig::Logging', writer => '_set_logf', default => sub{ new perfSONAR_PS::PSConfig::Logging() });
+has 'logf' => (is => 'ro', isa => 'perfSONAR_PS::Utils::Logging', writer => '_set_logf', default => sub{ new perfSONAR_PS::Utils::Logging() });
 
 my $logger = get_logger(__PACKAGE__);
+my $task_logger = get_logger('TaskLogger');
+my $transaction_logger = get_logger('TransactionLogger');
 
 sub init {
     my ($self, $config_file) = @_;
@@ -261,7 +263,8 @@ sub run {
     my $old_task_deadline = time + $self->check_interval_seconds();
     my $task_manager;        
     eval{
-        $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager();
+        $task_manager = new perfSONAR_PS::Client::PScheduler::TaskManager(logger => $transaction_logger);
+        $task_manager->logf()->guid($self->logf()->guid()); # make logging guids consistent
         $task_manager->init(
                             pscheduler_url => $self->pscheduler_url(),
                             tracker_file => $agent_conf->pscheduler_tracker_file(),
@@ -590,10 +593,13 @@ sub _process_tasks {
                 next;
             }
             $task_manager->add_task(task => $psc_task);
+            #log task to task log. Do here because even if was not added, want record that
+            # it is a task that this host manages
+            $task_logger->info($self->logf()->format_task($psc_task));
         }
         $tg->stop();
     }
-    $logger->info($self->logf()->format('Successfully processed pSConfig JSON.'));
+    $logger->info($self->logf()->format('Successfully processed task.'));
 }
 
 sub _requesting_agent_from_file {
