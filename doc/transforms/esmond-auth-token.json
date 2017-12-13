@@ -1,0 +1,3 @@
+{
+    "script": "if .archives.\"example-archive-central\" then .archives.\"example-archive-central\".data.\"_auth-token\" |= \"5123cfa1d6bb66c327f1133bc00949b46437e02a\" else . end"
+}

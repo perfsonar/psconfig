@@ -1,0 +1,3 @@
+{
+    "script": ".tests |= map_values(if .type == \"latencybg\" or .type == \"latency\" then .spec.\"data-ports\" |= {\"lower\": 8760, \"upper\": 9960} else . end)"
+}

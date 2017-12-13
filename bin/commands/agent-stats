@@ -118,6 +118,9 @@ while( defined ($tasks_log_line = $tasks_log->readline) ){
             if($ctx_map->{'config_url'}){
                 $by_url->{$ctx_map->{'config_url'}} = 0 unless($by_url->{$ctx_map->{'config_url'}}); 
                 $by_url->{$ctx_map->{'config_url'}}++;
+            }elsif($ctx_map->{'config_file'}){
+                $by_url->{$ctx_map->{'config_file'}} = 0 unless($by_url->{$ctx_map->{'config_file'}}); 
+                $by_url->{$ctx_map->{'config_file'}}++;
             }
         }
     }

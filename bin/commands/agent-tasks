@@ -83,6 +83,7 @@ my $agent_log_line;
 while( defined ($agent_log_line = $agent_log->readline) ){
     if($agent_log_line =~ /guid=(.+?) msg=Agent completed running$/){
         $guid = $1;
+        last;
     }
 }
 unless($guid){
@@ -97,7 +98,6 @@ my $tasks_log_line;
 while( defined ($tasks_log_line = $tasks_log->readline) ){
     if($tasks_log_line =~ /^.+ INFO guid=$guid .+ task=(.+)$/){
         my $task_json = $1;
-        print "$task_json\n";
         my $task;
         eval{ $task = from_json($task_json); };
         if($@){
@@ -105,6 +105,9 @@ while( defined ($tasks_log_line = $tasks_log->readline) ){
         }else{
             push @{$tasks}, $task;
         }
+    }elsif(@{$tasks} > 0){
+        #no use in looking, we reached end of guid
+        last;
     }
 }
 

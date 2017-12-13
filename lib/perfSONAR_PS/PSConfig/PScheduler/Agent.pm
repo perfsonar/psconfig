@@ -246,13 +246,10 @@ sub run {
         $self->requesting_agent_addresses(\%requesting_agent);
         $logger->debug($self->logf()->format("Auto-detected requesting agent", {"requesting_agent" => \%requesting_agent}));
     }
-#     
+
 #     #todo: check binding options - even when downloading meshes
 #      
-#     #todo: make sure timeouts are set correctly
-#
-#     #todo: make sure i am happy with error reporting
-#    
+#     #todo: make sure timeouts are set correctly    
 
     ##
     # Reset logging context, done with config file
