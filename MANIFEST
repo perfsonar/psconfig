@@ -1,5 +1,7 @@
 MANIFEST
 Makefile
+bin/commands/agent-stats
+bin/commands/agent-tasks
 bin/commands/validate
 bin/psconfig
 bin/psconfig_pscheduler_agent

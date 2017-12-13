@@ -1,0 +1,120 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+agent-tasks - Get a list of tasks managed by the agent
+ 
+=head1 SYNOPSIS
+ 
+agent-stats [options]
+ 
+ Options:
+   -h | --help          help message
+   -d | --logdir DIR    directory containing log files to parse
+
+=head1 ARGUMENTS
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<-d | --logdir DIR>
+ 
+Directory containing log files to parse
+
+=back
+ 
+=head1 DESCRIPTION
+ 
+B<This program> will parse the tasks log of a pSConfig agent and rint them as json
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
+
+use File::ReadBackwards;
+use JSON qw( from_json to_json );
+
+#parse options
+my $logdir;
+my $help;
+GetOptions(
+    'help|h' => \$help,
+    'logdir|d=s' => \$logdir,
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV != 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "This command does not accept arguments",
+        -exitval => $exitval,
+        -verbose => 0   
+    });
+    exit $exitval;
+}
+
+
+#Set file names
+unless($logdir){
+    $logdir = '/var/log/perfsonar';
+}
+my $AGENT_LOG_FILE = "$logdir/psconfig-pscheduler-agent.log";
+my $TASKS_LOG_FILE = "$logdir/psconfig-pscheduler-agent-tasks.log";
+my $TRANSACTIONS_LOG_FILE = "$logdir/psconfig-pscheduler-agent-tasks.log";
+
+#TODO: Handle rotation
+
+#find guid
+my $guid;
+my $agent_log = File::ReadBackwards->new($AGENT_LOG_FILE) or die "Unable to open $AGENT_LOG_FILE: $!\n" ;
+my $agent_log_line;
+while( defined ($agent_log_line = $agent_log->readline) ){
+    if($agent_log_line =~ /guid=(.+?) msg=Agent completed running$/){
+        $guid = $1;
+    }
+}
+unless($guid){
+    print STDERR "Unable to find last guid in $AGENT_LOG_FILE. Make sure the agent has completed at least one run.\n";
+    exit 1;
+}
+
+#parse tasks
+my $tasks = [];
+my $tasks_log = File::ReadBackwards->new($TASKS_LOG_FILE) or die "Unable to open $TASKS_LOG_FILE: $!\n" ;
+my $tasks_log_line;
+while( defined ($tasks_log_line = $tasks_log->readline) ){
+    if($tasks_log_line =~ /^.+ INFO guid=$guid .+ task=(.+)$/){
+        my $task_json = $1;
+        print "$task_json\n";
+        my $task;
+        eval{ $task = from_json($task_json); };
+        if($@){
+            print STDERR "Error parsing task: $@\n";
+        }else{
+            push @{$tasks}, $task;
+        }
+    }
+}
+
+#output
+print to_json({"tasks"=> $tasks}, {pretty => 1});
+
+
+_success();
+
+#Subroutines
+sub _success{
+    exit 0;
+}

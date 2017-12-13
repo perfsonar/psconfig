@@ -59,6 +59,8 @@ files: 30s for the original file and 30s for both includes
 B<This program> will read a JSON file from local filesystem or an http(s) URL and validate the JSON. An exit code of 0 indicates valid, 1 indicates it is invalid, and 2 indicates an error occurred.
  
 =cut
+use strict;
+use warnings;
 
 use FindBin qw($Bin);
 use lib "$Bin/../../lib";
@@ -154,7 +156,7 @@ if($psconfig_client->error()){
 }
 
 #validate again after expansion
-my @errors = $psconfig->validate();
+@errors = $psconfig->validate();
 if(@errors){
     unless($quiet){
         print STDERR "pSConfig JSON is not valid after expanding includes. Encountered the following validation errors:\n\n";
