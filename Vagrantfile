@@ -49,6 +49,8 @@ Vagrant.configure("2") do |config|
                 perl-devel\
                 perl-ExtUtils-MakeMaker\
                 pscheduler-bundle-full\
+                pscheduler-test-snmpget\
+                pscheduler-tool-pysnmp\
                 GeoIP-data\
                 perl-AppConfig\
                 perl-B-Hooks-EndOfScope\
@@ -230,7 +232,11 @@ Vagrant.configure("2") do |config|
   # and creates a perfsonar user/group
   config.vm.provision "shell", inline: <<-SHELL
     mkdir -p /var/lib/perfsonar/psconfig
+    mkdir -p /var/log/perfsonar/
+    ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
     /usr/sbin/groupadd perfsonar 2> /dev/null || :
     /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
+    chown -R perfsonar:perfsonar /var/lib/perfsonar/
+    chown -R perfsonar:perfsonar /var/log/perfsonar/
   SHELL
 end
