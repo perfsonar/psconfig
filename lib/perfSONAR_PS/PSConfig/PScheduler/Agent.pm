@@ -596,7 +596,7 @@ sub _process_tasks {
         }
         $tg->stop();
     }
-    $logger->info($self->logf()->format('Successfully processed task.'));
+    $logger->debug($self->logf()->format('Successfully processed task.'));
 }
 
 sub _requesting_agent_from_file {
