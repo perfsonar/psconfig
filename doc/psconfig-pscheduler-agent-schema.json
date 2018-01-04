@@ -132,7 +132,12 @@
         "JQTransformSpecification": {
             "type": "object",
             "properties": {
-                "script":    { "type": "string" }
+                "script":   {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                }
             },
             "additionalProperties": false,
             "required": [ "script" ]

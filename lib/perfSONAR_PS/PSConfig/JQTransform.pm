@@ -11,7 +11,7 @@ has 'error' => (is => 'ro', isa => 'Str|Undef', writer => '_set_error');
 
 sub script {
     my ($self, $val) = @_;
-    return $self->_field('script', $val);
+    return $self->_field_list('script', $val);
 }
 
 sub apply {

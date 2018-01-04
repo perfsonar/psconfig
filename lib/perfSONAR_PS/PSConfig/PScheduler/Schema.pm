@@ -146,7 +146,12 @@ sub psconfig_pscheduler_json_schema() {
         "JQTransformSpecification": {
             "type": "object",
             "properties": {
-                "script":    { "type": "string" }
+                "script":   {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                }
             },
             "additionalProperties": false,
             "required": [ "script" ]
