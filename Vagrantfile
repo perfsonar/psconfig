@@ -68,6 +68,7 @@ Vagrant.configure("2") do |config|
                 perl-Compress-Raw-Zlib\
                 perl-Config-General\
                 perl-Curses\
+                perl-Devel-Cover\
                 perl-DBD-Pg\
                 perl-DBI\
                 perl-DB_File\
