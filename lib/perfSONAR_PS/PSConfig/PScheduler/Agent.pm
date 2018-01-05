@@ -584,6 +584,12 @@ sub _process_tasks {
         }
         my @pair;
         while(@pair = $tg->next()){
+            #check for errors expanding task
+            if($tg->error()){
+                $logger->error($tg->error());
+                next;
+            }
+            #build pscheduler
             my $psc_task = $tg->pscheduler_task();
             unless($psc_task){
                 $logger->error($self->logf()->format("Error converting task to pscheduler: " . $tg->error()));
