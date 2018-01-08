@@ -247,9 +247,13 @@ sub run {
         $logger->debug($self->logf()->format("Auto-detected requesting agent", {"requesting_agent" => \%requesting_agent}));
     }
 
-#     #todo: check binding options - even when downloading meshes
-#      
-#     #todo: make sure timeouts are set correctly    
+    ##
+    # Set defaults for pscheduler binding addresses
+    unless($agent_conf->pscheduler_bind_map()){
+        $agent_conf->pscheduler_bind_map({});
+    }
+    
+    #todo: make sure timeouts are set correctly    
 
     ##
     # Reset logging context, done with config file
@@ -272,7 +276,7 @@ sub run {
                             new_task_min_runs => $agent_conf->task_min_runs(),
                             old_task_deadline => $old_task_deadline,
                             task_renewal_fudge_factor => $agent_conf->task_renewal_fudge_factor(),
-                            bind_map => {},#\%bind_map,
+                            bind_map => $agent_conf->pscheduler_bind_map(),
                             lead_address_map => {},#\%pscheduler_addr_map,
                             debug => $self->debug()
                         );

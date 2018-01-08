@@ -31,7 +31,7 @@
         },
         
         "pscheduler-bind-map": { 
-            "type": "#/pSConfig/AddressMap",
+            "$ref": "#/pSConfig/AddressMap",
             "description": "Maps a remote pscheduler address to the local address to use when trying to communicate with aforementioned remote address. Remote address is key and local address is value. Special key _default is used if no address matches. If no _default and no remote address matches a key then uses local routing table."
         },
                 
@@ -181,7 +181,7 @@
                     
                 },
                 "bind-address": { 
-                    "type": "#/pSConfig/Host",
+                    "$ref": "#/pSConfig/Host",
                     "description": "Local address to use when downloading JSON. Default is to let local routing tables choose."
                 },
                 "ssl-validate-certificate": { 

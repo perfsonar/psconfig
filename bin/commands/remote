@@ -12,7 +12,7 @@ remote add|delete|list [options] URL
    -h | --help                  help message
    --transform JSON|@FILE       JSON transform object or a path to a file starting with @ that alters downloaded json
    --configure-archives         Indicates archives defined in remote URL should be used
-   --bind-address               Local address to bind to when downloading JSON
+   --bind-address ADDRESS       Local address to bind to when downloading JSON
    --ssl-validate-certificate   When using https, indicates hostname should be verified against CA
    --ssl-ca-file FILE           A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.
    --ssl-ca-path PATH           A typical certificate authority (CA) path found on Linux. Used to verify server SSL certificate when using https.
@@ -109,7 +109,7 @@ GetOptions(
     'help|h' => \$help,
     'transform=s' => \$transform_opt,
     'configure-archives' => \$config_archives,
-    'bind-address' => \$bind_address,
+    'bind-address=s' => \$bind_address,
     'ssl-validate-certificates' => \$ssl_validate,
     'ssl-ca-file=s' => \$ssl_file,
     'ssl-ca-path=s' => \$ssl_path,
