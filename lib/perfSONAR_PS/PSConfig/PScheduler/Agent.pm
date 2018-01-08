@@ -266,6 +266,7 @@ sub run {
                             pscheduler_url => $self->pscheduler_url(),
                             tracker_file => $agent_conf->pscheduler_tracker_file(),
                             client_uuid_file => $agent_conf->client_uuid_file(),
+                            reference_label => "psconfig",
                             user_agent => "psconfig-pscheduler-agent",
                             new_task_min_ttl => $task_min_ttl_seconds,
                             new_task_min_runs => $agent_conf->task_min_runs(),
