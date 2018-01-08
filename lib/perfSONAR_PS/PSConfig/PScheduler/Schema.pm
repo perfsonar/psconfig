@@ -15,7 +15,7 @@ sub psconfig_pscheduler_json_schema() {
 {
     "id": "http://www.perfsonar.net/psconfig-pscheduler-agent-schema#",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "pSConfig pScheduler AgentS chema",
+    "title": "pSConfig pScheduler Agent Schema",
     "description": "Schema for pSConfig pScheduler agent configuration file. This is the file that tells the agent what pSConfig files to download and controls basic behaviors of agent script.",
     "type": "object",
     "additionalProperties": false,
@@ -44,6 +44,11 @@ sub psconfig_pscheduler_json_schema() {
             "description": "List of IP addresses and/or hostnames to use when determining which tests this agent should configure. Default is all the addresses found on interfaces on this host."
         },
         
+        "pscheduler-bind-map": { 
+            "type": "#/pSConfig/AddressMap",
+            "description": "Maps a remote pscheduler address to the local address to use when trying to communicate with aforementioned remote address. Remote address is key and local address is value. Special key _default is used if no address matches. If no _default and no remote address matches a key then uses local routing table."
+        },
+                
         "include-directory": {
             "type": "string",
             "description": "Directory with local pSConfig files to be processed. Default is /etc/psconfig/pscheduler.d"
@@ -102,6 +107,14 @@ sub psconfig_pscheduler_json_schema() {
     },
     
     "pSConfig": {
+        
+        "AddressMap": {
+            "type": "object",
+            "patternProperties": { 
+                "^[a-zA-Z0-9:._\\-]+$": { "$ref": "#/pSConfig/Host" }
+            },
+            "additionalProperties": false
+        },
         
         "Cardinal": {
             "type": "integer",
@@ -180,6 +193,10 @@ sub psconfig_pscheduler_json_schema() {
                     "$ref": "#/pSConfig/JQTransformSpecification",
                     "description": "JQ script to transform downloaded pSConfig JSON"
                     
+                },
+                "bind-address": { 
+                    "type": "#/pSConfig/Host",
+                    "description": "Local address to use when downloading JSON. Default is to let local routing tables choose."
                 },
                 "ssl-validate-certificate": { 
                     "type": "boolean",

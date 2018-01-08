@@ -29,6 +29,12 @@ sub pscheduler_assist_server {
     return $self->_field_urlhostport('pscheduler-assist-server', $val);
 }
 
+sub pscheduler_bind_map{
+    my ($self, $val) = @_;
+    
+    return $self->_field_anyobj('pscheduler-bind-map', $val);
+}
+
 sub pscheduler_fail_attempts {
     my ($self, $val) = @_;
     return $self->_field_cardinal('pscheduler-fail-attempts', $val);

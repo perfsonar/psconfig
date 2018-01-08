@@ -376,7 +376,8 @@ sub run {
             #create client
             my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
                 url => $remote->url(),
-                filters =>  $filters
+                filters =>  $filters,
+                bind_address => $remote->bind_address()
             );
             #process tasks
             my $configure_archives = $remote->configure_archives() ? 1 : 0; #makesure defined

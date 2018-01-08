@@ -15,6 +15,11 @@ sub configure_archives {
     return $self->_field_bool('configure-archives', $val);
 }
 
+sub bind_address {
+    my ($self, $val) = @_;
+    return $self->_field_host('bind-address', $val);
+}
+
 sub ssl_validate_certificate {
     my ($self, $val) = @_;
     return $self->_field_bool('ssl-validate-certificate', $val);
