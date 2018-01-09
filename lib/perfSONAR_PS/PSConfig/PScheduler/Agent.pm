@@ -386,7 +386,7 @@ sub run {
             #process tasks
             my $configure_archives = $remote->configure_archives() ? 1 : 0; #makesure defined
             $self->logf()->global_context({"config_src" => 'remote', 'config_url' => $remote->url()});
-            $self->_process_tasks($psconfig_client, $task_manager, $configure_archives, $remote->transform());
+            $self->_process_tasks($psconfig_client, $task_manager, $configure_archives, $agent_conf->pscheduler_bind_map(), $remote->transform());
             $self->logf()->global_context({});
         }
         
@@ -407,7 +407,7 @@ sub run {
             );
             #process tasks
             $self->logf()->global_context({"config_src" => 'include', 'config_file' => $abs_file});
-            $self->_process_tasks($psconfig_client, $task_manager, 1);
+            $self->_process_tasks($psconfig_client, $task_manager, 1, $agent_conf->pscheduler_bind_map());
             $self->logf()->global_context({});
         }
         
@@ -515,7 +515,7 @@ sub _build_pscheduler_url {
 }
 
 sub _process_tasks {
-    my ($self, $psconfig_client, $task_manager, $configure_archives, $transform) = @_;
+    my ($self, $psconfig_client, $task_manager, $configure_archives, $bind_map, $transform) = @_;
     
     #get config
     my $psconfig = $psconfig_client->get_config();
@@ -582,7 +582,8 @@ sub _process_tasks {
             task_name => $task_name,
             match_addresses => $self->match_addresses(),
             default_archives => $self->default_archives(),
-            use_psconfig_archives => $configure_archives
+            use_psconfig_archives => $configure_archives,
+            bind_map => $bind_map
         );
         unless($tg->start()){
              $logger->error($self->logf()->format("Error initializing task iterator: " . $tg->error()));
