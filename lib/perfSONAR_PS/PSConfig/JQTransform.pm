@@ -9,10 +9,23 @@ extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
 has 'error' => (is => 'ro', isa => 'Str|Undef', writer => '_set_error');
 
+=item script()
+
+Getter/Setter for JQ script. Can be string or array of strings where each item in list
+is a line of the JQ script
+
+=cut
+
 sub script {
     my ($self, $val) = @_;
     return $self->_field_list('script', $val);
 }
+
+=item apply()
+
+Applies JQ script to provided object
+
+=cut
 
 sub apply {
     my ($self, $json_obj) = @_;
@@ -30,6 +43,12 @@ sub apply {
     
     return $transformed;
 }
+
+=item validate()
+
+Validates this object against JSON schema. Returns any errors found. Valid if list is empty.
+
+=cut
 
 sub validate {
     my $self = shift;
