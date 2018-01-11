@@ -18,6 +18,12 @@ extends 'perfSONAR_PS::Client::PSConfig::BaseConnect';
 
 our $VERSION = 4.1;
 
+=item config_obj()
+
+Overridden method that returns perfSONAR_PS::PSConfig::PScheduler::Config instance
+
+=cut
+
 sub config_obj {
     #return a perfSONAR_PS::Client::PSConfig::Config object
     return new perfSONAR_PS::PSConfig::PScheduler::Config();
