@@ -53,8 +53,6 @@ has 'error' => (is => 'ro', isa => 'Str', writer => '_set_error');
 has 'logf' => (is => 'ro', isa => 'perfSONAR_PS::Utils::Logging', writer => '_set_logf', default => sub{ new perfSONAR_PS::Utils::Logging() });
 
 my $logger = get_logger(__PACKAGE__);
-my $task_logger = get_logger('TaskLogger');
-my $transaction_logger = get_logger('TransactionLogger');
 
 sub _agent_name {
     die("Override this");

@@ -12,23 +12,13 @@ Agent that loads config, grabs meshes and submits to pscheduler
 
 use Mouse;
 
-use Data::Dumper;
-use Data::Validate::Domain qw(is_hostname);
-use Data::Validate::IP qw(is_ipv4 is_ipv6 is_loopback_ipv4);
-use Net::CIDR qw(cidrlookup);
-use File::Basename;
 use Log::Log4perl qw(get_logger);
-use URI;
-
 use perfSONAR_PS::Client::PScheduler::TaskManager;
 use perfSONAR_PS::Client::PScheduler::Task;
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
-use perfSONAR_PS::PSConfig::ArchiveConnect;
 use perfSONAR_PS::Utils::Logging;
 use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::PScheduler::Config;
-use perfSONAR_PS::Utils::DNS qw(resolve_address reverse_dns);
-use perfSONAR_PS::Utils::Host qw(get_ips);
 use perfSONAR_PS::Utils::ISO8601 qw/duration_to_seconds/;
 
 extends 'perfSONAR_PS::PSConfig::BaseAgent';
