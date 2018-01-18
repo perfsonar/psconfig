@@ -41,7 +41,6 @@ has 'include_directory' => (is => 'rw', isa => 'Str');
 has 'archive_directory' => (is => 'rw', isa => 'Str');
 has 'transform_directory' => (is => 'rw', isa => 'Str');
 has 'requesting_agent_file' => (is => 'rw', isa => 'Str');
-has 'match_addresses' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'pscheduler_url' => (is => 'rw', isa => 'Str');
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
 has 'check_config_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 60 });
@@ -196,19 +195,6 @@ sub run {
         }
         $logger->debug($self->logf()->format("check_config_interval is " . $self->check_config_interval_seconds() . " seconds"));
     }
-
-    ###
-    #Determine match addresses
-    my $auto_detected_addresses; #for efficiency so we don't do twice
-    my $match_addresses = $agent_conf->match_addresses();
-    unless($match_addresses && @{$match_addresses}) {
-        $auto_detected_addresses = $self->_get_addresses();
-        $match_addresses = $auto_detected_addresses;
-        $logger->debug($self->logf()->format("Auto-detected match addresses", {"match_addresses" => $match_addresses}));
-    }else{
-        $logger->debug($self->logf()->format("Loaded match addresses from config file", {"match_addresses" => $match_addresses}));
-    }
-    $self->match_addresses($match_addresses);
     
     ##
     # Build requesting_address which is used in address classes
@@ -216,7 +202,7 @@ sub run {
     unless($self->requesting_agent_addresses()){
         ##
         # Build requesting agent from all addresses on local machine
-        $auto_detected_addresses = $self->_get_addresses() unless($auto_detected_addresses);
+        my $auto_detected_addresses = $self->_get_addresses();
         my %requesting_agent = map {$_ => {'address' => $_ }} @{$auto_detected_addresses};
         $self->requesting_agent_addresses(\%requesting_agent);
         $logger->debug($self->logf()->format("Auto-detected requesting agent", {"requesting_agent" => \%requesting_agent}));

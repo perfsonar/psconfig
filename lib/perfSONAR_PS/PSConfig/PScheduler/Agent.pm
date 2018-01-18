@@ -25,6 +25,7 @@ extends 'perfSONAR_PS::PSConfig::BaseAgent';
 
 our $VERSION = 4.1;
 
+has 'match_addresses' => (is => 'rw', isa => 'ArrayRef', default => sub { [] });
 has 'pscheduler_fails' => (is => 'rw', isa => 'Int', default => sub { 0 });
 has 'max_pscheduler_attempts' => (is => 'rw', isa => 'Int', default => sub { 5 });
 has 'task_min_ttl_seconds' => (is => 'rw', isa => 'Int', default => sub { 86400 });
@@ -101,6 +102,19 @@ sub _run_start {
     unless($agent_conf->pscheduler_bind_map()){
         $agent_conf->pscheduler_bind_map({});
     }
+    
+    ###
+    #Determine match addresses
+    my $auto_detected_addresses; #for efficiency so we don't do twice
+    my $match_addresses = $agent_conf->match_addresses();
+    unless($match_addresses && @{$match_addresses}) {
+        $auto_detected_addresses = $self->_get_addresses();
+        $match_addresses = $auto_detected_addresses;
+        $logger->debug($self->logf()->format("Auto-detected match addresses", {"match_addresses" => $match_addresses}));
+    }else{
+        $logger->debug($self->logf()->format("Loaded match addresses from config file", {"match_addresses" => $match_addresses}));
+    }
+    $self->match_addresses($match_addresses);
     
     ##
     #Init the TaskManager
