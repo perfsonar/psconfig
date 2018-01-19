@@ -1,9 +1,9 @@
-package perfSONAR_PS::PSConfig::MaDDash::Config;
+package perfSONAR_PS::PSConfig::MaDDash::Agent::Config;
 
 use Mouse;
 use JSON::Validator;
 use perfSONAR_PS::PSConfig::Remote;
-use perfSONAR_PS::PSConfig::MaDDash::Schema qw(psconfig_maddash_json_schema);
+use perfSONAR_PS::PSConfig::MaDDash::Agent::Schema qw(psconfig_maddash_agent_json_schema);
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
@@ -132,6 +132,52 @@ sub check_config_interval {
     return $self->_field_duration('check-config-interval', $val);
 }
 
+=item grids()
+
+Get/sets grids as HashRef
+
+=cut
+
+sub grids{
+    my ($self, $val) = @_;
+    
+    return $self->_field_class_map('grids', 'perfSONAR_PS::Client::PSConfig::MaDDash::Agent::Grid', $val);
+}
+
+=item grid()
+
+Get/sets grid at specified field
+
+=cut
+
+sub grid{
+    my ($self, $field, $val) = @_;
+    
+    return $self->_field_class_map_item('grids', $field, 'perfSONAR_PS::Client::PSConfig::MaDDash::Agent::Grid', $val);
+}
+
+=item grid_names()
+
+Gets keys of grids HashRef
+
+=cut
+
+sub grid_names{
+    my ($self) = @_;
+    return $self->_get_map_names("grids");
+} 
+
+=item remove_grid()
+
+Removes grid at specified field
+
+=cut
+
+sub remove_grid {
+    my ($self, $field) = @_;
+    $self->_remove_map_item('grids', $field);
+}
+
 =item validate()
 
 Validates this object against JSON schema. Returns error messages of a 0 length array if valid. 
@@ -141,7 +187,7 @@ Validates this object against JSON schema. Returns error messages of a 0 length 
 sub validate {
     my $self = shift;
     my $validator = new JSON::Validator();
-    $validator->schema(psconfig_maddash_json_schema());
+    $validator->schema(psconfig_maddash_agent_json_schema());
 
     return $validator->validate($self->data());
 }

@@ -18,8 +18,9 @@ use YAML qw(LoadFile);
 
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 use perfSONAR_PS::Utils::Logging;
-use perfSONAR_PS::PSConfig::MaDDash::ConfigConnect;
-use perfSONAR_PS::PSConfig::MaDDash::Config;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::Config;
+#TODO: Probably delete DefaultReports
 use perfSONAR_PS::PSConfig::MaDDash::DefaultReports qw(load_default_reports);
 
 extends 'perfSONAR_PS::PSConfig::BaseAgent';
@@ -46,7 +47,7 @@ sub _agent_name {
 }
 
 sub _config_client {
-    return new perfSONAR_PS::PSConfig::MaDDash::ConfigConnect();
+    return new perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect();
 }
 
 sub _init {
