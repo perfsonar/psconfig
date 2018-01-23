@@ -223,8 +223,16 @@ Vagrant.configure("2") do |config|
             if ! [ -L /etc/perfsonar ]; then
                 rm -rf /etc/perfsonar
             fi
+            if ! [ -d /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar ]; then
+                rm -rf /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar
+            fi
+            if ! [ -L /usr/lib/perfsonar ]; then
+                rm -rf /usr/lib/perfsonar
+            fi
             mkdir -p /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar
             ln -fs /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar /etc/perfsonar
+            mkdir -p /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar
+            ln -fs /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar /usr/lib/perfsonar
         SHELL
       end
   end
@@ -233,11 +241,15 @@ Vagrant.configure("2") do |config|
   # and creates a perfsonar user/group
   config.vm.provision "shell", inline: <<-SHELL
     mkdir -p /var/lib/perfsonar/psconfig
+    mkdir -p /usr/lib/perfsonar/psconfig
+    mkdir -p /usr/lib/perfsonar/psconfig/checks
+    mkdir -p /usr/lib/perfsonar/psconfig/visualization
     mkdir -p /var/log/perfsonar/
     ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
     /usr/sbin/groupadd perfsonar 2> /dev/null || :
     /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
     chown -R perfsonar:perfsonar /var/lib/perfsonar/
+    chown -R perfsonar:perfsonar /usr/lib/perfsonar/
     chown -R perfsonar:perfsonar /var/log/perfsonar/
   SHELL
 end

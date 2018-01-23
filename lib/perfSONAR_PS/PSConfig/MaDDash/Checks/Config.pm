@@ -5,7 +5,7 @@ use JSON::Validator;
 
 use perfSONAR_PS::Client::PSConfig::JQTransform;
 use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
-use perfSONAR_PS::PSConfig::MaDDash::Checks::CheckDefaults
+use perfSONAR_PS::PSConfig::MaDDash::Checks::CheckDefaults;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::CommandOpt;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabels;
 
@@ -57,6 +57,18 @@ Sets/gets requires object
 sub requires{
     my ($self, $val) = @_;
     return $self->_field_class('requires', 'perfSONAR_PS::PSConfig::MaDDash::TaskSelector', $val);
+}
+
+=item archive_accessor()
+
+Sets/gets archive-accessor
+
+=cut
+
+sub archive_accessor{
+    my ($self, $val) = @_;
+    
+    return $self->_field_class('archive-accessor', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 =item status_labels()

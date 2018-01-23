@@ -1,16 +1,6 @@
 package perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabels;
 
-use Mouse;
-
-"ok": { "type": "string" },
-                "warning": { "type": "string" },
-                "critical": { "type": "string" },
-                "notrun": { "type": "string" },
-                "unknown": { "type": "string" },
-                "custom": { 
-                    "$ref": "StatusLabelCustom" 
-                }
-                
+use Mouse;      
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
@@ -87,7 +77,7 @@ Gets/sets the an individual value from custom
 =cut
 
 sub custom_label {
-    my ($self, $val) = @_;
+    my ($self, $field, $val) = @_;
     return $self->_field_map('custom', $field, $val);
 }
 

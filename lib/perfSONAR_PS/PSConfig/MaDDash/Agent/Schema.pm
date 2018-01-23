@@ -25,7 +25,7 @@ sub psconfig_maddash_agent_json_schema() {
     "description": "Schema for pSConfig MaDDash agent configuration file. This is the file that tells the agent what pSConfig files to download and controls basic behaviors of agent script.",
     "type": "object",
     "additionalProperties": false,
-    "required": [],
+    "required": [ "grids" ],
     "properties": {
     
         "remotes": {
@@ -36,17 +36,27 @@ sub psconfig_maddash_agent_json_schema() {
                 
         "include-directory": {
             "type": "string",
-            "description": "Directory with local pSConfig files to be processed. Default is /etc/psconfig/maddash.d"
+            "description": "Directory with local pSConfig files to be processed. Default is /etc/perfsonar/psconfig/maddash.d"
         },
         
         "archive-directory": {
             "type": "string",
-            "description": "Directory with default archives to be added to all tasks. Default is /etc/psconfig/archives.d"
+            "description": "Directory with default archives to be added to all tasks. Default is /etc/perfsonar/psconfig/archives.d"
         },
         
         "transform-directory": {
             "type": "string",
-            "description": "Directory with default transformations to apply to JSON processed by agent. Default is /etc/psconfig/transforms.d"
+            "description": "Directory with default transformations to apply to JSON processed by agent. Default is /etc/perfsonar/psconfig/transforms.d"
+        },
+        
+        "check-plugin-directory": {
+            "type": "string",
+            "description": "Directory with plugins for checks. Default is /usr/lib/perfsonar/psconfig/checks"
+        },
+        
+        "visualization-plugin-directory": {
+            "type": "string",
+            "description": "Directory with plugins for visualizations. Default is /usr/lib/perfsonar/psconfig/visualization"
         },
         
         "maddash-yaml-file": {
@@ -138,6 +148,10 @@ sub psconfig_maddash_agent_json_schema() {
                     "$ref": "#/pSConfig/Duration",
                     "description": "How often to check after a check detects a change in state"
                 },
+                "retry-attempts": {
+                    "$ref": "#/pSConfig/IntZero",
+                    "description": "How many times to retry after detecting a change in state"
+                },
                 "timeout": {
                     "$ref": "#/pSConfig/Duration",
                     "description": "How long to wait for check to complete"
@@ -161,10 +175,6 @@ sub psconfig_maddash_agent_json_schema() {
         "Grid": {
             "type": "object",
             "properties": {
-                "selector": {
-                    "$ref": "#/pSConfig/TaskSelector",
-                    "description": "Matches tasks that will be used to generate grids"
-                },
                 "check": {
                     "$ref": "#/pSConfig/CheckConfig",
                     "description": "Configuration of check plugin used in this grid"
@@ -173,13 +183,17 @@ sub psconfig_maddash_agent_json_schema() {
                     "$ref": "#/pSConfig/VisualizationConfig",
                     "description": "Configuration of visualization used in this grid"
                 },
+                "selector": {
+                    "$ref": "#/pSConfig/TaskSelector",
+                    "description": "Matches tasks that will be used to generate grids"
+                },
                 "priority": {
                     "$ref": "#/pSConfig/GridPriority",
                     "description": "Priority of grid."
                 }
             },
             "additionalProperties": false,
-            "required": [ "selector", "check", "visualization" ]
+            "required": [ "check", "visualization" ]
         },
         
         "GridPriority": {

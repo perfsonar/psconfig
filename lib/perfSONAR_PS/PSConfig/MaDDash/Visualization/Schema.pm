@@ -25,7 +25,7 @@ sub psconfig_maddash_viz_json_schema() {
     "description": "Schema for pSConfig MaDDash Visualization Plug-ins. This allows people to define new types of visualization to be used in MaDDash",
     "type": "object",
     "additionalProperties": false,
-    "required": [],
+    "required": [ "type", "requires", "defaults", "http-get-opts"],
     "properties": {
     
         "type": {
@@ -34,7 +34,7 @@ sub psconfig_maddash_viz_json_schema() {
         }, 
         
         "requires": {
-            "$ref": "TaskSelector",
+            "$ref": "#/pSConfig/TaskSelector",
             "description": "Indicates minimum requirements a task must meet to use this task"
         },
         
@@ -150,7 +150,7 @@ sub psconfig_maddash_viz_json_schema() {
                 }
             },
             "additionalProperties": false,
-            "required": [ "type" ]
+            "required": [ "base-url" ]
         },
         
         "VizVars": {

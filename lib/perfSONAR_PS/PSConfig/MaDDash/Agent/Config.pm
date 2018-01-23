@@ -75,6 +75,28 @@ sub transform_directory {
     return $self->_field('transform-directory', $val);
 }
 
+=item check_plugin_directory()
+
+Gets/sets the directory where check plugins live
+
+=cut
+
+sub check_plugin_directory {
+    my ($self, $val) = @_;
+    return $self->_field('check-plugin-directory', $val);
+}
+
+=item visualization_plugin_directory()
+
+Gets/sets the directory where visualization plugins live
+
+=cut
+
+sub visualization_plugin_directory {
+    my ($self, $val) = @_;
+    return $self->_field('visualization-plugin-directory', $val);
+}
+
 =item pscheduler_assist_server()
 
 Sets/gets the pscheduler-assist-server field as a host with optional port in form HOST:PORT
@@ -141,7 +163,7 @@ Get/sets grids as HashRef
 sub grids{
     my ($self, $val) = @_;
     
-    return $self->_field_class_map('grids', 'perfSONAR_PS::Client::PSConfig::MaDDash::Agent::Grid', $val);
+    return $self->_field_class_map('grids', 'perfSONAR_PS::PSConfig::MaDDash::Agent::Grid', $val);
 }
 
 =item grid()
@@ -153,7 +175,7 @@ Get/sets grid at specified field
 sub grid{
     my ($self, $field, $val) = @_;
     
-    return $self->_field_class_map_item('grids', $field, 'perfSONAR_PS::Client::PSConfig::MaDDash::Agent::Grid', $val);
+    return $self->_field_class_map_item('grids', $field, 'perfSONAR_PS::PSConfig::MaDDash::Agent::Grid', $val);
 }
 
 =item grid_names()

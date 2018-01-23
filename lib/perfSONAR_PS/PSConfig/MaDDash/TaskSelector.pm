@@ -1,4 +1,4 @@
-package perfSONAR_PS::PSConfig::MaDDash::Agent::TaskSelector;
+package perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 
 use Mouse;
 
@@ -6,7 +6,7 @@ use perfSONAR_PS::PSConfig::JQTransform;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
-==item test_type()
+=item test_type()
 
 Get/sets test-type as ArrayRef
 
@@ -28,7 +28,7 @@ sub add_test_type{
     $self->_add_list_item('test-type', $val);
 }
 
-==item task_name()
+=item task_name()
 
 Get/sets task-name as ArrayRef
 
@@ -50,7 +50,7 @@ sub add_task_name{
     $self->_add_list_item('task-name', $val);
 }
 
-==item archive_type()
+=item archive_type()
 
 Get/sets archive-type as ArrayRef
 

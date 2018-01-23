@@ -25,7 +25,7 @@ sub psconfig_maddash_check_json_schema() {
     "description": "Schema for pSConfig MaDDash Check Plug-ins. This allows people to define new types of checks",
     "type": "object",
     "additionalProperties": false,
-    "required": [],
+    "required": [ "type", "name", "description", "requires", "status-labels", "defaults", "command" ],
     "properties": {
     
         "type": {
@@ -46,6 +46,11 @@ sub psconfig_maddash_check_json_schema() {
         "requires": {
             "$ref": "#/pSConfig/TaskSelector",
             "description": "Indicates minimum requirements a task must meet to use this task"
+        },
+        
+        "archive-accessor": {
+            "$ref": "#/pSConfig/JQTransformSpecification",
+            "description": "JQ script used to build the accessor for supported archivers"
         },
         
         "status-labels": {
@@ -117,6 +122,10 @@ sub psconfig_maddash_check_json_schema() {
                     "$ref": "#/pSConfig/Duration",
                     "description": "How often to check after a check detects a change in state"
                 },
+                "retry-attempts": {
+                    "$ref": "#/pSConfig/IntZero",
+                    "description": "How many times to retry after detecting a change in state"
+                },
                 "timeout": {
                     "$ref": "#/pSConfig/Duration",
                     "description": "How long to wait for check to complete"
@@ -126,6 +135,7 @@ sub psconfig_maddash_check_json_schema() {
                     "description": "Plug-in specific parameters"
                 }
             },
+            "required": [ "check-interval", "critical-threshold", "warning-threshold" ],
             "additionalProperties": false
         },
         
@@ -184,6 +194,11 @@ sub psconfig_maddash_check_json_schema() {
             "additionalProperties": false,
             "required": [ "script" ]
         },
+        
+        "IntZero": {
+            "type": "integer",
+            "minimum": 0
+        },
 
         "StatusLabels": {
             "type": "object",
@@ -197,6 +212,7 @@ sub psconfig_maddash_check_json_schema() {
                     "$ref": "#/pSConfig/StatusLabelCustom" 
                 }
             },
+            "required": [ "ok", "warning", "critical", "notrun", "unknown"],
             "additionalProperties": false
         },
         

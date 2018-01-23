@@ -20,6 +20,13 @@ use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 use perfSONAR_PS::Utils::Logging;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Config;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::Grid;
+use perfSONAR_PS::PSConfig::MaDDash::Checks::ConfigConnect;
+use perfSONAR_PS::PSConfig::MaDDash::Checks::Config;
+use perfSONAR_PS::PSConfig::MaDDash::Visualization::ConfigConnect;
+use perfSONAR_PS::PSConfig::MaDDash::Visualization::Config;
+
+
 #TODO: Probably delete DefaultReports
 use perfSONAR_PS::PSConfig::MaDDash::DefaultReports qw(load_default_reports);
 
@@ -37,6 +44,7 @@ has 'group_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
 has 'grids' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'dashboards' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'check_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
+has 'agent_grids' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 
 my $logger = get_logger(__PACKAGE__);
 my $task_logger = get_logger('TaskLogger');
@@ -63,6 +71,48 @@ sub _run_start {
         my $default = "/etc/maddash/maddash-server/maddash.yaml";
         $logger->debug($self->logf()->format("No maddash-yaml-file specified. Defaulting to $default"));
         $agent_conf->maddash_yaml_file($default);
+    }
+    unless($agent_conf->check_plugin_directory()){
+        my $default = "/usr/lib/perfsonar/psconfig/checks/";
+        $logger->debug($self->logf()->format("No check-plugin-directory specified. Defaulting to $default"));
+        $agent_conf->check_plugin_directory($default);
+    }
+    unless($agent_conf->visualization_plugin_directory()){
+        my $default = "/usr/lib/perfsonar/psconfig/visualization/";
+        $logger->debug($self->logf()->format("No visualization-plugin-directory specified. Defaulting to $default"));
+        $agent_conf->visualization_plugin_directory($default);
+    }
+    
+    ##
+    # Exit if no grids to setup
+    unless($agent_conf->grids() && @{$agent_conf->grid_names()}){
+        $logger->info($self->logf()->format("No grids to setup."));
+  #TODO: Uncomment this
+  #      return;
+    }
+    
+    ##
+    # Load check plug-ins
+    my $check_plugins_map = $self->_load_plugins($agent_conf->check_plugin_directory(), "check");
+    print "============== CHECK PLUGINS ==============\n";
+    print Dumper($check_plugins_map);
+    print "===========================================\n";
+    
+    ##
+    # Load visualization plug-ins
+    my $viz_plugins_map = $self->_load_plugins($agent_conf->visualization_plugin_directory(), "visualization");
+    print "============== VIZ PLUGINS ==============\n";
+    print Dumper($viz_plugins_map);
+    print "===========================================\n";
+    
+    ##
+    # Set plugins in each grid set
+    foreach my $agent_grid_name(@{$agent_conf->grid_names()}){
+        my $agent_grid = $agent_conf->grid($agent_grid_name);
+        $agent_grid->load_check_plugin($check_plugins_map);
+        $agent_grid->load_visualization_plugin($viz_plugins_map);
+        #set here because the plugin settings won't stick with agent_conf
+        push @{$self->agent_grids()}, $agent_grid;
     }
     
     return 1;
@@ -94,29 +144,21 @@ sub _run_handle_psconfig {
         my $task = $psconfig->task($task_name);
         my $group = $psconfig->group($task->group_ref());
         my $row_equal_col = 0;
-         
-        #get grid name
-        my $grid_name = $task->psconfig_meta_param(META_DISPLAY_NAME());
-        unless($grid_name){
-            $grid_name = $task_name;
-        }
         
-        #add to dashboard
-        if($dashboard){
-            push @{$dashboard->{'grids'}}, $grid_name;
-        }
-        
-        #check dimension count
+        ##
+        # check dimension count
         if($group->dimension_count() > 2){
             $logger->warn($self->logf()->format("MaDDash agent currently only supports groups with 2 or less dimensions"));
             next;
         }
         
-        #build row group
+        ##
+        # build row group
         my $row_id = $task_name . "-row";
         my $row_labels = $self->_build_maddash_group($row_id, $group->dimension(0), $psconfig);
-         
-        #build column group if two-dimensional
+        
+        ##
+        # build column group if two-dimensional
         my $column_id = $task_name . "-col";
         my $col_labels = [];
         if($group->dimension_count() == 1){
@@ -135,7 +177,8 @@ sub _run_handle_psconfig {
             }
         }
         
-        #build excludes
+        ##
+        # build excludes
         my $exclude_checks = {};
         my $has_exclude_checks = 0;
         if($group->can('excludes') && $group->excludes()){
@@ -154,39 +197,80 @@ sub _run_handle_psconfig {
             }
         }
         
-        #build checks 
-        my $checks = $self->_build_checks($psconfig, $agent_conf, $task_name, $task, $group, $row_equal_col);
+        ##
+        # Build object used to determine if task matches
+        my $jq_obj = {
+            'task' => $task->data(),
+            'group' => $group->data(),
+            'test' => $psconfig->test($task->test_ref())->data()
+        };
+        $jq_obj->{'schedule'} = $psconfig->schedule($task->schedule_ref()) if($task->schedule_ref());
+        $jq_obj->{'archives'} = [];
+        if($task->archive_refs()){
+            foreach my $archive_ref(@{$task->archive_refs()}){
+                push @{$jq_obj->{'archives'}}, $psconfig->archive($archive_ref);
+            }            
+        }
         
-        #build grid
-        my $grid = {};
-        $grid->{ADDED_BY_TAG()}  = 1;
-        $grid->{name}            = $grid_name;
-        $grid->{rows}            = $row_id;
-        $grid->{columns}         = $column_id;
-        $grid->{excludeChecks}   = $exclude_checks if($has_exclude_checks);
-        $grid->{rowOrder}        = "alphabetical";
-        $grid->{colOrder}        = "alphabetical";
-        $grid->{excludeSelf}     = 1;
-        $grid->{columnAlgorithm} = "all";
-        $grid->{checks}          = $checks; #TODO: figure this out
-       #  $grid->{statusLabels}    = {
-#             ok => $check->{ok_description},
-#             warning  => $check->{warning_description},
-#             critical => $check->{critical_description},
-#             unknown => "Unable to retrieve data",
-#             notrun => "Check has not yet run",
-#         };
-#         my $report_id = __generate_report_id(
-#                                 grid_name => $grid_name,
-#                                 group_type => $test->members->type, 
-#                                 test_type => $test->parameters->type,
-#                                 maddash_options => $maddash_options
-#                             );
-#         $grid->{report} = $report_id if($report_id);
-        push @{$self->grids()}, $grid;
+        ##
+        # walkthrough configured grids
+        my @matching_agent_grids = ();
+        foreach my $agent_grid(@{$self->agent_grids()}){
+            ##
+            # Determine if this task has a check we want configured
+            if($agent_grid->matches()){
+                push @matching_agent_grids, $agent_grid;
+            }
+        }
         
-        #build checks
-        ## $row_labels, $col_labels - or maybe row_nlas, col_nlas,
+        ##
+        # Setup each matching grid
+        foreach my $matching_agent_grid(@matching_agent_grids) {
+            #get grid name
+            my $grid_name = $task->psconfig_meta_param(META_DISPLAY_NAME());
+            unless($grid_name){
+                $grid_name = $task_name;
+            }
+        
+            #add to dashboard
+            if($dashboard){
+                push @{$dashboard->{'grids'}}, $grid_name;
+            }
+        
+            #build checks 
+            my $checks = $self->_build_checks($psconfig, $agent_conf, $task_name, $task, $group, $row_equal_col);
+        
+            #build grid
+            my $grid = {};
+            $grid->{ADDED_BY_TAG()}  = 1;
+            $grid->{name}            = $grid_name;
+            $grid->{rows}            = $row_id;
+            $grid->{columns}         = $column_id;
+            $grid->{excludeChecks}   = $exclude_checks if($has_exclude_checks);
+            $grid->{rowOrder}        = "alphabetical";
+            $grid->{colOrder}        = "alphabetical";
+            $grid->{excludeSelf}     = 1;
+            $grid->{columnAlgorithm} = "all";
+            $grid->{checks}          = $checks; #TODO: figure this out
+           #  $grid->{statusLabels}    = {
+    #             ok => $check->{ok_description},
+    #             warning  => $check->{warning_description},
+    #             critical => $check->{critical_description},
+    #             unknown => "Unable to retrieve data",
+    #             notrun => "Check has not yet run",
+    #         };
+    #         my $report_id = __generate_report_id(
+    #                                 grid_name => $grid_name,
+    #                                 group_type => $test->members->type, 
+    #                                 test_type => $test->parameters->type,
+    #                                 maddash_options => $maddash_options
+    #                             );
+    #         $grid->{report} = $report_id if($report_id);
+            push @{$self->grids()}, $grid;
+        
+            #build checks
+            ## $row_labels, $col_labels - or maybe row_nlas, col_nlas,
+        }
     }
     
     
@@ -233,8 +317,8 @@ sub _run_end {
     
     ##
     # Output maddash yaml
-    print "::::::YAML::::::\n";
-    print YAML::Dump($maddash_yaml);
+    #print "::::::YAML::::::\n";
+    #print YAML::Dump($maddash_yaml);
     
     
 }
@@ -316,6 +400,53 @@ sub _load_maddash_yaml {
     
     return $maddash_yaml;
 }
+
+sub _load_plugins {
+    my($self, $directory, $name) = @_;
+
+    my $plugin_map = {};
+    unless(opendir(PLUGIN_FILES, $directory)){
+        $logger->error($self->logf()->format("Could not open $directory"));
+        return;
+    }
+    while (my $plugin_file = readdir(PLUGIN_FILES)) {
+        next unless($plugin_file =~ /\.json$/);
+        my $abs_file = "$directory/$plugin_file";
+        my $log_ctx = {"${name}_plugin_file" => $abs_file};
+        $logger->debug($self->logf()->format("Loading $name plug-in file $abs_file", $log_ctx));
+        my $client;
+        #not ideal, but all the rest of code is exactly the same so probably worth it
+        if($name eq 'check'){
+            $client = new perfSONAR_PS::PSConfig::MaDDash::Checks::ConfigConnect(url => $abs_file);
+        }elsif($name eq 'visualization'){
+            $client = new perfSONAR_PS::PSConfig::MaDDash::Visualization::ConfigConnect(url => $abs_file);
+        }else{
+            $logger->error($self->logf()->format("Programming error, unrecognized plugin type. File a bug, this should not happen: " . $client->error(), $log_ctx));
+        }
+        my $plugin = $client->get_config();
+        if($client->error()){
+            $logger->error($self->logf()->format("Error reading $name plug-in file: " . $client->error(), $log_ctx));
+            next;
+        } 
+        #validate
+        my @errors = $plugin->validate();
+        if(@errors){
+            my $cat = "${name}_plugin_schema_validation_error";
+            foreach my $error(@errors){
+                my $path = $error->path;
+                $logger->error($self->logf()->format($error->message, {
+                    'category' => $cat,
+                    'json_path' => $path
+                }));
+            }
+            next;
+        }
+        $plugin_map->{$plugin->type()} = $plugin;
+    }
+
+    return $plugin_map;
+}
+
 
 sub _build_group_members {
     my($self, $psconfig) = @_;
@@ -444,7 +575,6 @@ sub _select_archive {
     
     #TODO: base this off of check definition
     foreach my $a(@{$tg->expanded_archives()}){
-        print Dumper($a);
         if($a->{'archiver'} eq 'esmond'){
             return $a->{'data'}->{'url'};
         }
