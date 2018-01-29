@@ -83,6 +83,87 @@ sub jq {
     return $self->_field_class('jq', 'perfSONAR_PS::PSConfig::JQTransform', $val);
 }
 
+=item matches()
+
+Returns whether the given object matches this selector
+
+=cut
+
+sub matches{
+    my ($self, $jq_obj) = @_;
+    
+    #return if no jq_obj
+    unless($jq_obj){
+        return;
+    }
+    
+    #check test types
+    my $sel_test_types = $self->test_type();
+    if($sel_test_types && @{$sel_test_types}){
+        unless($jq_obj->{'test'} && $jq_obj->{'test'}->{'type'}){
+            return;
+        }
+        my $matches = 0;
+        my $test_type = $jq_obj->{'test'}->{'type'};
+        foreach my $sel_test_type(@{$sel_test_types}){
+            if($sel_test_type eq $test_type){
+                $matches = 1;
+                last;
+            }
+        }
+        return 0 unless($matches);
+    }
+    
+    #check task name types
+    my $sel_task_names = $self->task_name();
+    if($sel_task_names && @{$sel_task_names}){
+        return unless($jq_obj->{'task-name'});
+        my $matches = 0;
+        my $task_name = $jq_obj->{'task-name'};
+        foreach my $sel_task_name(@{$sel_task_names}){
+            if($task_name eq $sel_task_name){
+                $matches = 1;
+                last;
+            }
+        }
+        return 0 unless($matches);
+    }
+    
+    #check archive type
+    my $sel_archive_types = $self->archive_type();
+    if($sel_archive_types && @{$sel_archive_types}){
+        return unless($jq_obj->{'archives'});
+        my $matches = 0;
+        my $archives = $jq_obj->{'archives'};
+        my $archive_types = {};
+        #build map of archives for efficiency
+        foreach my $archive(@{$archives}){
+            $archive_types->{$archive->{'archiver'}} = 1;
+        }
+        #see if we have a matching type
+        foreach my $sel_archive_type(@{$sel_archive_types}){
+            if($archive_types->{$sel_archive_type}){
+                $matches = 1;
+                last;
+            }
+        }
+        return 0 unless($matches);
+    }
+    
+    #check jq
+    my $jq = $self->jq();
+    if($jq){
+        #try to apply transformation
+        my $jq_result = $jq->apply($jq_obj);
+        if(!$jq_result){
+            return 0;
+        }
+    }
+        
+    return 1;
+}
+
+
 
 
 __PACKAGE__->meta->make_immutable;

@@ -7,10 +7,12 @@ use perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::GridPriority;
 use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig;
+use perfSONAR_PS::PSConfig::MaDDash::Checks::Config;
+use perfSONAR_PS::PSConfig::MaDDash::Visualization::Config;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
-has 'check_plugin' => (is => 'rw', isa => ' perfSONAR_PS::PSConfig::MaDDash::Checks::Config|Undef');
+has 'check_plugin' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Checks::Config|Undef');
 has 'visualization_plugin' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Visualization::Config|Undef');
 
 my $logger;
@@ -74,7 +76,7 @@ Sets check_plugin given a map of check plugin objects where the key is the type
 sub load_check_plugin{
     my ($self, $plugin_map) = @_;
     
-    $self->_load_plugin($plugin_map, $self->check(), "check");
+    $self->check_plugin($self->_load_plugin($plugin_map, $self->check(), "check"));
 }
 
 =item load_visualization_plugin()
@@ -86,7 +88,7 @@ Sets visualization plugin given a map of visualization plugin objects where the 
 sub load_visualization_plugin{
     my ($self, $plugin_map) = @_;
     
-    $self->_load_plugin($plugin_map, $self->visualization(), "visualization");
+    $self->visualization_plugin($self->_load_plugin($plugin_map, $self->visualization(), "visualization"));
 }
 
 =item matches()
@@ -98,9 +100,30 @@ Returns whether the given object matches this grid
 sub matches{
     my ($self, $jq_obj) = @_;
     
-    #check requires
+    #make sure we have viz and check plugins
+    my $check = $self->check_plugin();
+    my $viz = $self->visualization_plugin();
+    unless($check && $viz){
+        return;
+    }
     
-    #check task selector
+    #check requires()
+    my $check_requires = $check->requires();
+    my $viz_requires = $viz->requires();
+    unless($check_requires && $viz_requires){
+        return;
+    }
+    
+    #check the requires() of each plugin
+    unless($check_requires->matches($jq_obj) && $viz_requires->matches($jq_obj)){
+        return 0;
+    }
+    
+    #check task selector, but only if it's set
+    my $sel = $self->selector(); #optional
+    if($sel && !$sel->matches($jq_obj)){
+        return 0;
+    }
     
     return 1;
 }

@@ -87,23 +87,16 @@ sub _run_start {
     # Exit if no grids to setup
     unless($agent_conf->grids() && @{$agent_conf->grid_names()}){
         $logger->info($self->logf()->format("No grids to setup."));
-  #TODO: Uncomment this
-  #      return;
+        return;
     }
     
     ##
     # Load check plug-ins
     my $check_plugins_map = $self->_load_plugins($agent_conf->check_plugin_directory(), "check");
-    print "============== CHECK PLUGINS ==============\n";
-    print Dumper($check_plugins_map);
-    print "===========================================\n";
     
     ##
     # Load visualization plug-ins
     my $viz_plugins_map = $self->_load_plugins($agent_conf->visualization_plugin_directory(), "visualization");
-    print "============== VIZ PLUGINS ==============\n";
-    print Dumper($viz_plugins_map);
-    print "===========================================\n";
     
     ##
     # Set plugins in each grid set
@@ -200,6 +193,7 @@ sub _run_handle_psconfig {
         ##
         # Build object used to determine if task matches
         my $jq_obj = {
+            'task-name' => $task_name,
             'task' => $task->data(),
             'group' => $group->data(),
             'test' => $psconfig->test($task->test_ref())->data()
@@ -208,7 +202,7 @@ sub _run_handle_psconfig {
         $jq_obj->{'archives'} = [];
         if($task->archive_refs()){
             foreach my $archive_ref(@{$task->archive_refs()}){
-                push @{$jq_obj->{'archives'}}, $psconfig->archive($archive_ref);
+                push @{$jq_obj->{'archives'}}, $psconfig->archive($archive_ref)->{'data'};
             }            
         }
         
@@ -218,7 +212,7 @@ sub _run_handle_psconfig {
         foreach my $agent_grid(@{$self->agent_grids()}){
             ##
             # Determine if this task has a check we want configured
-            if($agent_grid->matches()){
+            if($agent_grid->matches($jq_obj)){
                 push @matching_agent_grids, $agent_grid;
             }
         }
