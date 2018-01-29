@@ -209,12 +209,31 @@ sub _run_handle_psconfig {
         ##
         # walkthrough configured grids
         my @matching_agent_grids = ();
+        my $matching_agent_grid_prios = {};
         foreach my $agent_grid(@{$self->agent_grids()}){
             ##
             # Determine if this task has a check we want configured
             if($agent_grid->matches($jq_obj)){
-                push @matching_agent_grids, $agent_grid;
+                if($agent_grid->priority()){
+                    #if priority set, compare whether we should add it
+                    my $prio = $agent_grid->priority();
+                    if(!$matching_agent_grid_prios->{$prio->group()} ||
+                            $prio->level() < $matching_agent_grid_prios->{$prio->group()}->{'level'}){
+                        #if have not seen group yet, or we have and level is less than current, then add                        
+                        $matching_agent_grid_prios->{$prio->group()} = {
+                            'level' => $prio->level(),
+                            'grid' => $agent_grid
+                        };
+                    }
+                }else{
+                    #no priority, just add it
+                    push @matching_agent_grids, $agent_grid;
+                }
             }
+        }
+        #Add grids that had priority set
+        foreach my $matching_agent_grid_prio(keys %{$matching_agent_grid_prios}){
+            push @matching_agent_grids, $matching_agent_grid_prios->{$matching_agent_grid_prio}->{'grid'};
         }
         
         ##
@@ -225,7 +244,8 @@ sub _run_handle_psconfig {
             unless($grid_name){
                 $grid_name = $task_name;
             }
-        
+            $grid_name .= ' - ' . $matching_agent_grid->display_name();
+            
             #add to dashboard
             if($dashboard){
                 push @{$dashboard->{'grids'}}, $grid_name;

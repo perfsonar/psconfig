@@ -23,6 +23,17 @@ if(Log::Log4perl->initialized()) {
     $logger = get_logger(__PACKAGE__);
 }
 
+=item display_name()
+
+Sets/gets display-name string
+
+=cut
+
+sub display_name{
+    my ($self, $val) = @_;
+    return $self->_field('display-name', $val);
+}
+
 =item selector()
 
 Sets/gets selector object

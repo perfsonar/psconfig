@@ -155,6 +155,10 @@
         "Grid": {
             "type": "object",
             "properties": {
+                "display-name": {
+                    "type": "string",
+                    "description": "Name to be used in title of maddash grids."
+                },
                 "check": {
                     "$ref": "#/pSConfig/CheckConfig",
                     "description": "Configuration of check plugin used in this grid"
@@ -173,7 +177,7 @@
                 }
             },
             "additionalProperties": false,
-            "required": [ "check", "visualization" ]
+            "required": [ "display-name", "check", "visualization" ]
         },
         
         "GridPriority": {
@@ -181,7 +185,7 @@
             "properties": {
                 "group": {
                     "type": "string",
-                    "description": "Name of priority group. Only once check from group will be used."
+                    "description": "Name of priority group. Only one check from group will be used."
                 },
                 "level": {
                     "$ref": "#/pSConfig/IntZero",

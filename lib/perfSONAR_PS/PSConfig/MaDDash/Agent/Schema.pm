@@ -175,6 +175,10 @@ sub psconfig_maddash_agent_json_schema() {
         "Grid": {
             "type": "object",
             "properties": {
+                "display-name": {
+                    "type": "string",
+                    "description": "Name to be used in title of maddash grids."
+                },
                 "check": {
                     "$ref": "#/pSConfig/CheckConfig",
                     "description": "Configuration of check plugin used in this grid"
@@ -193,7 +197,7 @@ sub psconfig_maddash_agent_json_schema() {
                 }
             },
             "additionalProperties": false,
-            "required": [ "check", "visualization" ]
+            "required": [ "display-name", "check", "visualization" ]
         },
         
         "GridPriority": {
