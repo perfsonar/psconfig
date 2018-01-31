@@ -47,6 +47,7 @@ has 'grids' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'dashboards' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'check_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
 has 'agent_grids' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
+has 'report_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
 
 my $logger = get_logger(__PACKAGE__);
 my $task_logger = get_logger('TaskLogger');
@@ -334,13 +335,10 @@ sub _run_handle_psconfig {
             }
             
             #build reports
-    #         my $report_id = __generate_report_id(
-    #                                 grid_name => $grid_name,
-    #                                 group_type => $test->members->type, 
-    #                                 test_type => $test->parameters->type,
-    #                                 maddash_options => $maddash_options
-    #                             );
-    #         $grid->{report} = $report_id if($report_id);
+            my $report_name = $self->_load_report_yaml($check_plugin, $matching_agent_grid, $grid_name, $row_equal_col, $log_ctx);
+            $grid->{'report'} = $report_name if($report_name);
+            
+            #add to grids
             push @{$self->grids()}, $grid;
             
             #add to dashboard
@@ -392,6 +390,12 @@ sub _run_end {
         push @{$maddash_yaml->{'dashboards'}}, $dashboard;
     }
     
+    ##
+    # Add reports
+    foreach my $report_id(keys %{$self->report_map()}){
+        push @{$maddash_yaml->{'reports'}}, $self->report_map()->{$report_id};
+    }
+
     ##
     # Output maddash yaml
     my $maddash_yaml_str = $self->__quote_ipv6_address(YAML::Dump($maddash_yaml));
@@ -462,17 +466,6 @@ sub _load_maddash_yaml {
             delete($maddash_yaml->{$type}->{$key});
         }
     }
-    
-    #TODO: add thus back. It works fine but may need to be a bit more generic
-    #create map of existing reports
-    #add default reports if they are not already in place
-    #foreach my $default_report(@{load_default_reports()}){
-    #    #add unless we have our own manual version of the same name. allows default rules to be overridden.
-    #    unless($existing_reports->{$default_report->{id}}){
-    #        $default_report->{ADDED_BY_TAG()} = 1;
-    #        push @{ $maddash_yaml->{reports} },$default_report;
-    #    }
-    #}
     
     return $maddash_yaml;
 }
@@ -838,6 +831,72 @@ sub _select_archive {
     }
     
     return $archive_accessor;
+}
+
+sub _load_report_yaml {
+    my($self, $check_plugin, $matching_agent_grid, $grid_name, $row_equal_col, $log_ctx) = @_;
+    
+    # get yaml file
+    my $report_yaml_file = $check_plugin->defaults()->report_yaml_file();
+    my $report_name = $self->__generate_yaml_key($check_plugin->type());
+    my $custom_report_name;
+    $report_name .= $row_equal_col ? '_1' : '_2'; 
+    my $final_report_name = $report_name;
+    if($matching_agent_grid->check()->report_yaml_file()){
+        $report_yaml_file = $matching_agent_grid->check()->report_yaml_file();
+        $custom_report_name = "${grid_name}_${report_name}";
+        $final_report_name = $custom_report_name;
+    }
+    unless($report_yaml_file){
+        return;
+    }
+    
+    #check if we already have loaded the report we're after
+    if($self->report_map()->{$final_report_name}){
+        return $final_report_name;
+    }
+            
+    # Need to make changes to the YAML parser so that the Java YAML parser will
+    # grok the output.
+    local $YAML::UseHeader = 0;
+    local $YAML::CompressSeries = 0;
+    
+    my $report_yaml;
+    eval {
+        $report_yaml = LoadFile($report_yaml_file);
+    };
+    if ($@) {
+        $logger->error($self->logf()->format("Problem loading report YAML: ".$@, $log_ctx));
+        return;
+    }
+    
+    #simple validation
+    unless($report_yaml->{'reports'} && @{$report_yaml->{'reports'}}){
+        $logger->error($self->logf()->format("Report YAML is invalid. Top-level must a YAML array labelled 'reports'.", $log_ctx));
+        return;
+    }
+    
+    #walk through the loaded reports and grab the one we need
+    my $rule;
+    foreach my $report(@{$report_yaml->{'reports'}}){
+        if($report->{'id'} && $report->{'id'} eq $report_name){
+            $rule = $report->{'rule'};
+            last;
+        }
+    }
+    unless($rule){
+        $logger->warn($self->logf()->format("Unable to find report with name $report_name in $report_yaml_file", $log_ctx));
+        return;
+    }
+    
+    #update report map
+    $self->report_map()->{$final_report_name} = {
+        ADDED_BY_TAG() => 1,
+        'id' => $final_report_name,
+        'rule' => $rule
+    };
+    
+    return $final_report_name;
 }
 
 sub _get_root_address {
