@@ -25,7 +25,7 @@ sub psconfig_maddash_check_json_schema() {
     "description": "Schema for pSConfig MaDDash Check Plug-ins. This allows people to define new types of checks",
     "type": "object",
     "additionalProperties": false,
-    "required": [ "type", "name", "description", "requires", "status-labels", "defaults", "command" ],
+    "required": [ "type", "name", "description", "requires", "archive-accessor", "status-labels", "defaults", "command" ],
     "properties": {
     
         "type": {
@@ -135,7 +135,7 @@ sub psconfig_maddash_check_json_schema() {
                     "description": "Plug-in specific parameters"
                 }
             },
-            "required": [ "check-interval", "critical-threshold", "warning-threshold" ],
+            "required": [ "check-interval", "critical-threshold", "warning-threshold", "retry-interval", "retry-attempts", "timeout" ],
             "additionalProperties": false
         },
         
@@ -208,19 +208,24 @@ sub psconfig_maddash_check_json_schema() {
                 "critical": { "type": "string" },
                 "notrun": { "type": "string" },
                 "unknown": { "type": "string" },
-                "custom": { 
-                    "$ref": "#/pSConfig/StatusLabelCustom" 
+                "extra": {
+                    "type": "array",
+                    "items": { "$ref": "#/pSConfig/StatusLabelsExtra" } ,
+                    "description": "Extra statuses and their labels"
                 }
             },
             "required": [ "ok", "warning", "critical", "notrun", "unknown"],
             "additionalProperties": false
         },
         
-        "StatusLabelCustom": {
+        "StatusLabelsExtra": {
             "type": "object",
-            "patternProperties": { 
-                "^[0-9]+$": { "type": "string" }
+            "properties": {
+                "value": { "$ref": "#/pSConfig/IntZero" },
+                "short-name": { "type": "string" },
+                "description": { "type": "string" }
             },
+            "required": [ "value", "short-name", "description" ],
             "additionalProperties": false
         },
         

@@ -59,6 +59,17 @@ sub retry_interval {
     return $self->_field_duration('retry-interval', $val);
 }
 
+=item retry_attempts()
+
+Gets/sets the retry-attempts
+
+=cut
+
+sub retry_attempts {
+    my ($self, $val) = @_;
+    return $self->_field_intzero('retry-attempts', $val);
+}
+
 =item timeout()
 
 Gets/sets the timeout

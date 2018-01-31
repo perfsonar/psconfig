@@ -128,6 +128,10 @@ sub psconfig_maddash_agent_json_schema() {
                     "type": "string",
                     "description": "Type of check"
                 },
+                "archive-selector": {
+                    "$ref": "#/pSConfig/JQTransformSpecification",
+                    "description": "Allows you to select an archive based on additional criteria to be passed to the check"
+                },
                 "check-interval": {
                     "$ref": "#/pSConfig/Duration",
                     "description": "How often to run check"
@@ -205,11 +209,11 @@ sub psconfig_maddash_agent_json_schema() {
             "properties": {
                 "group": {
                     "type": "string",
-                    "description": "Name of priority group. Only once check from group will be used."
+                    "description": "Name of priority group. Only one check from group will be used."
                 },
                 "level": {
                     "$ref": "#/pSConfig/IntZero",
-                    "description": "Priority level. Matching check with lowest level will be chosen."
+                    "description": "Priority level. Matching check with highest level will be chosen."
                 }
             },
             "additionalProperties": false,

@@ -2,6 +2,8 @@ package perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig;
 
 use Mouse;
 
+use perfSONAR_PS::PSConfig::JQTransform;
+
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
 
@@ -14,6 +16,17 @@ Gets/sets the type
 sub type {
     my ($self, $val) = @_;
     return $self->_field('type', $val);
+}
+
+=item archive_selector()
+
+Get/sets JQTransform object for selecting the archive to use
+
+=cut
+
+sub archive_selector {
+    my ($self, $val) = @_;
+    return $self->_field_class('archive-selector', 'perfSONAR_PS::PSConfig::JQTransform', $val);
 }
 
 =item check_interval()
@@ -69,6 +82,17 @@ Gets/sets the retry-interval
 sub retry_interval {
     my ($self, $val) = @_;
     return $self->_field_duration('retry-interval', $val);
+}
+
+=item retry_attempts()
+
+Gets/sets the retry-attempts
+
+=cut
+
+sub retry_attempts {
+    my ($self, $val) = @_;
+    return $self->_field_intzero('retry-attempts', $val);
 }
 
 =item timeout()

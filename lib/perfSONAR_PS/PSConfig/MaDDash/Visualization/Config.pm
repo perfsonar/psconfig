@@ -3,7 +3,7 @@ package perfSONAR_PS::PSConfig::MaDDash::Visualization::Config;
 use Mouse;
 use JSON::Validator;
 
-use perfSONAR_PS::Client::PSConfig::JQTransform;
+use perfSONAR_PS::PSConfig::JQTransform;
 use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::VizDefaults;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::HttpGetOpt;
@@ -56,7 +56,7 @@ Sets/gets vars map
 sub vars{
     my ($self, $val) = @_;
     
-    return $self->_field_class_map('vars', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
+    return $self->_field_class_map('vars', 'perfSONAR_PS::PSConfig::JQTransform', $val);
 }
 
 =item var()
@@ -68,7 +68,7 @@ Get/sets var at specified field
 sub var{
     my ($self, $field, $val) = @_;
     
-    return $self->_field_class_map_item('vars', $field, 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
+    return $self->_field_class_map_item('vars', $field, 'perfSONAR_PS::PSConfig::JQTransform', $val);
 }
 
 =item var_names()
@@ -152,6 +152,32 @@ sub validate {
 
     return $validator->validate($self->data());
 }
+
+=item expand_vars()
+
+Expands the vars section and returns as key/val HashRef based on given object
+=cut
+
+sub expand_vars {
+    my ($self, $jq_obj) = @_;
+    my $expanded = {};
+    
+    #reset error
+    $self->_set_error('');
+     
+    #expand
+    foreach my $var_name(@{$self->var_names()}){
+        my $jq = $self->var($var_name);    
+        $expanded->{$var_name} = $jq->apply($jq_obj);
+        if($jq->error()){
+            $self->_set_error($jq->error());
+            return;
+        }
+    }
+    
+    return $expanded;
+}
+
 
 
 __PACKAGE__->meta->make_immutable;

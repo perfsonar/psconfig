@@ -2,6 +2,8 @@ package perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabels;
 
 use Mouse;      
 
+use perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabelsExtra;
+
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
 =item ok()
@@ -59,26 +61,26 @@ sub unknown {
     return $self->_field('unknown', $val);
 }
 
-=item custom()
+=item extra()
 
-Gets/sets the custom
+Gets/sets extra
 
 =cut
 
-sub custom {
+sub extra {
     my ($self, $val) = @_;
-    return $self->_field_map('custom', $val);
+    return $self->_field_class_list('extra', 'perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabelsExtra', $val);
 }
 
-=item custom_label()
+=item extra_label()
 
-Gets/sets the an individual value from custom
+Gets/sets the an individual value from extra
 
 =cut
 
-sub custom_label {
-    my ($self, $field, $val) = @_;
-    return $self->_field_map('custom', $field, $val);
+sub extra_label {
+    my ($self, $field, $index, $val) = @_;
+    return $self->_field_class_list_item('extra', $index, 'perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabelsExtra', $val);
 }
 
 

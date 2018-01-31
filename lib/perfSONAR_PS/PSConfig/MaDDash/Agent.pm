@@ -17,12 +17,14 @@ use Log::Log4perl qw(get_logger);
 use YAML qw(LoadFile);
 
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
+use perfSONAR_PS::Utils::ISO8601 qw/duration_to_seconds/;
 use perfSONAR_PS::Utils::Logging;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Config;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Grid;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::ConfigConnect;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::Config;
+use perfSONAR_PS::PSConfig::MaDDash::Template;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::ConfigConnect;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::Config;
 
@@ -147,12 +149,12 @@ sub _run_handle_psconfig {
         
         ##
         # build row group
-        my $row_id = $task_name . "-row";
+        my $row_id = $self->__generate_yaml_key($task_name . "-row");
         my $row_labels = $self->_build_maddash_group($row_id, $group->dimension(0), $psconfig);
         
         ##
         # build column group if two-dimensional
-        my $column_id = $task_name . "-col";
+        my $column_id = $self->__generate_yaml_key($task_name . "-col");
         my $col_labels = [];
         if($group->dimension_count() == 1){
             $self->group_map()->{$column_id} = [ "check" ]; #TODO: Make this better
@@ -218,8 +220,8 @@ sub _run_handle_psconfig {
                     #if priority set, compare whether we should add it
                     my $prio = $agent_grid->priority();
                     if(!$matching_agent_grid_prios->{$prio->group()} ||
-                            $prio->level() < $matching_agent_grid_prios->{$prio->group()}->{'level'}){
-                        #if have not seen group yet, or we have and level is less than current, then add                        
+                            $prio->level() > $matching_agent_grid_prios->{$prio->group()}->{'level'}){
+                        #if have not seen group yet, or we have and level is greater than current, then add                        
                         $matching_agent_grid_prios->{$prio->group()} = {
                             'level' => $prio->level(),
                             'grid' => $agent_grid
@@ -239,21 +241,24 @@ sub _run_handle_psconfig {
         ##
         # Setup each matching grid
         foreach my $matching_agent_grid(@matching_agent_grids) {
+            #useful vars
+            my $check_plugin = $matching_agent_grid->check_plugin();
+            my $viz_plugin = $matching_agent_grid->visualization_plugin();
+            
             #get grid name
             my $grid_name = $task->psconfig_meta_param(META_DISPLAY_NAME());
             unless($grid_name){
                 $grid_name = $task_name;
             }
             $grid_name .= ' - ' . $matching_agent_grid->display_name();
+            $grid_name = $self->__generate_yaml_key($grid_name);
             
-            #add to dashboard
-            if($dashboard){
-                push @{$dashboard->{'grids'}}, $grid_name;
-            }
-        
-            #build checks 
-            my $checks = $self->_build_checks($psconfig, $agent_conf, $task_name, $task, $group, $row_equal_col);
-        
+            my $log_ctx = { 
+                "grid_name" => "$grid_name",
+                "check_type" => $check_plugin->type(),
+                "viz_type" => $viz_plugin->type()
+            };
+            
             #build grid
             my $grid = {};
             $grid->{ADDED_BY_TAG()}  = 1;
@@ -265,14 +270,70 @@ sub _run_handle_psconfig {
             $grid->{colOrder}        = "alphabetical";
             $grid->{excludeSelf}     = 1;
             $grid->{columnAlgorithm} = "all";
-            $grid->{checks}          = $checks; #TODO: figure this out
-           #  $grid->{statusLabels}    = {
-    #             ok => $check->{ok_description},
-    #             warning  => $check->{warning_description},
-    #             critical => $check->{critical_description},
-    #             unknown => "Unable to retrieve data",
-    #             notrun => "Check has not yet run",
-    #         };
+            
+            ##
+            #build checks 
+            my $tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
+                psconfig => $psconfig,
+                pscheduler_url => $self->pscheduler_url(),
+                task_name => $task_name,
+                default_archives => $self->default_archives(),
+                use_psconfig_archives => 1
+            );
+            # A bit of a hack, but this is how we handle labels
+            # TODO: Can't currently handle group members that have name and label.
+            #  Probably requires changes to MaDDash 'command' option to support.
+            my $default_label = "address";
+            if($tg->group() && $tg->group()->can('default_label') && $tg->group()->default_label()){
+                $default_label = $tg->group()->default_label();
+            }
+            my $check_vars = $check_plugin->expand_vars($jq_obj);
+            if(!$check_vars || $check_plugin->error()){
+                $logger->error($self->logf()->format("Error expanding check plugin vars: ".$check_plugin->error(), $log_ctx));
+                next;
+            }
+            my $viz_vars = $viz_plugin->expand_vars($jq_obj);
+            if(!$viz_vars || $viz_plugin->error()){
+                $logger->error($self->logf()->format("Error expanding vizualization plugin vars: ".$viz_plugin->error(), $log_ctx));
+                next;
+            }
+            my $row_str = "%row.map.$default_label";
+            my $col_str = "%col.map.$default_label";
+            my $template = new perfSONAR_PS::PSConfig::MaDDash::Template({
+                'replace_quotes' => 0,
+                'row' => $row_str,
+                'col' => $col_str,
+                'jq_obj' => $jq_obj,
+                'check_config' => $matching_agent_grid->check(),
+                'viz_config' => $matching_agent_grid->visualization(),
+                'check_defaults' => $check_plugin->defaults(),
+                'viz_config' => $viz_plugin->defaults(),
+                'check_vars' => $check_vars,
+                'viz_vars' => $viz_vars,
+            });
+            
+            #expand status labels
+            my $maddash_status_labels = $self->_build_maddash_status_labels($template, $check_plugin, $log_ctx);
+            next unless($maddash_status_labels); #if problem formatting labels then skip
+            $grid->{statusLabels} = $maddash_status_labels;
+            
+            #build check object
+            $grid->{checks} = [];
+            my $check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 'forward', $log_ctx);
+            next unless($check_name);
+            push @{$grid->{checks}}, $check_name;
+            
+            #build reverse if not a mesh
+            unless($row_equal_col){
+                #flip row and column
+                $template->row($col_str);
+                $template->col($row_str);
+                my $rev_check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 'reverse', $log_ctx);
+                next unless($rev_check_name);
+                push @{$grid->{checks}}, $rev_check_name;
+            }
+            
+            #build reports
     #         my $report_id = __generate_report_id(
     #                                 grid_name => $grid_name,
     #                                 group_type => $test->members->type, 
@@ -281,9 +342,11 @@ sub _run_handle_psconfig {
     #                             );
     #         $grid->{report} = $report_id if($report_id);
             push @{$self->grids()}, $grid;
-        
-            #build checks
-            ## $row_labels, $col_labels - or maybe row_nlas, col_nlas,
+            
+            #add to dashboard
+            if($dashboard){
+                push @{$dashboard->{'grids'}}, $grid_name;
+            }
         }
     }
     
@@ -331,10 +394,9 @@ sub _run_end {
     
     ##
     # Output maddash yaml
-    #print "::::::YAML::::::\n";
-    #print YAML::Dump($maddash_yaml);
-    
-    
+    my $maddash_yaml_str = $self->__quote_ipv6_address(YAML::Dump($maddash_yaml));
+    print "::::::YAML::::::\n";
+    print $maddash_yaml_str;
 }
 
 sub _load_maddash_yaml {
@@ -494,6 +556,7 @@ sub _build_group_members {
         my $map = $group_member->{'map'} ? $group_member->{'map'} : {};
         $map->{'default'} = {} unless($map->{'default'});
         $map->{'default'}->{'address'} = $address->address();
+        $map->{'default'}->{'host_id'} = $address->host_ref() if($address->host_ref());
         
         #look for labels and put in default map
         foreach my $label_name(keys %{$address->labels()}){
@@ -537,64 +600,244 @@ sub _build_maddash_group {
     return \@maddash_group_labels;
 }
 
-sub _build_checks {
-    #todo: review if we need all these
-    my($self, $psconfig, $agent_conf, $task_name, $task, $group, $row_equal_col) = @_;
+sub _build_maddash_status_labels {
+    my($self, $template, $check_plugin, $log_ctx) = @_;
     
-    #build ma map
+    #expand template
+    my $expanded_status_labels = $template->expand($check_plugin->status_labels()->data());
+    if($template->error()){
+        $logger->error($self->logf()->format("Problem expanding status labels: ".$template->error(), $log_ctx));
+        return;
+    }
+    
+    #format for maddash
+    my $maddash_status_labels = {};
+    $maddash_status_labels->{'ok'} = $expanded_status_labels->{'ok'} if($expanded_status_labels->{'ok'});
+    $maddash_status_labels->{'warning'} = $expanded_status_labels->{'warning'} if($expanded_status_labels->{'warning'});
+    $maddash_status_labels->{'critical'} = $expanded_status_labels->{'critical'} if($expanded_status_labels->{'critical'});
+    $maddash_status_labels->{'notrun'} = $expanded_status_labels->{'notrun'} if($expanded_status_labels->{'notrun'});
+    $maddash_status_labels->{'unknown'} = $expanded_status_labels->{'unknown'} if($expanded_status_labels->{'unknown'});
+    if($expanded_status_labels->{'extra'}){
+        $maddash_status_labels->{'extra'} = [];
+        foreach my $extra_obj(@{$expanded_status_labels->{'extra'}}){
+            my $maddash_extra_obj = {};
+            $maddash_extra_obj->{'value'} = $extra_obj->{'value'};
+            $maddash_extra_obj->{'shortName'} = $extra_obj->{'short-name'};
+            $maddash_extra_obj->{'description'} = $extra_obj->{'description'};
+            push @{$maddash_status_labels->{'extra'}}, $maddash_extra_obj;
+        }
+    }
+    
+    return $maddash_status_labels;
+}
+
+sub _build_check {
+    my($self, $grid_name, $template, $matching_agent_grid, $tg, $suffix, $log_ctx) = @_;
+    
+    ##
+    #useful vars
+    my $check_plugin = $matching_agent_grid->check_plugin();
+    my $viz_plugin = $matching_agent_grid->visualization_plugin();
+    
+    ##        
+    #build maUrl
     my $ma_map = {};
-    my $tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
-        psconfig => $psconfig,
-        pscheduler_url => $self->pscheduler_url(),
-        task_name => $task_name,
-        default_archives => $self->default_archives(),
-        use_psconfig_archives => 1
-    );
     unless($tg->start()){
-         $logger->error($self->logf()->format("Error initializing task iterator: " . $tg->error()));
+         $logger->error($self->logf()->format("Error initializing task iterator: " . $tg->error(), $log_ctx));
          return;
     }
     my @addrs;
     while(@addrs = $tg->next()){
         #check for errors expanding task
         if($tg->error()){
-            $logger->error($tg->error());
+            $logger->error($self->logf()->format($tg->error(), $log_ctx));
             next;
         }
         #build map
         my $row = $self->_get_root_address($addrs[0]);
         my $col = (@addrs > 1 ? $self->_get_root_address($addrs[1]) : "default");
         $ma_map->{$row} = {} unless($ma_map->{$row});
-        $ma_map->{$row}->{$col} = $self->_select_archive($tg);
+        $ma_map->{$row}->{$col} = $self->_select_archive($tg, $matching_agent_grid);
+        unless($ma_map->{$row}->{$col}){
+            $logger->error($self->logf()->format("Unable to find suitable archive between $row and $col. Check the plugin requirements as well as any selectors you may have defined and verify they match your configuration.", $log_ctx));
+            return;
+        }
         
     }
     $tg->stop();
     $self->_simplify_map($ma_map);
-    $self->check_map()->{$task_name . "-check"} = {
-        ADDED_BY_TAG() => 1,
-        "maUrl" => $ma_map
-    };
     
-    #TODO: Delete this
-    my @checks = ('forward');
-    unless($row_equal_col){
-        push @checks, 'reverse';
+    ##        
+    #build graphUrl
+    ## more efficient to just used data directly, if change name may cause problems
+    my $expanded_http_get_opts = $template->expand($viz_plugin->data()->{'http-get-opts'});
+    if($template->error()){
+        $logger->error($self->logf()->format("Unable to fill-in HTTP GET options: " . $template->error(), $log_ctx));
+        return;
     }
-    
-    return \@checks;
-}
-
-sub _select_archive {
-    my($self, $tg) = @_;
-    
-    #TODO: base this off of check definition
-    foreach my $a(@{$tg->expanded_archives()}){
-        if($a->{'archiver'} eq 'esmond'){
-            return $a->{'data'}->{'url'};
+    #set base URL
+    my $graphUrl = $viz_plugin->defaults()->base_url();
+    if($matching_agent_grid->visualization()->base_url()){
+        $graphUrl = $matching_agent_grid->visualization()->base_url();
+    }
+    #build http get opts
+    my $first_get_opt = 1;
+    foreach my $expanded_http_get_opt(keys %{$expanded_http_get_opts}){
+        my $http_get_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Visualization::HttpGetOpt('data' => $expanded_http_get_opts->{$expanded_http_get_opt});
+        if($http_get_opt_obj->condition() && $http_get_opt_obj->condition() ne 'false'){
+            if($first_get_opt){
+                $graphUrl .= '?';
+                $first_get_opt = 0;
+            }else{
+                $graphUrl .= '&';
+            }
+            $graphUrl .= $expanded_http_get_opt;
+            $graphUrl .= '=' . $http_get_opt_obj->arg() if(defined $http_get_opt_obj->arg());
+        }elsif($http_get_opt_obj->required()){
+            $logger->error($self->logf()->format("Unable to generate graphUrl because unable generate $expanded_http_get_opt GET option", $log_ctx));
+            return;
         }
     }
     
-    return;
+    ##
+    #build command
+    ## more efficient to just used data directly, if change name may cause problems
+    my $expanded_command_opts = $template->expand($check_plugin->data()->{'command-opts'});
+    if($template->error()){
+        $logger->error($self->logf()->format("Unable to fill-in command-line options: " . $template->error(), $log_ctx));
+        return;
+    }
+    my $expanded_command_args = $template->expand($check_plugin->command_args());
+    if($template->error()){
+        $logger->error($self->logf()->format("Unable to fill-in command-line args: " . $template->error(), $log_ctx));
+        return;
+    }
+    #add command
+    my @command = ($check_plugin->command());
+    #add command opts
+    foreach my $expanded_command_opt(keys %{$expanded_command_opts}){
+        my $cmd_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Checks::CommandOpt('data' => $expanded_command_opts->{$expanded_command_opt});
+        if($cmd_opt_obj->condition() && $cmd_opt_obj->condition() ne 'false'){
+            push  @command, $expanded_command_opt;
+            push  @command, $cmd_opt_obj->arg() if($cmd_opt_obj->arg());
+        }elsif($cmd_opt_obj->required()){
+            $logger->error($self->logf()->format("Unable to generate command because unable generate $expanded_command_opt command option", $log_ctx));
+            return;
+        }
+    }
+    #add command args
+    push @command, @{$expanded_command_args} if($expanded_command_args);
+    
+    ##
+    # Prepare various options for conversion to MaDDash format
+    my $check_defaults = $check_plugin->defaults();
+    my $grid_check_config = $matching_agent_grid->check();
+    #checkInterval
+    my $check_interval = $check_defaults->check_interval();
+    if($grid_check_config->check_interval()){
+        $check_interval = $grid_check_config->check_interval();
+    }
+    $check_interval = duration_to_seconds($check_interval);
+    #retryInterval
+    my $retry_interval = $check_defaults->retry_interval();
+    if($grid_check_config->retry_interval()){
+        $retry_interval = $grid_check_config->retry_interval();
+    }
+    $retry_interval = duration_to_seconds($retry_interval);
+    #retryAttempts
+    my $retry_attempts = $check_defaults->retry_attempts();
+    if(defined $grid_check_config->retry_attempts()){
+        $retry_attempts = $grid_check_config->retry_attempts();
+    }
+    #timeout
+    my $timeout = $check_defaults->timeout();
+    if($grid_check_config->timeout()){
+        $timeout = $grid_check_config->timeout();
+    }
+    $timeout = duration_to_seconds($timeout);
+    
+    ##
+    # bring it all together
+    my $check_name = $self->__generate_yaml_key("$grid_name-$suffix");
+    $self->check_map()->{$check_name} = {
+        ADDED_BY_TAG() => 1,
+        "type" => "net.es.maddash.checks.PSNagiosCheck",
+        "name" => $check_plugin->name(),
+        "description" => $check_plugin->description(),
+        "checkInterval" => $check_interval,
+        "retryInterval" => $retry_interval,
+        "retryAttempts" => $retry_attempts,
+        "timeout" => $timeout,
+        "params" => {
+            "command" => join(' ', @command),
+            "maUrl" => $ma_map,
+            "graphUrl" => $graphUrl,
+        }
+    };
+    
+    return $check_name;
+}
+
+sub _select_archive {
+    my($self, $tg, $matching_agent_grid) = @_;
+    
+    my $check_plugin = $matching_agent_grid->check_plugin();
+    my $viz_plugin = $matching_agent_grid->visualization_plugin();
+    my $grid_selector = $matching_agent_grid->selector();
+    my $grid_archive_selector = $matching_agent_grid->check()->archive_selector();
+    
+    #build map of allowed archive types
+    my $IS_MATCHED = 0; #value an allowed_archive_types entry must have to match
+    my %allowed_archive_types = ();
+    #check requires archive type
+    my $check_required_type = $check_plugin->requires()->archive_type();
+    if($check_required_type && @{$check_required_type}){
+        $IS_MATCHED += 1;
+        foreach my $rt(@{$check_required_type}){
+            $allowed_archive_types{$rt} += 1;
+        }
+    }
+    #viz requires archive type
+    my $viz_required_type = $viz_plugin->requires()->archive_type();
+    if($viz_required_type && @{$viz_required_type}){
+        $IS_MATCHED += 1;
+        foreach my $vt(@{$viz_required_type}){
+            $allowed_archive_types{$vt} += 1;
+        }
+    }
+    #grid selector archive type
+    if($grid_selector){
+        my $grid_sel_type = $grid_selector->archive_type();
+        if($grid_sel_type && @{$grid_sel_type}){
+            $IS_MATCHED += 1;
+            foreach my $gt(@{$grid_sel_type}){
+                $allowed_archive_types{$gt} += 1;
+            }
+        }
+    }
+    
+    #perform all checks
+    my $archive_accessor;
+    foreach my $a(@{$tg->expanded_archives()}){
+        my $archiver_type = $a->{'archiver'};
+        
+        #check type
+        unless($allowed_archive_types{$archiver_type} && $allowed_archive_types{$archiver_type} == $IS_MATCHED){
+            next;
+        }
+                
+        #match against archive-selector
+        if($grid_archive_selector){
+            my $jq_result = $grid_archive_selector->apply($a);
+            next unless($jq_result);
+        }
+        
+        #use archive-accessor to return
+        $archive_accessor = $check_plugin->archive_accessor()->apply($a->{'data'});
+        last if($archive_accessor);
+    }
+    
+    return $archive_accessor;
 }
 
 sub _get_root_address {
@@ -647,6 +890,42 @@ sub _simplify_map {
     return;
 }
 
+sub __generate_yaml_key {
+  my ($self, $name) = @_;
+
+  $name =~ s/[^a-zA-Z0-9_\-.]/_/g;
+
+  return $name;
+}
+
+sub __quote_ipv6_address {
+    my ($self, $yaml) = @_;
+
+    my $IPv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))";
+    my $G = "[0-9a-fA-F]{1,4}";
+
+    my @tail = ( ":",
+	     "(:($G)?|$IPv4)",
+             ":($IPv4|$G(:$G)?|)",
+             "(:$IPv4|:$G(:$IPv4|(:$G){0,2})|:)",
+	     "((:$G){0,2}(:$IPv4|(:$G){1,2})|:)",
+	     "((:$G){0,3}(:$IPv4|(:$G){1,2})|:)",
+	     "((:$G){0,4}(:$IPv4|(:$G){1,2})|:)" );
+
+
+    my $IPv6_re = $G;
+    $IPv6_re = "$G:($IPv6_re|$_)" for @tail;
+    $IPv6_re = qq/:(:$G){0,5}((:$G){1,2}|:$IPv4)|$IPv6_re/;
+    $IPv6_re =~ s/\(/(?:/g;
+    $IPv6_re = qr/$IPv6_re/;
+
+    $yaml =~ s/($IPv6_re)/\'$1\'/gm;
+    $yaml =~ s/\'\'/\'/gm;
+    $yaml =~ s/\=\'($IPv6_re)\'/=$1/gm;
+    $yaml =~ s/([^=]https?)\:\/\/\'($IPv6_re)\'/'$1:\/\/[$2]'/gm;
+    $yaml =~ s/(\=https?)\:\/\/\'($IPv6_re)\'/$1:\/\/[$2]/gm;
+    return $yaml; 
+}
 
 __PACKAGE__->meta->make_immutable;
 

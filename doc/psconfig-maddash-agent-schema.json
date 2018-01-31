@@ -108,6 +108,10 @@
                     "type": "string",
                     "description": "Type of check"
                 },
+                "archive-selector": {
+                    "$ref": "#/pSConfig/JQTransformSpecification",
+                    "description": "Allows you to select an archive based on additional criteria to be passed to the check"
+                },
                 "check-interval": {
                     "$ref": "#/pSConfig/Duration",
                     "description": "How often to run check"
@@ -189,7 +193,7 @@
                 },
                 "level": {
                     "$ref": "#/pSConfig/IntZero",
-                    "description": "Priority level. Matching check with lowest level will be chosen."
+                    "description": "Priority level. Matching check with highest level will be chosen."
                 }
             },
             "additionalProperties": false,
