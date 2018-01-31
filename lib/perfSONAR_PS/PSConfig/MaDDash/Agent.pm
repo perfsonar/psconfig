@@ -398,9 +398,7 @@ sub _run_end {
 
     ##
     # Output maddash yaml
-    my $maddash_yaml_str = $self->__quote_ipv6_address(YAML::Dump($maddash_yaml));
-    print "::::::YAML::::::\n";
-    print $maddash_yaml_str;
+    $self->_save_maddash_yaml($maddash_yaml, $agent_conf->maddash_yaml_file());
 }
 
 sub _load_maddash_yaml {
@@ -897,6 +895,48 @@ sub _load_report_yaml {
     };
     
     return $final_report_name;
+}
+
+=item _save_maddash_yaml()
+
+Saves maddash yaml file to disk
+
+=cut
+
+sub _save_maddash_yaml() {
+    my ($self, $maddash_yaml, $filename) = @_;
+    
+    # Need to make changes to the YAML parser so that the Java YAML parser will
+    # grok the output.
+    local $YAML::UseHeader = 0;
+    local $YAML::CompressSeries = 0;
+    
+    # convert to YAML string
+    my $maddash_yaml_str = $self->__quote_ipv6_address(YAML::Dump($maddash_yaml));
+    
+    #log_ctx
+    my $log_ctx = {};
+    
+    #format filename
+    chomp $filename;
+    $filename =~ s/^file:\/\///g;
+    unless($filename) {
+        $self->_set_error("No save_filename set");
+        return;
+    }
+    $log_ctx->{'maddash_yaml_file'} = $filename;
+    
+    #save
+    eval{
+        open(my $fh, ">:encoding(UTF-8)", $filename) or die("Can't open $filename: $!");
+        print $fh $maddash_yaml_str;
+        close $fh;
+    };
+    if($@){
+        $logger->error($self->logf()->format($@, $log_ctx));
+        return;
+    }
+    $logger->info($self->logf()->format("Successfully generated a new MaDDash configuration", $log_ctx));
 }
 
 sub _get_root_address {
