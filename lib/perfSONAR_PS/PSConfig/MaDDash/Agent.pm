@@ -127,6 +127,7 @@ sub _run_handle_psconfig {
     my $dashboard_name = $psconfig->psconfig_meta_param(META_DISPLAY_NAME());
     if($dashboard_name){
          $dashboard = {
+            ADDED_BY_TAG() => 1,
             "name" => $dashboard_name,
             "grids" => []
         };
@@ -320,7 +321,7 @@ sub _run_handle_psconfig {
             
             #build check object
             $grid->{checks} = [];
-            my $check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 'forward', $log_ctx);
+            my $check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 0, $log_ctx);
             next unless($check_name);
             push @{$grid->{checks}}, $check_name;
             
@@ -329,7 +330,7 @@ sub _run_handle_psconfig {
                 #flip row and column
                 $template->row($col_str);
                 $template->col($row_str);
-                my $rev_check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 'reverse', $log_ctx);
+                my $rev_check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 1, $log_ctx);
                 next unless($rev_check_name);
                 push @{$grid->{checks}}, $rev_check_name;
             }
@@ -343,7 +344,7 @@ sub _run_handle_psconfig {
             
             #add to dashboard
             if($dashboard){
-                push @{$dashboard->{'grids'}}, $grid_name;
+                push @{$dashboard->{'grids'}}, {"name" => $grid_name};
             }
         }
     }
@@ -623,13 +624,13 @@ sub _build_maddash_status_labels {
 }
 
 sub _build_check {
-    my($self, $grid_name, $template, $matching_agent_grid, $tg, $suffix, $log_ctx) = @_;
+    my($self, $grid_name, $template, $matching_agent_grid, $tg, $is_reverse, $log_ctx) = @_;
     
     ##
     #useful vars
     my $check_plugin = $matching_agent_grid->check_plugin();
     my $viz_plugin = $matching_agent_grid->visualization_plugin();
-    
+    my $suffix = $is_reverse ? 'reverse' : 'forward';
     ##        
     #build maUrl
     my $ma_map = {};
@@ -749,11 +750,13 @@ sub _build_check {
     
     ##
     # bring it all together
-    my $check_name = $self->__generate_yaml_key("$grid_name-$suffix");
-    $self->check_map()->{$check_name} = {
+    my $check_id = $self->__generate_yaml_key("$grid_name-$suffix");
+    my $check_name = $check_plugin->name();
+    $check_name .= ' - Reverse' if($is_reverse);
+    $self->check_map()->{$check_id} = {
         ADDED_BY_TAG() => 1,
         "type" => "net.es.maddash.checks.PSNagiosCheck",
-        "name" => $check_plugin->name(),
+        "name" => $check_name,
         "description" => $check_plugin->description(),
         "checkInterval" => $check_interval,
         "retryInterval" => $retry_interval,
@@ -762,11 +765,11 @@ sub _build_check {
         "params" => {
             "command" => join(' ', @command),
             "maUrl" => $ma_map,
-            "graphUrl" => $graphUrl,
+            "graphUrl" =>  $graphUrl
         }
     };
     
-    return $check_name;
+    return $check_id;
 }
 
 sub _select_archive {
