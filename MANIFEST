@@ -7,6 +7,8 @@ bin/psconfig
 bin/psconfig_pscheduler_agent
 etc/pscheduler-agent.json
 etc/pscheduler-agent-logger.conf
+etc/maddash-agent.json
+etc/maddash-agent-logger.conf
 lib/perfSONAR_PS/PSConfig/ArchiveConnect.pm
 lib/perfSONAR_PS/PSConfig/JQTransform.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm

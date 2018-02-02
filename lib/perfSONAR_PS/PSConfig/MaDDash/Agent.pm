@@ -50,8 +50,6 @@ has 'agent_grids' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'report_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
 
 my $logger = get_logger(__PACKAGE__);
-my $task_logger = get_logger('TaskLogger');
-my $transaction_logger = get_logger('TransactionLogger');
 
 sub _agent_name {
     return "maddash";
