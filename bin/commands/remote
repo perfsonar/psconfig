@@ -10,9 +10,11 @@ remote add|delete|list [options] URL
  
  Options:
    -h | --help                  help message
+   --agent AGENT                Name of agent to use (e.g. pscheduler, maddash). Default is to look at all installed agents.
    --transform JSON|@FILE       JSON transform object or a path to a file starting with @ that alters downloaded json
    --configure-archives         Indicates archives defined in remote URL should be used
    --bind-address ADDRESS       Local address to bind to when downloading JSON
+   --quiet                      Suppress output to stdout and stderr
    --ssl-validate-certificate   When using https, indicates hostname should be verified against CA
    --ssl-ca-file FILE           A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.
    --ssl-ca-path PATH           A typical certificate authority (CA) path found on Linux. Used to verify server SSL certificate when using https.
@@ -45,6 +47,10 @@ A URL to the pSConfig JSON file. Not required for list. Can be of type http, htt
  
 Prints a help message and exits
 
+=item B<--agent AGENT>
+ 
+Name of agent to use (e.g. pscheduler, maddash). Default is to look at all installed agents.
+
 =item B<--transform JSON|@FILE>
  
 JSON transform object or a path to a file starting with @ that alters downloaded json
@@ -56,6 +62,10 @@ Indicates archives defined in remote URL should be used
 =item B<--bind-address>
  
 Local address to bind to when downloading JSON
+
+=item B<--quiet>
+ 
+Suppress output to stdout and stderr
 
 =item B<--ssl-validate-certificate>
  
@@ -86,30 +96,28 @@ use Getopt::Long qw(GetOptions);
 use JSON qw( from_json to_json );
 use Pod::Usage;
 
+use perfSONAR_PS::PSConfig::CLI::Constants;
 use perfSONAR_PS::PSConfig::JQTransform;
-use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
 use perfSONAR_PS::PSConfig::Remote;
 use perfSONAR_PS::PSConfig::TransformConnect;
 
-#TODO make config file configurable
-#TODO add --quiet option
-#TODO add --force option that does not check for existing
-#TODO evaluate whether more sensible way to filter list
-my $CONFIG_FILE="/etc/perfsonar/psconfig/pscheduler-agent.json";
-
 #parse options
 my $help;
+my $agent_opt;
 my $transform_opt;
 my $config_archives;
 my $bind_address;
+my $quiet_opt;
 my $ssl_validate;
 my $ssl_file;
 my $ssl_path;
 GetOptions(
     'help|h' => \$help,
     'transform=s' => \$transform_opt,
+    'agent=s' => \$agent_opt,
     'configure-archives' => \$config_archives,
     'bind-address=s' => \$bind_address,
+    'quiet' => \$quiet_opt,
     'ssl-validate-certificates' => \$ssl_validate,
     'ssl-ca-file=s' => \$ssl_file,
     'ssl-ca-path=s' => \$ssl_path,
@@ -168,113 +176,144 @@ if(@ARGV > 0){
     chomp $url;
 }
 
-#load config file
-my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
-
-#build remote
-my $remote = new perfSONAR_PS::PSConfig::Remote();
-$remote->url($url) if($url);
-my $url_only_checksum = $remote->checksum();
-$remote->configure_archives(1) if($config_archives);
-$remote->bind_address($bind_address) if($bind_address);
-$remote->ssl_validate_certificate(1) if($ssl_validate);
-$remote->ssl_ca_file($ssl_file) if($ssl_file);
-$remote->ssl_ca_path($ssl_file) if($ssl_path);
-if($transform_opt){
-    if($transform_opt =~ /^\@/){
-        $transform_opt =~ s/^\@//;
-        my $jqt = _load_transform($transform_opt);
-        $remote->transform($jqt);
-    }else{
-        my $jqt = new JQTransform();
-        $jqt->script($transform_opt);
-        $remote->transform($jqt);
-    }
-}
-my $remote_checksum = $remote->checksum();
-my $is_url_only = ($url && $remote_checksum eq $url_only_checksum);
-
-#perform action
 my $success_msg = "";
-if($action eq 'add'){
-    $success_msg = "Added remote configuration $url";
-    my $found = 0;
-    for(my $i = 0; $i < @{$agent_conf->remotes()}; $i++){
-        #if command just provided URL, match anything with that URL
-        #if provided more, match entire checksum. 
-        if($agent_conf->remote($i)->url() eq $remote->url()){
-            $success_msg = "Replaced existing remote configuration for $url";
-            $agent_conf->remote($i, $remote);
-            $found = 1;
-            last;
-        }
+my $agent_found = 0;
+foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
+    #get agent name
+    my $cli_agent_name = '=== ' . $cli_agent->{name} . " Agent ===";
+    if($agent_opt && lc($agent_opt) ne lc($cli_agent->{name})){
+        next;
     }
-    $agent_conf->add_remote($remote) unless($found);
-    _save_file($agent_conf_client, $agent_conf);
-}elsif($action eq 'delete'){
-    $success_msg = "No remote configuration for $url found";
-    my $found = 0;
-    for(my $i = 0; $i < @{$agent_conf->remotes()}; $i++){
-        if(($is_url_only && $agent_conf->remote($i)->url() eq $remote->url()) ||
-                (!$is_url_only && $agent_conf->remote($i)->checksum() eq $remote_checksum)){
-            $success_msg = "Removed remote configuration for $url";
-            $agent_conf->remove_list_item('remotes', $i);
-            last;
-        }
+    #see if file exists
+    unless(-e $cli_agent->{config_file}){
+        next;
     }
-    _save_file($agent_conf_client, $agent_conf);
-}elsif($action eq 'list'){
-    my $output = '[';
-    my $printed = 0;
-    foreach my $conf_remote(@{$agent_conf->remotes()}){
-        if($is_url_only && $conf_remote->url() ne $url){
-            next;
-        }elsif(!$is_url_only && $url && $conf_remote->checksum() ne $remote_checksum){
-            next;
-        }
-        if($printed){
-            $output .= ',';
+    #should be good to do some work now
+    $agent_found = 1;
+    
+    #load config file
+    my ($agent_conf_client, $agent_conf) = _load_config($cli_agent->{config_file}, $cli_agent->{client_class}, $cli_agent_name);
+    next unless($agent_conf_client);
+    
+    #build remote
+    my $remote = new perfSONAR_PS::PSConfig::Remote();
+    $remote->url($url) if($url);
+    my $url_only_checksum = $remote->checksum();
+    $remote->configure_archives(1) if($config_archives);
+    $remote->bind_address($bind_address) if($bind_address);
+    $remote->ssl_validate_certificate(1) if($ssl_validate);
+    $remote->ssl_ca_file($ssl_file) if($ssl_file);
+    $remote->ssl_ca_path($ssl_file) if($ssl_path);
+    if($transform_opt){
+        if($transform_opt =~ /^\@/){
+            $transform_opt =~ s/^\@//;
+            my $jqt = _load_transform($transform_opt, $cli_agent_name);
+            next unless($jqt);
+            $remote->transform($jqt);
         }else{
-            $printed = 1;
+            my $jqt = new JQTransform();
+            $jqt->script($transform_opt);
+            $remote->transform($jqt);
         }
-        $output .= $conf_remote->json(); 
     }
-    $output .= "]";
-    #format nicely
-    print to_json(from_json($output), {pretty=> 1});
+    my $remote_checksum = $remote->checksum();
+    my $is_url_only = ($url && $remote_checksum eq $url_only_checksum);
+
+    #perform action
+    $success_msg .= "\n" if($success_msg);
+    $success_msg .= "${cli_agent_name}\n";
+    if($action eq 'add'){
+        my $found = 0;
+        for(my $i = 0; $i < @{$agent_conf->remotes()}; $i++){
+            #if command just provided URL, match anything with that URL
+            #if provided more, match entire checksum. 
+            if($agent_conf->remote($i)->url() eq $remote->url()){
+                $success_msg .= "Replaced existing remote configuration for $url\n";
+                $agent_conf->remote($i, $remote);
+                $found = 1;
+                last;
+            }
+        }
+        $success_msg .= "Added remote configuration $url\n" unless($found);
+        $agent_conf->add_remote($remote) unless($found);
+        _save_file($agent_conf_client, $agent_conf, $cli_agent_name);
+    }elsif($action eq 'delete'){
+        $success_msg .= "No remote configuration for $url found\n";
+        my $found = 0;
+        for(my $i = 0; $i < @{$agent_conf->remotes()}; $i++){
+            if(($is_url_only && $agent_conf->remote($i)->url() eq $remote->url()) ||
+                    (!$is_url_only && $agent_conf->remote($i)->checksum() eq $remote_checksum)){
+                $success_msg .= "Removed remote configuration for $url\n";
+                $agent_conf->remove_list_item('remotes', $i);
+                $found = 1;
+                last;
+            }
+        }
+        $success_msg .= "No remote configuration for $url found\n" unless($found);
+        _save_file($agent_conf_client, $agent_conf, $cli_agent_name);
+    }elsif($action eq 'list'){
+        my $output = "[";
+        my $printed = 0;
+        foreach my $conf_remote(@{$agent_conf->remotes()}){
+            if($is_url_only && $conf_remote->url() ne $url){
+                next;
+            }elsif(!$is_url_only && $url && $conf_remote->checksum() ne $remote_checksum){
+                next;
+            }
+            if($printed){
+                $output .= ',';
+            }else{
+                $printed = 1;
+            }
+            $output .= $conf_remote->json(); 
+        }
+        $output .= "]";
+        #format nicely
+        $success_msg .= to_json(from_json($output), {pretty=> 1});
+    }
 }
 
 #Finish
-_success($success_msg);
+if($agent_found){
+    _success($success_msg);
+    exit 0;
+}elsif($agent_opt){
+    _error("Unable to find installed agent with name $agent_opt");
+    exit 1;
+}else{
+    _error("Unable to find any agents installed on this host");
+    exit 1;
+}
 
 #Subroutines
 sub _success{
     my $msg = shift;
-    print "$msg\n" if($msg);
-    exit 0;
+    print "$msg" if($msg && !$quiet_opt);
 }
 
 sub _error{
-    my $msg = shift;
-    print STDERR "$msg\n";
-    exit 1;
+    my ($msg, $cli_agent_name) = @_;
+    print STDERR "$cli_agent_name\n" if($cli_agent_name && !$quiet_opt);
+    print STDERR "$msg\n" unless($quiet_opt);
 }
 
 sub _load_config {
-    my ($config_file) = @_;
+    my ($config_file, $config_class, $cli_agent_name) = @_;
     
     ##
     #load config file
-    my $agent_conf_client = new perfSONAR_PS::PSConfig::PScheduler::ConfigConnect(
+    my $agent_conf_client = $config_class->new(
         url => $config_file,
         save_filename => $config_file
     );
     if($agent_conf_client->error()){
-        _error("Error opening $config_file: " . $agent_conf_client->error());
+        _error("Error opening $config_file: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
     } 
     my $agent_conf = $agent_conf_client->get_config();
     if($agent_conf_client->error()){
-        _error("Error parsing $config_file: " . $agent_conf_client->error());
+        _error("Error parsing $config_file: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
     }
     my @agent_conf_errors = $agent_conf->validate();
     if(@agent_conf_errors){
@@ -283,19 +322,21 @@ sub _load_config {
             $err .= "    JSON Path: " . $error->path . "\n";
             $err .= "    Error: " . $error->message . "\n";
         }
-        _error($err);
+        _error($err, $cli_agent_name);
+        return;
     }
     
     return ($agent_conf_client, $agent_conf);
 }
 
 sub _load_transform {
-    my ($config_file) = @_;
+    my ($config_file, $cli_agent_name) = @_;
     
     my $transform_client = new perfSONAR_PS::PSConfig::TransformConnect(url => $config_file);
     my $transform = $transform_client->get_config();
     if($transform_client->error()){
-        _error("Error reading default transform file: " . $transform_client->error());
+        _error("Error reading default transform file: " . $transform_client->error(), $cli_agent_name);
+        return;
     } 
     #validate
     my @errors = $transform->validate();
@@ -307,16 +348,18 @@ sub _load_transform {
             $err .= "    JSON Path: $path\n";
             $err .= "    Error: " . $error->message . "\n";
         }
-        _error($err);
+        _error($err, $cli_agent_name);
+        return;
     }
     
     return $transform;
 }
 
 sub _save_file{
-    my ($agent_conf_client, $agent_conf) = @_;
+    my ($agent_conf_client, $agent_conf, $cli_agent_name) = @_;
     $agent_conf_client->save_config($agent_conf, {'pretty' => 1});
     if($agent_conf_client->error()){
-        _error("Error saving configuration: " . $agent_conf_client->error());
+        _error("Error saving configuration: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
     }
 }
