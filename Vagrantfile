@@ -246,6 +246,7 @@ Vagrant.configure("2") do |config|
     mkdir -p /usr/lib/perfsonar/psconfig/visualization
     mkdir -p /var/log/perfsonar/
     ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
+    ln -fs /vagrant/bin /usr/lib/perfsonar/psconfig/bin
     /usr/sbin/groupadd perfsonar 2> /dev/null || :
     /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
     chown -R perfsonar:perfsonar /var/lib/perfsonar/

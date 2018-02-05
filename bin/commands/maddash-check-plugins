@@ -1,0 +1,168 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+maddash-check-plugins - Returns the list of check plug-ins installed for the local MaDDash agent
+ 
+=head1 SYNOPSIS
+ 
+maddash-check-plugin [options]
+ 
+ Options:
+   -h | --help          Help message
+   --type TYPE          Only display plugin of specified type. Return error status if not found.
+   --quiet              Suppress output to stdout and stderr
+   --detail             Print details of all plugins found
+   
+=back
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+
+=item B<--type TYPE>
+ 
+Only display plugin of specified type. Return error status if not found.
+
+=item B<--quiet>
+ 
+Suppress output to stdout and stderr
+
+=item B<--detail>
+ 
+Print details of all plugins found
+ 
+=head1 DESCRIPTION
+ 
+B<This program> returns the list of check plug-ins installed for the local MaDDash agent
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+
+use Hash::Merge qw( merge );
+use Getopt::Long qw(GetOptions);
+use JSON qw( from_json to_json );
+use Pod::Usage;
+
+use perfSONAR_PS::PSConfig::CLI::MaDDash qw( load_maddash_plugins );
+use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
+
+my $CONFIG_FILE="/etc/perfsonar/psconfig/maddash-agent.json";
+
+#parse options
+my $help;
+my $type_opt;
+my $quiet_opt;
+my $detail_opt;
+GetOptions(
+    'help|h' => \$help,
+    'type=s' => \$type_opt,
+    'quiet' => \$quiet_opt,
+    'detail' => \$detail_opt
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV > 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "No arguments accepted by this command",
+        -exitval => $exitval,
+        -verbose => 0   
+    });
+    exit $exitval;
+}
+
+#load config file
+my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
+
+#verify the check plugins provided are valid
+my $success_msg = "\nThe following pSConfig MaDDash agent check plugins are installed:\n\n";
+my $check_plugin_dir = $agent_conf->check_plugin_directory();
+unless($check_plugin_dir){
+    $check_plugin_dir = "/usr/lib/perfsonar/psconfig/checks/";
+}
+my $check_plugin_map = load_maddash_plugins($check_plugin_dir, 'check');
+$check_plugin_map = {} unless($check_plugin_map);
+if($type_opt && !$check_plugin_map->{$type_opt}){
+    my $msg = "The --type $type_opt does not match any installed check plugins. Valid values are:\n";
+    foreach my $plugin_type(keys %{$check_plugin_map}){
+        $msg .= "    $plugin_type\n";
+    }
+    _error($msg);
+}elsif($type_opt){
+    $success_msg .= _output_plugin($check_plugin_map->{$type_opt});
+}elsif(keys %{$check_plugin_map}){
+    foreach my $plugin_type(keys %{$check_plugin_map}){
+        $success_msg .= _output_plugin($check_plugin_map->{$plugin_type});
+    }
+}else{
+    _error("No check plug-ins installed on system");
+}
+  
+#Finish
+_success($success_msg);
+
+#Subroutines
+sub _success{
+    my $msg = shift;
+    print "$msg\n" if($msg && !$quiet_opt);
+    exit 0;
+}
+
+sub _error{
+    my $msg = shift;
+    print STDERR "$msg\n" unless($quiet_opt);
+    exit 1;
+}
+
+sub _load_config {
+    my ($config_file) = @_;
+    
+    ##
+    #load config file
+    my $agent_conf_client = new perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect(
+        url => $config_file,
+        save_filename => $config_file
+    );
+    if($agent_conf_client->error()){
+        _error("Error opening $config_file: " . $agent_conf_client->error());
+    } 
+    my $agent_conf = $agent_conf_client->get_config();
+    if($agent_conf_client->error()){
+        _error("Error parsing $config_file: " . $agent_conf_client->error());
+    }
+    my @agent_conf_errors = $agent_conf->validate();
+    if(@agent_conf_errors){
+        my $err = "$config_file is not valid. The following errors were encountered: \n";
+        foreach my $error(@agent_conf_errors){
+            $err .= "    JSON Path: " . $error->path . "\n";
+            $err .= "    Error: " . $error->message . "\n";
+        }
+        _error($err);
+    }
+    
+    return ($agent_conf_client, $agent_conf);
+}
+
+sub _output_plugin{
+    my $plugin = shift;
+    
+    my $out = "";
+    if($detail_opt){
+        $out = $plugin->json({pretty=>1}) . "\n";
+    }else{
+        $out = $plugin->type() . "\n";
+    }
+    return $out;
+}

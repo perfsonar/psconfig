@@ -1,0 +1,96 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+agents - Lists the pSConfig agents installed on this host.
+ 
+=head1 SYNOPSIS
+ 
+agents [options]
+ 
+ Options:
+   -h | --help          Help message
+   --quiet              Suppress output to stdout and stderr
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<--quiet>
+ 
+Suppress output to stdout and stderr
+
+=head1 DESCRIPTION
+ 
+B<This program> will list the pSConfig agents installed on this host. 
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
+
+use perfSONAR_PS::PSConfig::CLI::Constants;
+
+
+#parse options
+my $help;
+my $quiet_opt;
+GetOptions(
+    'help|h' => \$help,
+    'quiet' => \$quiet_opt,
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV > 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "No arguments accepted by this command",
+        -exitval => $exitval,
+        -verbose => 0   
+    });
+    exit $exitval;
+}
+
+#Find agents
+my $agent_count = 0;
+my $msg = "\nThe following pSConfig agents are installed:\n\n";
+foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
+    #see if config file exists
+    unless(-e $cli_agent->{command}){
+        next;
+    }
+    $agent_count++;
+    $msg .= $cli_agent->{name} . "\n";
+}
+
+#Output
+if($agent_count){
+    _success($msg);  
+}else{
+    _error("No agents installed") unless($agent_count);
+}
+
+
+#Subroutines
+sub _success{
+    my $msg = shift;
+    print "$msg\n" if($msg && !$quiet_opt);
+    exit 0;
+}
+
+sub _error{
+    my $msg = shift;
+    print STDERR "$msg\n" unless($quiet_opt);
+    exit 1;
+}

@@ -110,7 +110,7 @@
                 },
                 "archive-selector": {
                     "$ref": "#/pSConfig/JQTransformSpecification",
-                    "description": "Allows you to select an archive based on additional criteria to be passed to the check"
+                    "description": "Allows you to select an archive based on additional JQ criteria to be passed to the check"
                 },
                 "check-interval": {
                     "$ref": "#/pSConfig/Duration",

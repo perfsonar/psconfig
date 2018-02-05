@@ -356,8 +356,9 @@ if($action eq 'add'){
         $check_plugin_dir = "/usr/lib/perfsonar/psconfig/checks/";
     }
     my $check_plugin_map = load_maddash_plugins($check_plugin_dir, 'check');
+    $check_plugin_map = {} unless($check_plugin_map);
     unless($check_plugin_map->{$check->type()}){
-        my $msg = "The --check-type  " . $check->type() . " does not match any installed check plugins. Valid values are:\n";
+        my $msg = "The --check-type " . $check->type() . " does not match any installed check plugins. Valid values are:\n";
         foreach my $plugin_type(keys %{$check_plugin_map}){
             $msg .= "    $plugin_type\n";
         }
@@ -370,6 +371,7 @@ if($action eq 'add'){
         $viz_plugin_dir = "/usr/lib/perfsonar/psconfig/visualization/";
     }
     my $viz_plugin_map = load_maddash_plugins($viz_plugin_dir, 'visualization');
+    $viz_plugin_map = {} unless($viz_plugin_map);
     unless($viz_plugin_map->{$viz->type()}){
         my $msg = "The visualization type " . $viz->type() . " does not match any installed visualization plugins. Valid values are:\n";
         foreach my $plugin_type(keys %{$viz_plugin_map}){
