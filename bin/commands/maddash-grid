@@ -1,0 +1,559 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+maddash-grid - Add/delete/list MaDDash grids to MaDDash agent configuration file. For 
+delete and list, any grid that matches all the provided parameters will be listed. If no
+options are given, all grids will be matched for deleting/listing.  
+ 
+=head1 SYNOPSIS
+ 
+remote add|delete|list [options]
+ 
+ Options:
+   -h | --help                              Help message
+   --name NAME                              Required for add. Name of grid to add. Used to identify the grid to update/delete.
+   --check-type TYPE                        Required for add. Type of check to use for grid. 
+   --visualization-type TYPE                Required for add. Type of visualization to use for grid. 
+   --display-name NAME                      Name to use in generating title of grid. Defaults to --name if not specified.
+   --priority-group GROUP                   Name of priority group. Only one check from group will be used.
+   --priority-level LEVEL                   Priority level. Matching check with highest level will be chosen.
+   --selector-test-type TYPE[,TYPE..]       Match a task in your pSConfig file to this grid if it is a test of any type in the list
+   --selector-task-name NAME[,NAME..]       Match a task in your pSConfig file to this grid if it has one of the names in the list
+   --selector-archive-type TYPE[,TYPE..]    Match a task in your pSConfig file to this grid if it uses an archive of any type in the list
+   --selector-jq JSON|@FILE                 Match a task in your pSConfig file to this grid unless it is boolean false or an empty string. Can be JSON object or file starting with @.
+   --check-archive-selector JSON|@FILE      Allows you to select an archive based on additional JQ criteria to be passed to the check. Useful when you have multiple archives to choose from for a given task. Can be JSON object or file starting with @.
+   --check-interval DURATION                How often to run check as ISO8601 duration. Defaults to check-plugin default if not specified.
+   --check-warning-threshold THRESH         Threshold for the warning level of a check. Format is plug-in dependent. Defaults to check-plugin default if not specified.
+   --check-critical-threshold THRESH        Threshold for the critical level of a check. Format is plug-in dependent. Defaults to check-plugin default if not specified.
+   --check-report-yaml-file FILE            Location of YAML file with report to use for this check. Must be readable my maddash-agent when it runs. Defaults to check-plugin default if not specified.
+   --check-retry-interval DURATION          How often to check after a check detects a change in state as ISO8601 duration. Defaults to check-plugin default if not specified.
+   --check-retry-attempts ATTEMPTS          How many times to retry after detecting a change in state as an integer. Defaults to check-plugin default if not specified.
+   --check-timeout DURATION                 How long to wait for check to complete as ISO8601 duration. Defaults to check-plugin default if not specified.
+   --check-params JSON|@FILE                Plug-in specific parameters as JSON or file staring with @. Defaults to check-plugin default if not specified.
+   --visualization-base-url URL             Relative or absolute URL to be used when generating URL used for visualization. Defaults to visualization-plugin default if not specified.
+   --visualization-params JSON|@FILE        Plug-in specific parameters as JSON or file staring with @. Defaults to visualization-plugin defaults if not specified.
+   --quiet                                  Suppress output to stdout and stderr
+   --force                                  Only valid for delete. Remove matching grids without prompting.
+   
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<add|delete|list>
+ 
+The action to perform
+
+add: Adds grid to MaDDash agent config file. If agent with same name already exists then overwrites it.
+
+delete: Deletes any entry with the matching options from the agent configuration file
+
+list: Lists all the grids currently in the MaDDash agent configuration file. If no name given lists all definitions. If name and/or other parameters given, only matches those with same parameters.
+
+=back
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<--name NAME>
+ 
+Required. Name of grid to add. Used to identify the grid to update/delete.
+
+=item B<--check-type TYPE>
+ 
+Required. Type of check to use for grid. 
+
+=item B<--visualization-type TYPE>
+ 
+Required. Type of visualization to use for grid. 
+
+=item B<--display-name NAME>
+ 
+Name to use in generating title of grid. Defaults to --name if not specified.
+
+=item B<--priority-group GROUP>
+ 
+Name of priority group. Only one check from group will be used.
+
+=item B<--priority-level LEVEL>
+ 
+Priority level. Matching check with highest level will be chosen.
+
+=item B<--selector-test-type TYPE[,TYPE..]>
+ 
+Match a task in your pSConfig file to this grid if it is a test of any type in the list
+
+=item B<--selector-task-name NAME[,NAME..]>
+ 
+Match a task in your pSConfig file to this grid if it has one of the names in the list
+
+=item B<--selector-archive-type TYPE[,TYPE..]>
+ 
+Match a task in your pSConfig file to this grid if it uses an archive of any type in the list
+
+=item B<--selector-jq JSON|@FILE>
+ 
+Match a task in your pSConfig file to this grid unless it is boolean false or an empty string. Can be JSON object or file starting with @.
+
+=item B<--check-archive-selector JSON|@FILE>
+ 
+Allows you to select an archive based on additional JQ criteria to be passed to the check. Useful when you have multiple archives to choose from for a given task. Can be JSON object or file starting with @.
+
+=item B<--check-interval DURATION>
+ 
+How often to run check as ISO8601 duration. Defaults to check-plugin default if not specified.
+
+=item B<--check-warning-threshold THRESH>
+ 
+Threshold for the warning level of a check. Format is plug-in dependent. Defaults to check-plugin default if not specified.
+
+=item B<--check-critical-threshold THRESH>
+ 
+Threshold for the critical level of a check. Format is plug-in dependent. Defaults to check-plugin default if not specified.
+
+=item B<--check-report-yaml-file FILE>
+ 
+Location of YAML file with report to use for this check. Must be readable my maddash-agent when it runs. Defaults to check-plugin default if not specified.
+
+=item B<--check-retry-interval DURATION>
+ 
+How often to check after a check detects a change in state as ISO8601 duration. Defaults to check-plugin default if not specified.
+
+=item B<--check-retry-attempts ATTEMPTS>
+ 
+How many times to retry after detecting a change in state as an integer. Defaults to check-plugin default if not specified.
+
+=item B<--check-timeout DURATION>
+ 
+How long to wait for check to complete as ISO8601 duration. Defaults to check-plugin default if not specified.
+
+=item B<--check-params JSON|@FILE>
+ 
+Plug-in specific parameters as JSON or file staring with @. Defaults to check-plugin default if not specified.
+
+=item B<--visualization-base-url URL>
+ 
+Relative or absolute URL to be used when generating URL used for visualization. Defaults to visualization-plugin default if not specified.
+
+=item B<--visualization-params JSON|@FILE>
+ 
+Plug-in specific parameters as JSON or file staring with @. Defaults to visualization-plugin defaults if not specified.
+
+=back
+
+=item B<--quiet>
+ 
+Suppress output to stdout and stderr
+
+=item B<--force>
+ 
+Only valid for delete. Remove matching grids without prompting.
+ 
+=head1 DESCRIPTION
+ 
+B<This program> will add/delete/list MaDDash grids to MaDDash agent configuration file. For 
+delete and list, any grid that matches all the provided parameters will be listed. If no
+options are given, all grids will be matched for deleting/listing.  
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+
+use Hash::Merge qw( merge );
+use Getopt::Long qw(GetOptions);
+use JSON qw( from_json to_json );
+use Pod::Usage;
+
+use perfSONAR_PS::PSConfig::CLI::MaDDash qw( load_maddash_plugins );
+use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::Grid;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::GridPriority;
+use perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig;
+use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
+use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::PSConfig::TransformConnect;
+
+my $CONFIG_FILE="/etc/perfsonar/psconfig/maddash-agent.json";
+
+#parse options
+my $help;
+my $name_opt;
+my $check_type_opt;
+my $visualization_type_opt;
+my $display_name_opt;
+my $priority_group_opt;
+my $priority_level_opt;
+my $selector_test_type_opt;
+my $selector_task_name_opt;
+my $selector_archive_type_opt;
+my $selector_jq_opt;
+my $check_archive_selector_opt;
+my $check_interval_opt;
+my $check_warning_threshold_opt;
+my $check_critical_threshold_opt;
+my $check_report_yaml_file_opt;
+my $check_retry_interval_opt;
+my $check_retry_attempts_opt;
+my $check_timeout_opt;
+my $check_params_opt;
+my $visualization_base_url_opt;
+my $visualization_params_opt;
+my $quiet_opt;
+my $force_opt;
+GetOptions(
+    'help|h' => \$help,
+    'name=s' => \$name_opt,
+    'check-type=s' => \$check_type_opt,
+    'visualization-type=s' => \$visualization_type_opt,
+    'display-name=s' => \$display_name_opt,
+    'priority-group=s' => \$priority_group_opt,
+    'priority-level=s' => \$priority_level_opt,
+    'selector-test-type=s' => \$selector_test_type_opt,
+    'selector-task-name=s' => \$selector_task_name_opt,
+    'selector-archive-type=s' => \$selector_archive_type_opt,
+    'selector-jq=s' => \$selector_jq_opt,
+    'check-archive-selector=s' => \$check_archive_selector_opt,
+    'check-interval=s' => \$check_interval_opt,
+    'check-warning-threshold=s' => \$check_warning_threshold_opt,
+    'check-critical-threshold=s' => \$check_critical_threshold_opt,
+    'check-report-yaml-file=s' => \$check_report_yaml_file_opt,
+    'check-retry-interval=s' => \$check_retry_interval_opt,
+    'check-retry-attempts=s' => \$check_retry_attempts_opt,
+    'check-timeout=s' => \$check_timeout_opt,
+    'check-params=s' => \$check_params_opt,
+    'visualization-base-url=s' => \$visualization_base_url_opt,
+    'visualization-params=s' => \$visualization_params_opt,
+    'quiet' => \$quiet_opt,
+    'force' => \$force_opt
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV == 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Must specify an ACTION(add, delete or list)",
+        -exitval => $exitval,
+        -verbose => 0   
+    });
+    exit $exitval;
+}elsif(@ARGV > 1){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Too many parameters given. Only specify an ACTION(add, delete or list)",
+        -exitval => $exitval,
+        -verbose => 0
+    });
+    exit $exitval;
+}
+#get action
+my $action = shift @ARGV;
+chomp $action;
+$action = lc($action);
+
+#make sure we valid
+if($action ne 'add' && $action ne 'delete' && $action ne 'list'){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Invalid action given: $action. Must be one of add, delete or list.",
+        -exitval => $exitval,
+        -verbose => 0
+    });
+    exit $exitval;
+}elsif($action eq 'add'){
+    #make sure we have required parameters
+    if(!$name_opt){
+        my $exitval = 2;
+        pod2usage({
+            -message => "Missing required parameter --name",
+            -exitval => $exitval,
+            -verbose => 0
+        });
+        exit $exitval;
+    }elsif(!$check_type_opt){
+        my $exitval = 2;
+        pod2usage({
+            -message => "Missing required parameter --check-type",
+            -exitval => $exitval,
+            -verbose => 0
+        });
+        exit $exitval;
+    }elsif(!$visualization_type_opt){
+        my $exitval = 2;
+        pod2usage({
+            -message => "Missing required parameter --visualization-type",
+            -exitval => $exitval,
+            -verbose => 0
+        });
+        exit $exitval;
+    }
+}
+
+#load config file
+my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
+
+#build grid
+my $grid = new perfSONAR_PS::PSConfig::MaDDash::Agent::Grid();
+$grid->display_name($display_name_opt ? $display_name_opt : $name_opt);
+my $empty_checksum = $grid->checksum();
+
+##build check
+my $check = new perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig();
+$check->type($check_type_opt) if($check_type_opt);
+$check->archive_selector(_parse_transform($check_archive_selector_opt)) if($check_archive_selector_opt);
+$check->check_interval($check_interval_opt) if($check_interval_opt);
+$check->warning_threshold($check_warning_threshold_opt) if(defined $check_warning_threshold_opt);
+$check->critical_threshold($check_critical_threshold_opt) if(defined $check_critical_threshold_opt);
+$check->report_yaml_file($check_report_yaml_file_opt) if($check_report_yaml_file_opt);
+$check->retry_interval($check_retry_interval_opt) if($check_retry_interval_opt);
+$check->retry_attempts($check_retry_attempts_opt) if(defined $check_retry_attempts_opt);
+$check->timeout($check_timeout_opt) if($check_timeout_opt);
+$check->params(_parse_transform($check_params_opt)) if($check_params_opt);
+$grid->check($check) if(keys %{$check->data()});
+
+##build visualization
+my $viz = new perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig();
+$viz->type($visualization_type_opt) if($visualization_type_opt);
+$viz->base_url($visualization_base_url_opt) if($visualization_base_url_opt);
+$viz->params(_parse_transform($visualization_params_opt)) if($visualization_params_opt);
+$grid->visualization($viz) if(keys %{$viz->data()});
+
+##build selector
+my $sel = new perfSONAR_PS::PSConfig::MaDDash::TaskSelector();
+$sel->test_type(_parse_comma_list($selector_test_type_opt)) if($selector_test_type_opt);
+$sel->task_name(_parse_comma_list($selector_task_name_opt)) if($selector_task_name_opt);
+$sel->archive_type(_parse_comma_list($selector_archive_type_opt)) if($selector_archive_type_opt);
+$sel->jq(_parse_transform($selector_jq_opt)) if($selector_jq_opt);
+$grid->selector($sel) if(keys %{$sel->data()});
+
+##build priority
+my $prio = new perfSONAR_PS::PSConfig::MaDDash::Agent::GridPriority();
+$prio->group($priority_group_opt) if($priority_group_opt);
+$prio->level($priority_level_opt) if(defined $priority_level_opt);
+$grid->priority($prio) if(keys %{$prio->data()});
+        
+##build checksums used in matching grids
+my $grid_checksum = $grid->checksum();
+my $is_name_only = ($name_opt && $grid_checksum eq $empty_checksum);
+
+#perform action
+my $success_msg = "";
+chomp $name_opt if($name_opt);
+if($action eq 'add'){
+    #verify the check plugins provided are valid
+    my $check_plugin_dir = $agent_conf->check_plugin_directory();
+    unless($check_plugin_dir){
+        $check_plugin_dir = "/usr/lib/perfsonar/psconfig/checks/";
+    }
+    my $check_plugin_map = load_maddash_plugins($check_plugin_dir, 'check');
+    unless($check_plugin_map->{$check->type()}){
+        my $msg = "The --check-type  " . $check->type() . " does not match any installed check plugins. Valid values are:\n";
+        foreach my $plugin_type(keys %{$check_plugin_map}){
+            $msg .= "    $plugin_type\n";
+        }
+        _error($msg);
+    }
+    
+    #verify the viz plugins are valid
+    my $viz_plugin_dir = $agent_conf->visualization_plugin_directory();
+    unless($viz_plugin_dir){
+        $viz_plugin_dir = "/usr/lib/perfsonar/psconfig/visualization/";
+    }
+    my $viz_plugin_map = load_maddash_plugins($viz_plugin_dir, 'visualization');
+    unless($viz_plugin_map->{$viz->type()}){
+        my $msg = "The visualization type " . $viz->type() . " does not match any installed visualization plugins. Valid values are:\n";
+        foreach my $plugin_type(keys %{$viz_plugin_map}){
+            $msg .= "    $plugin_type\n";
+        }
+        _error($msg);
+    }
+    
+    #Add grid
+    if($agent_conf->grid($name_opt)){
+        $success_msg = "Replaced existing grid $name_opt";
+    }else{
+        $success_msg = "Added grid $name_opt";
+    }
+    $agent_conf->grid($name_opt, $grid);
+    _save_file($agent_conf_client, $agent_conf);
+}elsif($action eq 'delete'){
+    my $found = 0;
+    foreach my $grid_name(@{$agent_conf->grid_names()}){
+        if($name_opt && $grid_name ne $name_opt){
+            next;
+        }
+        my $merged_grid_data = merge($grid->data(), $agent_conf->grid($grid_name)->data());
+        my $merged_grid = new perfSONAR_PS::PSConfig::MaDDash::Agent::Grid('data' => $merged_grid_data);
+        if(!$is_name_only && $merged_grid->checksum() ne $agent_conf->grid($grid_name)->checksum()){
+            next;
+        }
+        my $doit = 0;
+        if($force_opt){
+            $doit = 1;
+        }else{
+            print "Do you really want to delete grid \"$grid_name\"? (y/n):";
+            my $ans = <STDIN>;
+            chomp $ans;
+            $ans = lc($ans);
+            if($ans =~ /^y/){
+                $doit = 1;
+            }
+        }
+        if($doit){
+            $success_msg .= "Removed grid $grid_name";
+            $success_msg .= "\n" if($found);
+            $agent_conf->remove_grid($grid_name);
+            $found = 1;
+        }
+    }
+    $success_msg = "No matching grid found to delete" unless($found);
+    _save_file($agent_conf_client, $agent_conf);
+}elsif($action eq 'list'){
+    my $output = '{';
+    my $printed = 0;
+    foreach my $grid_name(@{$agent_conf->grid_names()}){
+        if($name_opt && $grid_name ne $name_opt){
+            next;
+        }
+        my $merged_grid_data = merge($grid->data(), $agent_conf->grid($grid_name)->data());
+        my $merged_grid = new perfSONAR_PS::PSConfig::MaDDash::Agent::Grid('data' => $merged_grid_data);
+        if(!$is_name_only && $merged_grid->checksum() ne $agent_conf->grid($grid_name)->checksum()){
+            next;
+        }
+        if($printed){
+            $output .= ',';
+        }else{
+            $printed = 1;
+        }
+        $output .= "\"$grid_name\": " . $agent_conf->grid($grid_name)->json(); 
+    }
+    $output .= "}";
+    #format nicely
+    print to_json(from_json($output), {pretty=> 1}) unless($quiet_opt);
+}
+
+#Finish
+_success($success_msg);
+
+#Subroutines
+sub _success{
+    my $msg = shift;
+    print "$msg\n" if($msg && !$quiet_opt);
+    exit 0;
+}
+
+sub _error{
+    my $msg = shift;
+    print STDERR "$msg\n" unless($quiet_opt);
+    exit 1;
+}
+
+sub _load_config {
+    my ($config_file) = @_;
+    
+    ##
+    #load config file
+    my $agent_conf_client = new perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect(
+        url => $config_file,
+        save_filename => $config_file
+    );
+    if($agent_conf_client->error()){
+        _error("Error opening $config_file: " . $agent_conf_client->error());
+    } 
+    my $agent_conf = $agent_conf_client->get_config();
+    if($agent_conf_client->error()){
+        _error("Error parsing $config_file: " . $agent_conf_client->error());
+    }
+    my @agent_conf_errors = $agent_conf->validate();
+    if(@agent_conf_errors){
+        my $err = "$config_file is not valid. The following errors were encountered: \n";
+        foreach my $error(@agent_conf_errors){
+            $err .= "    JSON Path: " . $error->path . "\n";
+            $err .= "    Error: " . $error->message . "\n";
+        }
+        _error($err);
+    }
+    
+    return ($agent_conf_client, $agent_conf);
+}
+
+sub _load_transform {
+    my ($config_file) = @_;
+    
+    my $transform_client = new perfSONAR_PS::PSConfig::TransformConnect(url => $config_file);
+    my $transform = $transform_client->get_config();
+    if($transform_client->error()){
+        _error("Error reading default transform file: " . $transform_client->error());
+    } 
+    #validate
+    my @errors = $transform->validate();
+    if(@errors){
+        my $err = "$config_file is not a valid transform file. The following errors were encountered: \n";
+        foreach my $error(@errors){
+            my $path = $error->path;
+            $path =~ s/^\/transform//; #makes prettier error message
+            $err .= "    JSON Path: $path\n";
+            $err .= "    Error: " . $error->message . "\n";
+        }
+        _error($err);
+    }
+    
+    return $transform;
+}
+
+sub _parse_transform {
+    my ($transform_opt) = @_;
+    
+    my $jqt;
+    if($transform_opt =~ /^\@/){
+        $transform_opt =~ s/^\@//;
+        $jqt = _load_transform($transform_opt);
+    }else{
+        $jqt = new JQTransform();
+        $jqt->script($transform_opt);
+    }
+    
+    return $jqt;
+}
+
+sub _parse_comma_list {
+     my ($list_opt) = @_;
+     
+     chomp $list_opt;
+     my @list = split ',', $list_opt;
+     
+     return \@list;
+}
+
+sub _save_file{
+    my ($agent_conf_client, $agent_conf) = @_;
+    
+    #validate
+    my @errors = $agent_conf->validate();
+    if(@errors){
+        unless($quiet_opt){
+            print STDERR "Could not validate generated MaDDash agent file. Will not modify existing file. Encountered the following validation errors:\n\n";
+            foreach my $error(@errors){
+                print STDERR "   Node: " . $error->path . "\n";
+                print STDERR "   Error: " . $error->message . "\n\n";
+            }
+        }    
+        exit 1;
+    }
+    
+    #save
+    $agent_conf_client->save_config($agent_conf, {'pretty' => 1});
+    if($agent_conf_client->error()){
+        _error("Error saving configuration: " . $agent_conf_client->error());
+    }
+}

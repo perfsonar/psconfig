@@ -2,14 +2,14 @@
 
 =head1 NAME
  
-remote - Add/delete/listremote URLs and associated parameters in agent configuration file
+remote - Add/delete/list remote URLs and associated parameters in agent configuration file(s)
  
 =head1 SYNOPSIS
  
 remote add|delete|list [options] URL
  
  Options:
-   -h | --help                  help message
+   -h | --help                  Help message
    --agent AGENT                Name of agent to use (e.g. pscheduler, maddash). Default is to look at all installed agents.
    --transform JSON|@FILE       JSON transform object or a path to a file starting with @ that alters downloaded json
    --configure-archives         Indicates archives defined in remote URL should be used
