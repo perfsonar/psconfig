@@ -2,11 +2,11 @@
 
 =head1 NAME
  
-agent-stats - Get statistics about a pSConfig agent
+pscheduler-stats - Get statistics about a pSConfig agent
  
 =head1 SYNOPSIS
  
-agent-stats [options]
+pscheduler-stats [options]
  
  Options:
    -h | --help          help message

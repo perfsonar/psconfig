@@ -2,11 +2,11 @@
 
 =head1 NAME
  
-agent-tasks - Get a list of tasks managed by the agent
+pscheduler-tasks - Get a list of tasks managed by the agent
  
 =head1 SYNOPSIS
  
-agent-stats [options]
+pscheduler-stats [options]
  
  Options:
    -h | --help          help message

@@ -355,7 +355,7 @@ if($action eq 'add'){
     unless($check_plugin_dir){
         $check_plugin_dir = "/usr/lib/perfsonar/psconfig/checks/";
     }
-    my $check_plugin_map = load_maddash_plugins($check_plugin_dir, 'check');
+    my ($check_plugin_map, $check_plugin_err) = load_maddash_plugins($check_plugin_dir, 'check');
     $check_plugin_map = {} unless($check_plugin_map);
     unless($check_plugin_map->{$check->type()}){
         my $msg = "The --check-type " . $check->type() . " does not match any installed check plugins. Valid values are:\n";
@@ -370,7 +370,7 @@ if($action eq 'add'){
     unless($viz_plugin_dir){
         $viz_plugin_dir = "/usr/lib/perfsonar/psconfig/visualization/";
     }
-    my $viz_plugin_map = load_maddash_plugins($viz_plugin_dir, 'visualization');
+    my ($viz_plugin_map, $viz_plugin_err) = load_maddash_plugins($viz_plugin_dir, 'visualization');
     $viz_plugin_map = {} unless($viz_plugin_map);
     unless($viz_plugin_map->{$viz->type()}){
         my $msg = "The visualization type " . $viz->type() . " does not match any installed visualization plugins. Valid values are:\n";
@@ -521,7 +521,7 @@ sub _parse_transform {
         $transform_opt =~ s/^\@//;
         $jqt = _load_transform($transform_opt);
     }else{
-        $jqt = new JQTransform();
+        $jqt = new perfSONAR_PS::PSConfig::JQTransform();
         $jqt->script($transform_opt);
     }
     

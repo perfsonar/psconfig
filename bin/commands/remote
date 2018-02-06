@@ -206,12 +206,11 @@ foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
     $remote->ssl_ca_path($ssl_file) if($ssl_path);
     if($transform_opt){
         if($transform_opt =~ /^\@/){
-            $transform_opt =~ s/^\@//;
-            my $jqt = _load_transform($transform_opt, $cli_agent_name);
+            my $jqt = _load_transform(substr($transform_opt, 1), $cli_agent_name);
             next unless($jqt);
             $remote->transform($jqt);
         }else{
-            my $jqt = new JQTransform();
+            my $jqt = new perfSONAR_PS::PSConfig::JQTransform();
             $jqt->script($transform_opt);
             $remote->transform($jqt);
         }
@@ -238,7 +237,6 @@ foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
         $agent_conf->add_remote($remote) unless($found);
         _save_file($agent_conf_client, $agent_conf, $cli_agent_name);
     }elsif($action eq 'delete'){
-        $success_msg .= "No remote configuration for $url found\n";
         my $found = 0;
         for(my $i = 0; $i < @{$agent_conf->remotes()}; $i++){
             if(($is_url_only && $agent_conf->remote($i)->url() eq $remote->url()) ||

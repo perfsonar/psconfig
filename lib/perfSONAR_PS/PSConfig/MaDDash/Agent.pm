@@ -200,7 +200,7 @@ sub _run_handle_psconfig {
             'group' => $group->data(),
             'test' => $psconfig->test($task->test_ref())->data()
         };
-        $jq_obj->{'schedule'} = $psconfig->schedule($task->schedule_ref()) if($task->schedule_ref());
+        $jq_obj->{'schedule'} = $psconfig->schedule($task->schedule_ref())->data() if($task->schedule_ref());
         $jq_obj->{'archives'} = [];
         if($task->archive_refs()){
             foreach my $archive_ref(@{$task->archive_refs()}){
@@ -339,6 +339,7 @@ sub _run_handle_psconfig {
             
             #add to grids
             push @{$self->grids()}, $grid;
+            $logger->info($self->logf()->format("Grid added", $log_ctx));
             
             #add to dashboard
             if($dashboard){
