@@ -2,7 +2,7 @@
 
 =head1 NAME
  
-agents - Lists the pSConfig agents installed on this host.
+agents - Lists the pSConfig agents installed on this host and validates the main configuration file.
  
 =head1 SYNOPSIS
  
@@ -10,6 +10,7 @@ agents [options]
  
  Options:
    -h | --help          Help message
+   --agent AGENT        Name of agent to check and validate (e.g. pscheduler, maddash). Default is to look at all installed agents.
    --quiet              Suppress output to stdout and stderr
 
 =head1 OPTIONS
@@ -20,13 +21,17 @@ agents [options]
  
 Prints a help message and exits
 
+=item B<--agent AGENT>
+ 
+Name of agent to check and validate (e.g. pscheduler, maddash). Default is to look at all installed agents.
+
 =item B<--quiet>
  
 Suppress output to stdout and stderr
 
 =head1 DESCRIPTION
  
-B<This program> will list the pSConfig agents installed on this host. 
+B<This program> will list the pSConfig agents installed on this host and validate the main configuration file. 
  
 =cut
 use strict;
@@ -40,12 +45,13 @@ use Pod::Usage;
 
 use perfSONAR_PS::PSConfig::CLI::Constants;
 
-
 #parse options
 my $help;
+my $agent_opt;
 my $quiet_opt;
 GetOptions(
     'help|h' => \$help,
+    'agent=s' => \$agent_opt,
     'quiet' => \$quiet_opt,
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
 
@@ -63,34 +69,86 @@ if($help){
 }
 
 #Find agents
+my $exitval = 0;
 my $agent_count = 0;
 my $msg = "\nThe following pSConfig agents are installed:\n\n";
 foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
-    #see if config file exists
+    #if agent specified, only use given agent
+    if($agent_opt && lc($agent_opt) ne lc($cli_agent->{name})){
+        next;
+    }
+    #see if command exists
     unless(-e $cli_agent->{command}){
         next;
     }
+    #validate
+    my $agent_conf = _validate_config($cli_agent->{config_file}, $cli_agent->{client_class}, $cli_agent->{name});
+    unless($agent_conf){
+        $exitval = 1;
+    }
     $agent_count++;
-    $msg .= $cli_agent->{name} . "\n";
+    if($agent_opt){
+        $msg = $cli_agent->{name} . " agent is installed";
+        $msg .= " but has configuration errors" unless($agent_conf);
+        last;
+    }elsif(!$agent_conf){
+        $msg .= $cli_agent->{name} . " (configuration errors)\n";
+    }else{
+        $msg .= $cli_agent->{name} . "\n";
+    }
 }
 
 #Output
 if($agent_count){
     _success($msg);  
+}elsif($agent_opt){
+    _error("No agents installed with name $agent_opt");
 }else{
-    _error("No agents installed") unless($agent_count);
+    _error("No agents installed");
 }
 
+#exit 
+exit $exitval;
 
 #Subroutines
 sub _success{
     my $msg = shift;
     print "$msg\n" if($msg && !$quiet_opt);
-    exit 0;
 }
 
 sub _error{
     my $msg = shift;
     print STDERR "$msg\n" unless($quiet_opt);
-    exit 1;
+}
+
+sub _validate_config {
+    my ($config_file, $config_class, $cli_agent_name) = @_;
+    
+    ##
+    #load config file
+    my $agent_conf_client = $config_class->new(
+        url => $config_file,
+        save_filename => $config_file
+    );
+    if($agent_conf_client->error()){
+        _error("\n[$cli_agent_name agent] Error opening $config_file: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
+    } 
+    my $agent_conf = $agent_conf_client->get_config();
+    if($agent_conf_client->error()){
+        _error("\n[$cli_agent_name agent] Error parsing $config_file: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
+    }
+    my @agent_conf_errors = $agent_conf->validate();
+    if(@agent_conf_errors){
+        my $err = "\n[$cli_agent_name agent error] $config_file is not valid. The following errors were encountered: \n";
+        foreach my $error(@agent_conf_errors){
+            $err .= "    JSON Path: " . $error->path . "\n";
+            $err .= "    Error: " . $error->message . "\n";
+        }
+        _error($err, $cli_agent_name);
+        return;
+    }
+    
+    return $agent_conf;
 }
