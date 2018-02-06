@@ -487,7 +487,7 @@ sub _load_plugins {
         }elsif($name eq 'visualization'){
             $client = new perfSONAR_PS::PSConfig::MaDDash::Visualization::ConfigConnect(url => $abs_file);
         }else{
-            $logger->error($self->logf()->format("Programming error, unrecognized plugin type. File a bug, this should not happen: " . $client->error(), $log_ctx));
+            $logger->error($self->logf()->format("Programming error, unrecognized plugin type. File a bug, this should not happen.", $log_ctx));
         }
         my $plugin = $client->get_config();
         if($client->error()){

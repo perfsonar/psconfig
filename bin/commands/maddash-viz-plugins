@@ -11,6 +11,7 @@ maddash-viz-plugin [options]
  Options:
    -h | --help          Help message
    --type TYPE          Only display plugin of specified type. Return error status if not found.
+   --file FILE          A plugin file to examine/display instead of iterating over default plugins directory.
    --quiet              Suppress output to stdout and stderr
    --detail             Print details of all plugins found
    
@@ -60,11 +61,13 @@ my $CONFIG_FILE="/etc/perfsonar/psconfig/maddash-agent.json";
 #parse options
 my $help;
 my $type_opt;
+my $file_opt;
 my $quiet_opt;
 my $detail_opt;
 GetOptions(
     'help|h' => \$help,
     'type=s' => \$type_opt,
+    'file=s' => \$file_opt,
     'quiet' => \$quiet_opt,
     'detail' => \$detail_opt
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
@@ -82,47 +85,74 @@ if($help){
     exit $exitval;
 }
 
-#load config file
-my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
-
-#verify the visualization plugins provided are valid
-my $success_msg = "\nThe following pSConfig MaDDash agent visualization plugins are installed:\n\n";
-my $viz_plugin_dir = $agent_conf->visualization_plugin_directory();
-unless($viz_plugin_dir){
-    $viz_plugin_dir = "/usr/lib/perfsonar/psconfig/visualization/";
+#can't use --file and --type together
+if($type_opt && $file_opt){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Cannot specify --type and --file at the same time",
+        -exitval => $exitval,
+        -verbose => 0   
+    });
+    exit $exitval;
 }
-my $viz_plugin_map = load_maddash_plugins($viz_plugin_dir, 'visualization');
+
+#load plugins
+my $exitval = 0;
+my $viz_plugin_dir;
+my $success_msg = "";
+if($file_opt){
+     $success_msg = "\nThe file $file_opt is a valid plugin with type " unless($detail_opt);
+}else{
+    #load config file
+    my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
+
+    #verify the visualization plugins provided are valid
+    $success_msg = "\nThe following pSConfig MaDDash agent visualization plugins are installed:\n\n" unless($detail_opt);
+    $viz_plugin_dir = $agent_conf->visualization_plugin_directory();
+    unless($viz_plugin_dir){
+        $viz_plugin_dir = "/usr/lib/perfsonar/psconfig/visualization/";
+    }
+}
+my ($viz_plugin_map, $load_err) = load_maddash_plugins($viz_plugin_dir, 'visualization', $file_opt);
 $viz_plugin_map = {} unless($viz_plugin_map);
+if($load_err){
+    $exitval = 1;
+    _error($load_err);
+}
 if($type_opt && !$viz_plugin_map->{$type_opt}){
     my $msg = "The --type $type_opt does not match any installed visualization plugins. Valid values are:\n";
     foreach my $plugin_type(keys %{$viz_plugin_map}){
         $msg .= "    $plugin_type\n";
     }
     _error($msg);
+    exit 1;
 }elsif($type_opt){
     $success_msg .= _output_plugin($viz_plugin_map->{$type_opt});
 }elsif(keys %{$viz_plugin_map}){
     foreach my $plugin_type(keys %{$viz_plugin_map}){
         $success_msg .= _output_plugin($viz_plugin_map->{$plugin_type});
     }
+}elsif($file_opt){
+    _error("The file $file_opt is not a valid plugin.");
+    exit 1;
 }else{
-    _error("No visualization plug-ins installed on system");
+    _error("No valid visualization plug-ins installed on system");
+    exit 1;
 }
   
 #Finish
-_success($success_msg);
+_output($success_msg);
+exit $exitval;
 
 #Subroutines
-sub _success{
+sub _output{
     my $msg = shift;
     print "$msg\n" if($msg && !$quiet_opt);
-    exit 0;
 }
 
 sub _error{
     my $msg = shift;
     print STDERR "$msg\n" unless($quiet_opt);
-    exit 1;
 }
 
 sub _load_config {
