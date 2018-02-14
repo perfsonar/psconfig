@@ -45,12 +45,14 @@ Vagrant.configure("2") do |config|
                 dkms\
                 make\
                 bzip2\
+                nagios-plugins-perfsonar\
                 perl\
                 perl-devel\
                 perl-ExtUtils-MakeMaker\
                 pscheduler-bundle-full\
                 pscheduler-test-snmpget\
                 pscheduler-tool-pysnmp\
+                perfsonar-graphs\
                 GeoIP-data\
                 perl-AppConfig\
                 perl-B-Hooks-EndOfScope\
@@ -200,7 +202,7 @@ Vagrant.configure("2") do |config|
                 perl-namespace-clean\
                 perl-version\
                 perltidy\
-                maddash-server\
+                maddash\
                 perl-Cache-Memcached\
                 perl-Class-XSAccessor\
                 perl-Config-Tiny\
@@ -252,5 +254,6 @@ Vagrant.configure("2") do |config|
     chown -R perfsonar:perfsonar /var/lib/perfsonar/
     chown -R perfsonar:perfsonar /usr/lib/perfsonar/
     chown -R perfsonar:perfsonar /var/log/perfsonar/
+    sed -i s/SELINUX=enforcing/SELINUX=permissive/g  /etc/selinux/config 
   SHELL
 end
