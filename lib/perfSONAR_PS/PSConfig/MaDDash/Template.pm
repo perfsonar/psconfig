@@ -22,7 +22,7 @@ our $VERSION = 4.1;
 has 'row' => (is => 'rw', isa => 'Str');
 has 'col' => (is => 'rw', isa => 'Str');
 has 'check_config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig');
-has 'visualization_config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig');
+has 'viz_config' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig');
 has 'check_defaults' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Checks::CheckDefaults');
 has 'viz_defaults' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Visualization::VizDefaults');
 has 'check_vars' => (is => 'rw', isa => 'HashRef', default => sub { {} });

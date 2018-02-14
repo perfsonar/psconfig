@@ -28,10 +28,6 @@ use perfSONAR_PS::PSConfig::MaDDash::Template;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::ConfigConnect;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::Config;
 
-
-#TODO: Probably delete DefaultReports
-use perfSONAR_PS::PSConfig::MaDDash::DefaultReports qw(load_default_reports);
-
 extends 'perfSONAR_PS::PSConfig::BaseAgent';
 
 use constant META_DISPLAY_NAME => 'display-name';
@@ -251,7 +247,6 @@ sub _run_handle_psconfig {
                 $grid_name = $task_name;
             }
             $grid_name .= ' - ' . $matching_agent_grid->display_name();
-            $grid_name = $self->__generate_yaml_key($grid_name);
             
             my $log_ctx = { 
                 "grid_name" => "$grid_name",
@@ -307,7 +302,7 @@ sub _run_handle_psconfig {
                 'check_config' => $matching_agent_grid->check(),
                 'viz_config' => $matching_agent_grid->visualization(),
                 'check_defaults' => $check_plugin->defaults(),
-                'viz_config' => $viz_plugin->defaults(),
+                'viz_defaults' => $viz_plugin->defaults(),
                 'check_vars' => $check_vars,
                 'viz_vars' => $viz_vars,
             });
