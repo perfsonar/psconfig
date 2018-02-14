@@ -243,17 +243,24 @@ Vagrant.configure("2") do |config|
   # and creates a perfsonar user/group
   config.vm.provision "shell", inline: <<-SHELL
     mkdir -p /var/lib/perfsonar/psconfig
+    mkdir -p /usr/lib/perfsonar/bin
     mkdir -p /usr/lib/perfsonar/psconfig
     mkdir -p /usr/lib/perfsonar/psconfig/checks
+    mkdir -p /usr/lib/perfsonar/psconfig/reports
     mkdir -p /usr/lib/perfsonar/psconfig/visualization
     mkdir -p /var/log/perfsonar/
+    mkdir -p /var/log/maddash/
     ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
+    ln -fs /vagrant/bin/psconfig_maddash_agent /usr/lib/perfsonar/psconfig_maddash_agent
+    ln -fs /vagrant/bin/psconfig_pscheduler_agent /usr/lib/perfsonar/psconfig_pscheduler_agent
     ln -fs /vagrant/bin /usr/lib/perfsonar/psconfig/bin
+    ln -fs /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.log
     /usr/sbin/groupadd perfsonar 2> /dev/null || :
     /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
     chown -R perfsonar:perfsonar /var/lib/perfsonar/
     chown -R perfsonar:perfsonar /usr/lib/perfsonar/
     chown -R perfsonar:perfsonar /var/log/perfsonar/
+    chown -R maddash:maddash /var/log/maddash/
     sed -i s/SELINUX=enforcing/SELINUX=permissive/g  /etc/selinux/config 
   SHELL
 end
