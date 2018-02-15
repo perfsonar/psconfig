@@ -128,6 +128,7 @@ mkdir -p %{buildroot}/%{psconfig_bin_base}
 mkdir -p %{buildroot}/%{command_base}
 mkdir -p %{buildroot}/%{doc_base}
 mkdir -p %{buildroot}/%{doc_base}/transforms
+mkdir -p %{buildroot}/%{_bindir}
 
 install -D -m 0644 scripts/%{service_pscheduler_agent}.service %{buildroot}/%{_unitdir}/%{service_pscheduler_agent}.service
 install -D -m 0644 scripts/%{service_maddash_agent}.service %{buildroot}/%{_unitdir}/%{service_maddash_agent}.service
@@ -136,6 +137,7 @@ install -D -m 0755 bin/%{bin_pscheduler_agent} %{buildroot}/%{install_base}/bin/
 install -D -m 0755 bin/%{bin_maddash_agent} %{buildroot}/%{install_base}/bin/%{bin_maddash_agent}
 
 install -D -m 0755 bin/psconfig %{buildroot}/%{psconfig_bin_base}/psconfig
+rm -f %{buildroot}/%{install_base}/bin/psconfig
 install -D -m 0755 bin/commands/* %{buildroot}/%{command_base}/
 ln -fs %{psconfig_bin_base}/psconfig %{buildroot}/%{_bindir}/psconfig
 
@@ -218,12 +220,13 @@ ln -s /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.
 %attr(0755,perfsonar,perfsonar) %{command_base}/validate
 %{install_base}/lib/perfSONAR_PS/PSConfig/*.pm
 %{install_base}/lib/perfSONAR_PS/PSConfig/CLI/*.pm
+%{doc_base}/*
 %{_bindir}/psconfig
 
 
 %files pscheduler
 %defattr(0644,perfsonar,perfsonar,0755)
-%config(noreplace) %{config_base}/pscheduler-agent.conf
+%config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/%{bin_pscheduler_agent}
 %attr(0755,perfsonar,perfsonar) %{command_base}/pscheduler-*
@@ -233,7 +236,7 @@ ln -s /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.
 
 %files maddash
 %defattr(0644,perfsonar,perfsonar,0755)
-%config(noreplace) %{config_base}/maddash-agent.conf
+%config(noreplace) %{config_base}/maddash-agent.json
 %config(noreplace) %{config_base}/maddash-agent-logger.conf
 %attr(0755,perfsonar,perfsonar) %{install_base}/bin/%{bin_maddash_agent}
 %attr(0755,perfsonar,perfsonar) %{command_base}/maddash-*
