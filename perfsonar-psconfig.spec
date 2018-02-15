@@ -160,23 +160,18 @@ chown perfsonar:perfsonar %{config_base}/archives.d
 
 
 %post pscheduler
+mkdir -p %{config_base}/pscheduler.d/
+chown perfsonar:perfsonar %{config_base}/pscheduler.d/
 %systemd_post %{service_pscheduler_agent}.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
     systemctl enable %{service_pscheduler_agent}.service
     systemctl start %{service_pscheduler_agent}.service
 fi
-mkdir -p %{config_base}/pscheduler.d/
-chown perfsonar:perfsonar %{config_base}/pscheduler.d/
+
 
 
 %post maddash
-%systemd_post %{service_maddash_agent}.service
-if [ "$1" = "1" ]; then
-    #if new install, then enable
-    systemctl enable %{service_maddash_agent}.service
-    systemctl start %{service_maddash_agent}.service
-fi
 mkdir -p %{config_base}/maddash.d
 chown perfsonar:perfsonar %{config_base}/maddash.d
 mkdir -p %{psconfig_base}/checks
@@ -185,6 +180,13 @@ mkdir -p %{psconfig_base}/reports
 chown perfsonar:perfsonar %{psconfig_base}/reports
 mkdir -p %{psconfig_base}/visualization
 chown perfsonar:perfsonar %{psconfig_base}/visualization
+%systemd_post %{service_maddash_agent}.service
+if [ "$1" = "1" ]; then
+    #if new install, then enable
+    systemctl enable %{service_maddash_agent}.service
+    systemctl start %{service_maddash_agent}.service
+fi
+
 
 #symlink for convenience
 ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-maddash-agent.log &>/dev/null || :
