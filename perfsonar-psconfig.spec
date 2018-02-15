@@ -1,7 +1,7 @@
 %define install_base        /usr/lib/perfsonar/
 %define psconfig_base       %{install_base}/psconfig/
-%define psconfig_bin_base   %{install_base}/psconfig/bin
-%define command_base        %{psconfig_bin_base}/commands
+%define psconfig_bin_base   %{install_base}/bin
+%define command_base        %{psconfig_bin_base}/psconfig_commands
 %define config_base         /etc/perfsonar/psconfig
 %define doc_base            /usr/share/doc/perfsonar/psconfig
 
@@ -45,6 +45,7 @@ Requires:		perl(Getopt::Long)
 Requires:		perl(JSON)
 Requires:		perl(JSON::Validator)
 Requires:		perl(Log::Log4perl)
+Requires:		perl(Module::Load)
 Requires:		perl(Mouse)
 Requires:		perl(POSIX)
 Requires:		perl(Params::Validate)
@@ -133,18 +134,11 @@ mkdir -p %{buildroot}/%{_bindir}
 install -D -m 0644 scripts/%{service_pscheduler_agent}.service %{buildroot}/%{_unitdir}/%{service_pscheduler_agent}.service
 install -D -m 0644 scripts/%{service_maddash_agent}.service %{buildroot}/%{_unitdir}/%{service_maddash_agent}.service
 
-install -D -m 0755 bin/%{bin_pscheduler_agent} %{buildroot}/%{install_base}/bin/%{bin_pscheduler_agent}
-install -D -m 0755 bin/%{bin_maddash_agent} %{buildroot}/%{install_base}/bin/%{bin_maddash_agent}
-
-install -D -m 0755 bin/psconfig %{buildroot}/%{psconfig_bin_base}/psconfig
-rm -f %{buildroot}/%{install_base}/bin/psconfig
-install -D -m 0755 bin/commands/* %{buildroot}/%{command_base}/
 ln -fs %{psconfig_bin_base}/psconfig %{buildroot}/%{_bindir}/psconfig
 
 install -D -m 0644 doc/*.json %{buildroot}/%{doc_base}/
 install -D -m 0644 doc/transforms/*.json %{buildroot}/%{doc_base}/transforms/
 
-rm -rf %{buildroot}/%{install_base}/bin/commands
 rm -rf %{buildroot}/%{install_base}/scripts/
 rm -rf %{buildroot}/%{install_base}/doc
 
@@ -219,7 +213,7 @@ ln -s /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.
 %attr(0755,perfsonar,perfsonar) %{command_base}/remote
 %attr(0755,perfsonar,perfsonar) %{command_base}/validate
 %{install_base}/lib/perfSONAR_PS/PSConfig/*.pm
-%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/*.pm
+%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/Constants.pm
 %{doc_base}/*
 %{_bindir}/psconfig
 
@@ -228,7 +222,7 @@ ln -s /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.
 %defattr(0644,perfsonar,perfsonar,0755)
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/%{bin_pscheduler_agent}
+%attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_pscheduler_agent}
 %attr(0755,perfsonar,perfsonar) %{command_base}/pscheduler-*
 %attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
 %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/*
@@ -238,10 +232,11 @@ ln -s /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.
 %defattr(0644,perfsonar,perfsonar,0755)
 %config(noreplace) %{config_base}/maddash-agent.json
 %config(noreplace) %{config_base}/maddash-agent-logger.conf
-%attr(0755,perfsonar,perfsonar) %{install_base}/bin/%{bin_maddash_agent}
+%attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_maddash_agent}
 %attr(0755,perfsonar,perfsonar) %{command_base}/maddash-*
 %attr(0644,root,root) %{_unitdir}/%{service_maddash_agent}.service
 %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
+%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm
 
 
 %changelog

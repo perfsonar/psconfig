@@ -7,7 +7,7 @@ WHOAMI=$(basename $0)
 #SCRIPT_DIR=$(dirname $(readlink -f $0))
 SCRIPT_PATH=`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`
 SCRIPT_DIR=$(dirname $SCRIPT_PATH)
-COMMAND_DIR="${SCRIPT_DIR}/commands"
+COMMAND_DIR="${SCRIPT_DIR}/psconfig_commands"
 
 die()
 {
