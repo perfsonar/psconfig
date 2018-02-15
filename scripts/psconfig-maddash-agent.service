@@ -5,7 +5,7 @@ After=network.target maddash-server.service
 [Service]
 Type=forking
 PIDFile=/var/run/psconfig-maddash-agent.pid
-ExecStart=/usr/lib/perfsonar/bin/psconfig_maddash_agent --config=/etc/perfsonar/psconfig/maddash-agent.conf --logger=/etc/perfsonar/psconfig/maddash-agent-logger.conf --pidfile=/var/run/psconfig-maddash-agent.pid --user=maddash --group=maddash
+ExecStart=/usr/lib/perfsonar/bin/psconfig_maddash_agent --config=/etc/perfsonar/psconfig/maddash-agent.json --logger=/etc/perfsonar/psconfig/maddash-agent-logger.conf --pidfile=/var/run/psconfig-maddash-agent.pid --user=maddash --group=maddash
 
 [Install]
 WantedBy=multi-user.target

@@ -5,7 +5,7 @@ After=network.target  pscheduler-scheduler.service pscheduler-archiver.service p
 [Service]
 Type=forking
 PIDFile=/var/run/psconfig-pscheduler-agent.pid
-ExecStart=/usr/lib/perfsonar/bin/psconfig_pscheduler_agent --config=/etc/perfsonar/psconfig/pscheduler-agent.conf --logger=/etc/perfsonar/psconfig/pscheduler-agent-logger.conf --pidfile=/var/run/psconfig-pscheduler-agent.pid --user=perfsonar --group=perfsonar
+ExecStart=/usr/lib/perfsonar/bin/psconfig_pscheduler_agent --config=/etc/perfsonar/psconfig/pscheduler-agent.json --logger=/etc/perfsonar/psconfig/pscheduler-agent-logger.conf --pidfile=/var/run/psconfig-pscheduler-agent.pid --user=perfsonar --group=perfsonar
 
 [Install]
 WantedBy=multi-user.target
