@@ -4,9 +4,6 @@ package perfSONAR_PS::PSConfig::CLI::Constants;
 use strict;
 use warnings;
 
-use perfSONAR_PS::PSConfig::PScheduler::ConfigConnect;
-use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
-
 use constant {
     CLI_AGENTS => [
         {

@@ -41,6 +41,7 @@ use FindBin qw($Bin);
 use lib "$Bin/../../lib";
 
 use Getopt::Long qw(GetOptions);
+use Module::Load;
 use Pod::Usage;
 
 use perfSONAR_PS::PSConfig::CLI::Constants;
@@ -123,6 +124,16 @@ sub _error{
 
 sub _validate_config {
     my ($config_file, $config_class, $cli_agent_name) = @_;
+    
+    ##
+    # Load client class
+    eval{
+        load  $config_class;
+    };
+    if($@){
+        _error("\n[$cli_agent_name agent] It does not appear the agent is full installed. You may want to reinstall.");
+        return;
+    }
     
     ##
     #load config file
