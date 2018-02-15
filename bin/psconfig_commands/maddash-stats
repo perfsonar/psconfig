@@ -67,7 +67,7 @@ if($help){
 
 #Set file names
 unless($logdir){
-    $logdir = '/var/log/perfsonar';
+    $logdir = '/var/log/maddash';
 }
 my $AGENT_LOG_FILE = "$logdir/psconfig-maddash-agent.log";
 

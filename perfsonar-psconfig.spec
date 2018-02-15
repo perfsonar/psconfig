@@ -187,7 +187,7 @@ mkdir -p %{psconfig_base}/visualization
 chown perfsonar:perfsonar %{psconfig_base}/visualization
 
 #symlink for convenience
-ln -s /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.log &>/dev/null || :
+ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-maddash-agent.log &>/dev/null || :
 
 
 %preun pscheduler
