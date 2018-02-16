@@ -70,4 +70,4 @@ vagrant ssh
 build
 ```
 
-For more information on building and testing RPMs see rpms/RPM_README.md.
+For more information on building and testing RPMs see shared/rpms/RPM_README.md.
