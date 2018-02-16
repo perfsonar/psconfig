@@ -1,0 +1,112 @@
+{
+    "type": "ps-nagios-throughput",
+    "name": "Throughput",
+    "description": "Queries an esmond MA for throughput data and alerts on response",
+    "requires": {
+        "test-type": ["throughput"],
+        "archive-type": ["esmond"]
+    },
+    "archive-accessor": {
+        "script": [ ".url" ]
+    },
+    "status-labels": {
+        "ok": "Throughput >= {% check.warning %}Gbps",
+        "warning": "Throughput < {% check.warning %}Gbps",
+        "critical": "Throughput <= {% check.critical %}Gbps",
+        "notrun": "Check has not run yet",
+        "unknown": "Unable to find test data"
+    },
+    "defaults": {
+        "check-interval": "PT4H",
+        "warning-threshold": "1",
+        "critical-threshold": ".5",
+        "retry-attempts": 1,
+        "retry-interval": "PT5M",
+        "report-yaml-file": "/usr/lib/perfsonar/psconfig/reports/ps-nagios-throughput-report.yaml",
+        "timeout": "PT60S",
+        "params": {
+            "time-range": "86400",
+            "tool": "",
+            "agent": ""
+        }
+    },
+    "vars": {
+        "protocol": {
+            "script": [ 
+                "if .test.spec.udp==true then",
+                "   \"udp\"",
+                "else",
+                "   \"tcp\"" ,
+                "end"
+            ]
+        },
+        "ipv4": { 
+            "script": [".test.spec.\"ip-version\"==4"]
+        },
+        "ipv6": {
+            "script": [".test.spec.\"ip-version\"==6"]
+        },
+        "bandwidth": {
+            "script": [ ".test.spec.bandwidth" ]
+        }
+    },
+    "command": "/usr/lib64/nagios/plugins/check_throughput.pl",
+    "command-opts": {
+        "-u": {
+            "required": true,
+            "condition": "%maUrl",
+            "arg": "%maUrl"
+        },
+        "-s": {
+            "required": true,
+            "condition": "{% row %}",
+            "arg": "{% row %}"
+        },
+        "-d": {
+            "required": true,
+            "condition": "{% col %}",
+            "arg": "{% col %}"
+        },
+        "-a": {
+            "condition": "{% check.params.agent %}",
+            "arg": "{% check.params.agent %}"
+        },
+        "-r": {
+            "required": true,
+            "condition": "{% check.params.time-range %}",
+            "arg": "{% check.params.time-range %}"
+        },
+        "-w": {
+            "required": true,
+            "condition": "{% check.warning %}",
+            "arg": "{% check.warning %}:"
+        },
+        "-c": {
+            "required": true,
+            "condition": "{% check.critical %}",
+            "arg": "{% check.critical %}:"
+        },
+        "-p": {
+            "condition": "{% check.vars.protocol %}",
+            "arg": "{% check.vars.protocol %}"
+        },
+        "-4": {
+            "condition": "{% check.vars.ipv4 %}"
+        },
+        "-6": {
+            "condition": "{% check.vars.ipv6 %}"
+        },
+        "--tool": {
+            "condition": "{% check.params.tool %}",
+            "arg": "{% check.params.tool %}"
+        },
+        "--udpbandwidth": {
+            "condition": "{% check.vars.bandwidth %}",
+            "arg": "{% check.vars.bandwidth %}"
+        },
+        "-t": {
+            "condition": "{% check.timeout.seconds %}",
+            "arg": "{% check.timeout.seconds %}"
+        }
+    }
+}

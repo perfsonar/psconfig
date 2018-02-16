@@ -1,0 +1,28 @@
+{
+    "type": "ps-graphs",
+    "requires": {
+        "test-type": ["throughput", "latency", "latencybg", "rtt"],
+        "archive-type": ["esmond"]
+    },
+    "defaults": {
+        "base-url": "/perfsonar-graphs/graphWidget.cgi"
+    },
+    "vars": {},
+    "http-get-opts": {
+        "source": {
+            "required": true,
+            "condition": "{% row %}",
+            "arg": "{% row %}"
+        },
+        "dest": {
+            "required": true,
+            "condition": "{% col %}",
+            "arg": "{% col %}"
+        },
+        "url": {
+            "required": true,
+            "condition": "1",
+            "arg": "%maUrl"
+        } 
+    }
+}

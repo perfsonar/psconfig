@@ -97,6 +97,27 @@ The pSConfig MaDDash Agent downloads a centralized JSON file
 describing the tests a mesh is running, and generates a MaDDash configuration.
 
 
+%package maddash-checks
+Summary:		pSConfig MaDDash Agent
+Group:			Applications/Communications
+Requires:		perfsonar-psconfig-maddash = %{version}-%{release}
+Requires:       nagios-plugins-perfsonar
+
+%description maddash-checks
+A default set of check plugins for the pSConfig MaDDash Agent
+
+
+%package maddash-visualizations
+Summary:		pSConfig MaDDash Agent
+Group:			Applications/Communications
+Requires:		perfsonar-psconfig-maddash = %{version}-%{release}
+Requires:       perfsonar-graphs
+Requires:       nagios-plugins-perfsonar
+Requires:       perfsonar-traceroute-viewer
+
+%description maddash-visualizations
+A default set of visualization plugins for the pSConfig MaDDash Agent
+
 %pre utils
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
@@ -125,7 +146,9 @@ describing the tests a mesh is running, and generates a MaDDash configuration.
 rm -rf %{buildroot}
 
 make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
-mkdir -p %{buildroot}/%{psconfig_bin_base}
+mkdir -p %{buildroot}/%{psconfig_base}/checks
+mkdir -p %{buildroot}/%{psconfig_base}/reports
+mkdir -p %{buildroot}/%{psconfig_base}/visualization
 mkdir -p %{buildroot}/%{command_base}
 mkdir -p %{buildroot}/%{doc_base}
 mkdir -p %{buildroot}/%{doc_base}/transforms
@@ -134,11 +157,16 @@ mkdir -p %{buildroot}/%{_bindir}
 install -D -m 0644 scripts/%{service_pscheduler_agent}.service %{buildroot}/%{_unitdir}/%{service_pscheduler_agent}.service
 install -D -m 0644 scripts/%{service_maddash_agent}.service %{buildroot}/%{_unitdir}/%{service_maddash_agent}.service
 
+install -D -m 0644 plugins/checks/* %{buildroot}/%{psconfig_base}/checks/
+install -D -m 0644 plugins/reports/* %{buildroot}/%{psconfig_base}/reports/
+install -D -m 0644 plugins/visualization/* %{buildroot}/%{psconfig_base}/visualization/
+
 ln -fs %{psconfig_bin_base}/psconfig %{buildroot}/%{_bindir}/psconfig
 
 install -D -m 0644 doc/*.json %{buildroot}/%{doc_base}/
 install -D -m 0644 doc/transforms/*.json %{buildroot}/%{doc_base}/transforms/
 
+rm -rf %{buildroot}/%{install_base}/plugins/
 rm -rf %{buildroot}/%{install_base}/scripts/
 rm -rf %{buildroot}/%{install_base}/doc
 
@@ -239,6 +267,17 @@ ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-ma
 %attr(0644,root,root) %{_unitdir}/%{service_maddash_agent}.service
 %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
 %{install_base}/lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm
+
+
+%files maddash-checks
+%defattr(0644,perfsonar,perfsonar,0755)
+%{psconfig_base}/checks/*
+%{psconfig_base}/reports/*
+
+
+%files maddash-visualizations
+%defattr(0644,perfsonar,perfsonar,0755)
+%{psconfig_base}/visualization/*
 
 
 %changelog

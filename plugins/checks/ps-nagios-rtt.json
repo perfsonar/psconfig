@@ -1,0 +1,102 @@
+{
+    "type": "ps-nagios-rtt",
+    "name": "RTT",
+    "description": "Queries an esmond MA for round trip time data and alerts on response",
+    "requires": {
+        "test-type": ["rtt"],
+        "archive-type": ["esmond"]
+    },
+    "archive-accessor": {
+        "script": [ ".url" ]
+    },
+    "status-labels": {
+        "ok": "RTT is <= {% check.warning %}ms",
+        "warning": "RTT is > {% check.warning %}ms",
+        "critical": "RTT is >= {% check.critical %}ms",
+        "notrun": "Check has not run yet",
+        "unknown": "Unable to find test data"
+    },
+    "defaults": {
+        "check-interval": "PT30M",
+        "warning-threshold": "50",
+        "critical-threshold": "100",
+        "retry-attempts": 1,
+        "retry-interval": "PT5M",
+        "report-yaml-file": "/usr/lib/perfsonar/psconfig/reports/ps-nagios-rtt-report.yaml",
+        "timeout": "PT60S",
+        "params": {
+            "time-range": "2700",
+            "tool": "",
+            "agent": "",
+            "digits": "",
+            "quantile": ""
+        }
+    },
+    "vars": {
+        "ipv4": { 
+            "script": [".test.spec.\"ip-version\"==4"]
+        },
+        "ipv6": {
+            "script": [".test.spec.\"ip-version\"==6"]
+        }
+    },
+    "command": "/usr/lib64/nagios/plugins/check_rtt.pl",
+    "command-opts": {
+        "-u": {
+            "required": true,
+            "condition": "%maUrl",
+            "arg": "%maUrl"
+        },
+        "-s": {
+            "required": true,
+            "condition": "{% row %}",
+            "arg": "{% row %}"
+        },
+        "-d": {
+            "required": true,
+            "condition": "{% col %}",
+            "arg": "{% col %}"
+        },
+        "-a": {
+            "condition": "{% check.params.agent %}",
+            "arg": "{% check.params.agent %}"
+        },
+        "-r": {
+            "required": true,
+            "condition": "{% check.params.time-range %}",
+            "arg": "{% check.params.time-range %}"
+        },
+        "-w": {
+            "required": true,
+            "condition": "{% check.warning %}",
+            "arg": "{% check.warning %}"
+        },
+        "-c": {
+            "required": true,
+            "condition": "{% check.critical %}",
+            "arg": "{% check.critical %}"
+        },
+        "--digits": {
+            "condition": "{% check.params.digits %}",
+            "arg": "{% check.params.digits %}"
+        },
+        "-4": {
+            "condition": "{% check.vars.ipv4 %}"
+        },
+        "-6": {
+            "condition": "{% check.vars.ipv6 %}"
+        },
+        "--tool": {
+            "condition": "{% check.params.tool %}",
+            "arg": "{% check.params.tool %}"
+        },
+        "-t": {
+            "condition": "{% check.timeout.seconds %}",
+            "arg": "{% check.timeout.seconds %}"
+        },
+        "-q": {
+            "condition": "{% check.params.quantile %}",
+            "arg": "{% check.params.quantile %}"
+        }
+    }
+}
