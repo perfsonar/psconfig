@@ -5,3 +5,5 @@
 # Ignore vagrant files
 .vagrant
 vagrant-data
+# Ignore coverage data
+cover_db

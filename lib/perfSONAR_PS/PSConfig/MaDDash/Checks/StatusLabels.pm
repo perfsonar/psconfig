@@ -79,7 +79,7 @@ Gets/sets the an individual value from extra
 =cut
 
 sub extra_label {
-    my ($self, $field, $index, $val) = @_;
+    my ($self, $index, $val) = @_;
     return $self->_field_class_list_item('extra', $index, 'perfSONAR_PS::PSConfig::MaDDash::Checks::StatusLabelsExtra', $val);
 }
 

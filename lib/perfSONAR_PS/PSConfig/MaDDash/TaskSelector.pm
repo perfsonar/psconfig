@@ -138,7 +138,7 @@ sub matches{
         my $archive_types = {};
         #build map of archives for efficiency
         foreach my $archive(@{$archives}){
-            $archive_types->{$archive->{'archiver'}} = 1;
+            $archive_types->{$archive->{'archiver'}} = 1 if($archive->{'archiver'});
         }
         #see if we have a matching type
         foreach my $sel_archive_type(@{$sel_archive_types}){
