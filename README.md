@@ -59,3 +59,15 @@ This repository contains a [git submodule](http://git-scm.com/book/en/v2/Git-Too
     ```
 For more information on using the submodule, see the *shared/README.md* file or access it [here](https://github.com/perfsonar/perl-shared/blob/master/README.md) 
 
+## Building RPMs
+
+You can build the RPMs with the following commands:
+
+```bash
+cd rpms
+vagrant up
+vagrant ssh
+build
+```
+
+For more information on building and testing RPMs see shared/rpms/RPM_README.md.
