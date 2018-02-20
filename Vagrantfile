@@ -262,13 +262,19 @@ Vagrant.configure("2") do |config|
             ln -fs /vagrant/bin/psconfig_maddash_agent /usr/lib/perfsonar/bin/psconfig_maddash_agent
             ln -fs /vagrant/bin/psconfig_pscheduler_agent /usr/lib/perfsonar/bin/psconfig_pscheduler_agent
             ln -fs /vagrant/bin/psconfig /usr/lib/perfsonar/bin/psconfig
-            ln -fs /vagrant/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands
+            if ! [ -L /usr/lib/perfsonar/bin/psconfig_commands ]; then
+                mv /usr/lib/perfsonar/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands.bak
+                ln -fs /vagrant/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands
+            fi
             ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
             chown -R perfsonar:perfsonar /usr/lib/perfsonar/
 
             # Create plugin directory
-            ln -fs /vagrant/plugins /usr/lib/perfsonar/psconfig
-
+            if ! [ -L /usr/lib/perfsonar/psconfig ]; then
+                mv /usr/lib/perfsonar/psconfig /usr/lib/perfsonar/psconfig.bak
+                ln -fs /vagrant/plugins /usr/lib/perfsonar/psconfig
+            fi
+            
             # Create doc directory
             mkdir -p /usr/share/doc/perfsonar
             ln -fs /vagrant/doc /usr/share/doc/perfsonar/psconfig
