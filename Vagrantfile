@@ -32,8 +32,45 @@ Vagrant.configure("2") do |config|
         # reserved local address range for IPv6
         psconfig.vm.network "private_network", ip: "fdac:218a:75e5:69c8::1#{i}"
         
+        #Disable selinux
+        psconfig.vm.provision "shell", inline: <<-SHELL
+            sed -i s/SELINUX=enforcing/SELINUX=permissive/g /etc/selinux/config
+        SHELL
+    
         #Install all requirements and perform initial setup
         psconfig.vm.provision "shell", inline: <<-SHELL
+            # Create users
+            /usr/sbin/groupadd perfsonar 2> /dev/null || :
+            /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
+            /usr/sbin/groupadd maddash 2> /dev/null || :
+            /usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
+
+            #setup directories first so don't conflict with rpms
+            if ! [ -d /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar ]; then
+                rm -rf /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar
+            fi
+            if ! [ -L /etc/perfsonar ]; then
+                rm -rf /etc/perfsonar
+            fi
+            if ! [ -d /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar ]; then
+                rm -rf /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar
+            fi
+            if ! [ -L /usr/lib/perfsonar ]; then
+                rm -rf /usr/lib/perfsonar
+            fi
+            mkdir -p /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar
+            ln -fs /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar /etc/perfsonar
+            mkdir -p /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar
+            ln -fs /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar /usr/lib/perfsonar
+            
+            # Create config directory - copy so changes are not in git
+            mkdir -p /etc/perfsonar/psconfig
+            cp /vagrant/etc/* /etc/perfsonar/psconfig/
+            mkdir -p /etc/perfsonar/psconfig/pscheduler.d
+            mkdir -p /etc/perfsonar/psconfig/maddash.d
+            mkdir -p /etc/perfsonar/psconfig/transforms.d
+            mkdir -p /etc/perfsonar/psconfig/archives.d
+            
             yum install -y epel-release
             yum install -y  http://software.internet2.edu/rpms/el7/x86_64/RPMS.main/perfSONAR-repo-0.8-1.noarch.rpm
             yum clean all
@@ -219,48 +256,35 @@ Vagrant.configure("2") do |config|
                 perl-String-CRC32\
                 perl-Task-Weaken\
                 perl-YAML
-            if ! [ -d /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar ]; then
-                rm -rf /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar
-            fi
-            if ! [ -L /etc/perfsonar ]; then
-                rm -rf /etc/perfsonar
-            fi
-            if ! [ -d /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar ]; then
-                rm -rf /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar
-            fi
-            if ! [ -L /usr/lib/perfsonar ]; then
-                rm -rf /usr/lib/perfsonar
-            fi
-            mkdir -p /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar
-            ln -fs /vagrant/vagrant-data/psconfig-el7-#{i}/etc/perfsonar /etc/perfsonar
-            mkdir -p /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar
-            ln -fs /vagrant/vagrant-data/psconfig-el7-#{i}/usr/lib/perfsonar /usr/lib/perfsonar
+                
+            # Create bin directory
+            mkdir -p /usr/lib/perfsonar/bin
+            ln -fs /vagrant/bin/psconfig_maddash_agent /usr/lib/perfsonar/bin/psconfig_maddash_agent
+            ln -fs /vagrant/bin/psconfig_pscheduler_agent /usr/lib/perfsonar/bin/psconfig_pscheduler_agent
+            ln -fs /vagrant/bin/psconfig /usr/lib/perfsonar/bin/psconfig
+            ln -fs /vagrant/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands
+            ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
+            chown -R perfsonar:perfsonar /usr/lib/perfsonar/
+
+            # Create plugin directory
+            ln -fs /vagrant/plugins /usr/lib/perfsonar/psconfig
+
+            # Create doc directory
+            mkdir -p /usr/share/doc/perfsonar
+            ln -fs /vagrant/doc /usr/share/doc/perfsonar/psconfig
+
+            # Create log directories
+            mkdir -p /var/log/perfsonar/
+            mkdir -p /var/log/maddash/
+            ln -fs /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.log
+            chown -R perfsonar:perfsonar /var/log/perfsonar/
+            chown -R maddash:maddash /var/log/maddash/
+
+            # Create data directory
+            mkdir -p /var/lib/perfsonar/psconfig
+            chown -R perfsonar:perfsonar /var/lib/perfsonar/
+            
         SHELL
       end
   end
-  
-  # Runs on all hosts before they are provisioned. Inits /var/lib/psconfig
-  # and creates a perfsonar user/group
-  config.vm.provision "shell", inline: <<-SHELL
-    mkdir -p /var/lib/perfsonar/psconfig
-    mkdir -p /usr/lib/perfsonar/bin
-    mkdir -p /usr/lib/perfsonar/psconfig
-    mkdir -p /usr/lib/perfsonar/psconfig/checks
-    mkdir -p /usr/lib/perfsonar/psconfig/reports
-    mkdir -p /usr/lib/perfsonar/psconfig/visualization
-    mkdir -p /var/log/perfsonar/
-    mkdir -p /var/log/maddash/
-    ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
-    ln -fs /vagrant/bin/psconfig_maddash_agent /usr/lib/perfsonar/psconfig_maddash_agent
-    ln -fs /vagrant/bin/psconfig_pscheduler_agent /usr/lib/perfsonar/psconfig_pscheduler_agent
-    ln -fs /vagrant/bin /usr/lib/perfsonar/psconfig/bin
-    ln -fs /var/log/maddash/psconfig-maddash.log /var/log/perfsonar/psconfig-maddash.log
-    /usr/sbin/groupadd perfsonar 2> /dev/null || :
-    /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-    chown -R perfsonar:perfsonar /var/lib/perfsonar/
-    chown -R perfsonar:perfsonar /usr/lib/perfsonar/
-    chown -R perfsonar:perfsonar /var/log/perfsonar/
-    chown -R maddash:maddash /var/log/maddash/
-    sed -i s/SELINUX=enforcing/SELINUX=permissive/g  /etc/selinux/config 
-  SHELL
 end
