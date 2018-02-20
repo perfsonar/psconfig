@@ -347,7 +347,7 @@
                 "ip-version": 4,
                 "udp": true,
                 "bandwidth": 50000000,
-                "window_size": 1024000
+                "window-size": 1024000
             }
         },
         "throughput_iperf3_udp_test_v6": {
@@ -359,7 +359,7 @@
                 "ip-version": 6,
                 "udp": true,
                 "bandwidth": 50000000,
-                "window_size": 1024000
+                "window-size": 1024000
             }
         },
         "throughput_nuttcp_udp_test_v4": {
@@ -391,7 +391,7 @@
             "spec": {
                 "source": "{% address[0] %}",
                 "dest": "{% address[1] %}",
-                "packet-timeout": "PT10S",
+                "packet-timeout": 10,
                 "packet-interval": 0.1,
                 "packet-count": 600,
                 "packet-padding": 0,
@@ -404,7 +404,7 @@
             "spec": {
                 "source": "{% address[0] %}",
                 "dest": "{% address[1] %}",
-                "packet-timeout": "PT10S",
+                "packet-timeout": 10,
                 "packet-interval": 0.1,
                 "packet-count": 600,
                 "packet-padding": 0,
