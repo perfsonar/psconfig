@@ -165,7 +165,6 @@
     "groups": {
         "testbed_latency_hosts": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "perfsonar-dev5.grnoc.iu.edu" },
                 { "name": "ps-deb.es.net" },
@@ -188,7 +187,6 @@
         
         "testbed_throughput_hosts": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "perfsonar-dev5.grnoc.iu.edu" },
                 { "name": "ps-deb.es.net" },
@@ -211,7 +209,6 @@
         
         "testbed_traceroute_hosts": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "perfsonar-dev5.grnoc.iu.edu" },
                 { "name": "ps-deb.es.net" },
@@ -234,7 +231,6 @@
         
         "pscheduler_hosts": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "antg-dev.es.net" },
                 { "name": "antg-staging.es.net" },
@@ -254,7 +250,6 @@
         
         "pscheduler_hosts_minusi2": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "antg-dev.es.net" },
                 { "name": "antg-staging.es.net" },
@@ -273,7 +268,6 @@
         
         "testbed_throughput_hosts_minusi2": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "perfsonar-dev5.grnoc.iu.edu" },
                 { "name": "ps-deb.es.net" },
@@ -295,7 +289,6 @@
         
         "v6_hosts_throughput": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "antg-dev.es.net" },
                 { "name": "antg-staging.es.net", "label": "ipv6" },
@@ -309,7 +302,6 @@
         
         "v6_hosts_latency": {
             "type": "mesh",
-            "force-bidirectional": true,
             "addresses": [
                 { "name": "antg-dev.es.net" },
                 { "name": "antg-staging.es.net", "label": "ipv6" },
