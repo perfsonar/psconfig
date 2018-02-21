@@ -15,9 +15,7 @@ remote add|delete|list [options] URL
    --configure-archives         Indicates archives defined in remote URL should be used
    --bind-address ADDRESS       Local address to bind to when downloading JSON
    --quiet                      Suppress output to stdout and stderr
-   --ssl-validate-certificate   When using https, indicates hostname should be verified against CA
-   --ssl-ca-file FILE           A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.
-   --ssl-ca-path PATH           A typical certificate authority (CA) path found on Linux. Used to verify server SSL certificate when using https.
+   --ssl-ca-file FILE           A certificate authority (CA) file used to verify server SSL certificate when using https.
 
 =head1 ARGUMENTS
 
@@ -67,17 +65,9 @@ Local address to bind to when downloading JSON
  
 Suppress output to stdout and stderr
 
-=item B<--ssl-validate-certificate>
- 
-When using https, indicates hostname should be verified against CA
-
 =item B<--ssl-ca-file FILE>
  
 A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.
-
-=item B<--ssl-ca-path PATH>
- 
-A typical certificate authority (CA) path found on Linux. Used to verify server SSL certificate when using https.
 
 =back
  
@@ -109,9 +99,7 @@ my $transform_opt;
 my $config_archives;
 my $bind_address;
 my $quiet_opt;
-my $ssl_validate;
 my $ssl_file;
-my $ssl_path;
 GetOptions(
     'help|h' => \$help,
     'transform=s' => \$transform_opt,
@@ -119,9 +107,7 @@ GetOptions(
     'configure-archives' => \$config_archives,
     'bind-address=s' => \$bind_address,
     'quiet' => \$quiet_opt,
-    'ssl-validate-certificates' => \$ssl_validate,
     'ssl-ca-file=s' => \$ssl_file,
-    'ssl-ca-path=s' => \$ssl_path,
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
 
 #parse arguments
@@ -202,9 +188,7 @@ foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
     my $url_only_checksum = $remote->checksum();
     $remote->configure_archives(1) if($config_archives);
     $remote->bind_address($bind_address) if($bind_address);
-    $remote->ssl_validate_certificate(1) if($ssl_validate);
     $remote->ssl_ca_file($ssl_file) if($ssl_file);
-    $remote->ssl_ca_path($ssl_file) if($ssl_path);
     if($transform_opt){
         if($transform_opt =~ /^\@/){
             my $jqt = _load_transform(substr($transform_opt, 1), $cli_agent_name);

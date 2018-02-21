@@ -162,8 +162,6 @@ Vagrant.configure("2") do |config|
                 perl-JSON\
                 perl-JSON-Validator\
                 perl-JSON-XS\
-                perl-LWP-MediaTypes\
-                perl-LWP-Protocol-https\
                 perl-Linux-Inotify2\
                 perl-List-MoreUtils\
                 perl-Log-Dispatch\
@@ -179,6 +177,7 @@ Vagrant.configure("2") do |config|
                 perl-Module-Implementation\
                 perl-Module-Load\
                 perl-Module-Runtime\
+                perl-Mojolicious\
                 perl-Moose\
                 perl-Mouse\
                 perl-Mozilla-CA\
@@ -187,7 +186,6 @@ Vagrant.configure("2") do |config|
                 perl-Net-Daemon\
                 perl-Net-Domain-TLD\
                 perl-Net-HTTP\
-                perl-Net-INET6Glue\
                 perl-Net-IP\
                 perl-Net-LibIDN\
                 perl-Net-Netmask\
@@ -263,7 +261,9 @@ Vagrant.configure("2") do |config|
             ln -fs /vagrant/bin/psconfig_pscheduler_agent /usr/lib/perfsonar/bin/psconfig_pscheduler_agent
             ln -fs /vagrant/bin/psconfig /usr/lib/perfsonar/bin/psconfig
             if ! [ -L /usr/lib/perfsonar/bin/psconfig_commands ]; then
-                mv /usr/lib/perfsonar/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands.bak
+                if [ -d /usr/lib/perfsonar/bin/psconfig_commands ]; then
+                    mv /usr/lib/perfsonar/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands.bak
+                fi
                 ln -fs /vagrant/bin/psconfig_commands /usr/lib/perfsonar/bin/psconfig_commands
             fi
             ln -fs /vagrant/bin/psconfig /usr/bin/psconfig
@@ -271,7 +271,9 @@ Vagrant.configure("2") do |config|
 
             # Create plugin directory
             if ! [ -L /usr/lib/perfsonar/psconfig ]; then
-                mv /usr/lib/perfsonar/psconfig /usr/lib/perfsonar/psconfig.bak
+                if [ -d /usr/lib/perfsonar/psconfig ]; then
+                    mv /usr/lib/perfsonar/psconfig /usr/lib/perfsonar/psconfig.bak
+                fi
                 ln -fs /vagrant/plugins /usr/lib/perfsonar/psconfig
             fi
             

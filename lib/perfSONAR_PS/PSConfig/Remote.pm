@@ -38,17 +38,6 @@ sub bind_address {
     return $self->_field_host('bind-address', $val);
 }
 
-=item ssl_validate_certificate()
-
-Gets/sets the boolean (0 or 1) indicating if SSL certificate CN must match hostname
-
-=cut
-
-sub ssl_validate_certificate {
-    my ($self, $val) = @_;
-    return $self->_field_bool('ssl-validate-certificate', $val);
-}
-
 =item ssl_ca_file()
 
 Gets/sets the typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.
@@ -58,17 +47,6 @@ Gets/sets the typical certificate authority (CA) file found on BSD. Used to veri
 sub ssl_ca_file {
     my ($self, $val) = @_;
     return $self->_field('ssl-ca-file', $val);
-}
-
-=item ssl_ca_path()
-
-Gets/sets the typical certificate authority (CA) directory found on Linux. Used to verify server SSL certificate when using https.
-
-=cut
-
-sub ssl_ca_path {
-    my ($self, $val) = @_;
-    return $self->_field('ssl-ca-path', $val);
 }
 
 =item transform()

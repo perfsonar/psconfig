@@ -184,17 +184,9 @@
                     "$ref": "#/pSConfig/Host",
                     "description": "Local address to use when downloading JSON. Default is to let local routing tables choose."
                 },
-                "ssl-validate-certificate": { 
-                    "type": "boolean",
-                    "description": "If true, validates SSL certificate common name matches hostname. Default is false." 
-                },
                 "ssl-ca-file": { 
                     "type": "string",
-                    "description": "A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https." 
-                },
-                "ssl-ca-path": { 
-                    "type": "string",
-                    "description": "A typical certificate authority (CA) path found on Linux. Used to verify server SSL certificate when using https." 
+                    "description": "A certificate authority (CA) file used to verify server SSL certificate when using https." 
                 }
             },
             "additionalProperties": false,

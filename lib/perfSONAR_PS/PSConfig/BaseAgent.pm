@@ -301,9 +301,7 @@ sub run {
     foreach my $remote(@{$agent_conf->remotes()}){
         #create api filters 
         my $filters = new perfSONAR_PS::Client::PSConfig::ApiFilters(
-            ca_certificate_file => $remote->ssl_ca_file(),
-            ca_certificate_path => $remote->ssl_ca_path(),
-            verify_hostname => $remote->ssl_validate_certificate(),
+            ca_certificate_file => $remote->ssl_ca_file()
         );
         #create client
         my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
