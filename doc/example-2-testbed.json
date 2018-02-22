@@ -152,13 +152,6 @@
                 "display-name": "ps-4-0-xenial.qalab.geant.net (Ubuntu16, 4.0)",
                 "organization": "GEANT"
             }
-        },
-        "perfsonar-lab-vm.ilab.umnet.umich.edu": { 
-            "address": "perfsonar-lab-vm.ilab.umnet.umich.edu",
-            "_meta": {
-                "display-name": "perfsonar-lab-vm.ilab.umnet.umich.edu (EL7, 4.0)",
-                "organization": "UMich"
-            }
         }
     },
     
@@ -176,7 +169,6 @@
                 { "name": "perfsonar-dev.grnoc.iu.edu"},
                 { "name": "ps-deb-2.es.net" },
                 { "name": "perfsonar-liva.lbl.gov" },
-                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
                 { "name": "ps-4-0.qalab.geant.net" },
                 { "name": "ps-4-0-xenial.qalab.geant.net" },
                 { "name": "pstest.geant.carnet.hr" },
@@ -198,7 +190,6 @@
                 { "name": "perfsonar-dev.grnoc.iu.edu"},
                 { "name": "ps-deb-2.es.net" },
                 { "name": "perfsonar-liva.lbl.gov" },
-                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
                 { "name": "ps-4-0.qalab.geant.net" },
                 { "name": "ps-4-0-xenial.qalab.geant.net" },
                 { "name": "pstest.geant.carnet.hr" },
@@ -220,7 +211,6 @@
                 { "name": "perfsonar-dev.grnoc.iu.edu"},
                 { "name": "ps-deb-2.es.net" },
                 { "name": "perfsonar-liva.lbl.gov" },
-                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
                 { "name": "ps-4-0.qalab.geant.net" },
                 { "name": "ps-4-0-xenial.qalab.geant.net" },
                 { "name": "pstest.geant.carnet.hr" },
@@ -239,7 +229,6 @@
                 { "name": "ma-dev2.bldc.grnoc.iu.edu" },
                 { "name": "perfsonar-dev.grnoc.iu.edu" },
                 { "name": "ps-deb-2.es.net" },
-                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
                 { "name": "ps-4-0.qalab.geant.net" },
                 { "name": "ps-4-0-xenial.qalab.geant.net" },
                 { "name": "pstest.geant.carnet.hr" },
@@ -257,7 +246,6 @@
                 { "name": "ma-dev2.bldc.grnoc.iu.edu" },
                 { "name": "perfsonar-dev.grnoc.iu.edu" },
                 { "name": "ps-deb-2.es.net" },
-                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
                 { "name": "ps-4-0.qalab.geant.net" },
                 { "name": "ps-4-0-xenial.qalab.geant.net" },
                 { "name": "pstest.geant.carnet.hr" },
@@ -278,7 +266,6 @@
                 { "name": "perfsonar-dev.grnoc.iu.edu"},
                 { "name": "ps-deb-2.es.net" },
                 { "name": "perfsonar-liva.lbl.gov" },
-                { "name": "perfsonar-lab-vm.ilab.umnet.umich.edu" },
                 { "name": "ps-4-0.qalab.geant.net" },
                 { "name": "ps-4-0-xenial.qalab.geant.net" },
                 { "name": "pstest.geant.carnet.hr" },
@@ -468,7 +455,7 @@
             "slip": "PT10M"
         },
         "repeat-PT15M": {
-            "repeat": "PT4H",
+            "repeat": "PT15M",
             "sliprand": true,
             "slip": "PT15M"
         }
@@ -525,7 +512,7 @@
         },
         "rtt-v4": {
             "group": "pscheduler_hosts",
-            "test": "latencybg_test_v4",
+            "test": "rtt_test_v4",
             "schedule": "repeat-PT15M",
             "archives": [ "iu-central-archive" ],
             "_meta": {
@@ -588,7 +575,7 @@
         "rtt-v6": {
             "disabled": true,
             "group": "v6_hosts_latency",
-            "test": "latencybg_test_v6",
+            "test": "rtt_test_v6",
             "schedule": "repeat-PT15M",
             "archives": [ "iu-central-archive" ],
             "_meta": {
@@ -598,3 +585,4 @@
     }
     
 }
+
