@@ -78,11 +78,11 @@
                 "organization": "ESnet"
             }
         },
-        "test-owamp.es.net": { 
-            "address": "test-owamp.es.net",
+        "test-owamp1.es.net": { 
+            "address": "test-owamp1.es.net",
             "host": "test-pt1.es.net",
             "_meta": {
-                "display-name": "test-owamp.es.net (CentOS7, 4.0)",
+                "display-name": "test-owamp1.es.net (CentOS7, 4.0)",
                 "organization": "ESnet"
             }
         },
@@ -136,6 +136,13 @@
             "address": "pstest.geant.carnet.hr",
             "_meta": {
                 "display-name": "pstest.geant.carnet.hr (Debian7, 4.0)",
+                "organization": "GEANT"
+            }
+        },
+        "pstest2.geant.carnet.hr": { 
+            "address": "pstest2.geant.carnet.hr",
+            "_meta": {
+                "display-name": "pstest2.geant.carnet.hr (Debian9, 4.0)",
                 "organization": "GEANT"
             }
         },
@@ -404,8 +411,6 @@
             "spec": {
                 "source": "{% address[0] %}",
                 "dest": "{% address[1] %}",
-                "wait": "PT5S",
-                "sendwait": "PT30S",
                 "ip-version": 4
             }
         },
@@ -414,8 +419,6 @@
             "spec": {
                 "source": "{% address[0] %}",
                 "dest": "{% address[1] %}",
-                "wait": "PT5S",
-                "sendwait": "PT30S",
                 "ip-version": 6
             }
         },
@@ -467,7 +470,7 @@
             "test": "throughput_iperf3_tcp_test_v4",
             "schedule": "repeat-PT4H",
             "archives": [ "iu-central-archive" ],
-            "tools": [ "iperf3" ],
+            "tools": [ "bwctliperf3", "iperf3" ],
             "_meta": {
                 "display-name": "iperf3 TCP Test Between Testbeds"
             }
@@ -477,7 +480,7 @@
             "test": "throughput_iperf3_udp_test_v4",
             "schedule": "repeat-PT4H",
             "archives": [ "iu-central-archive" ],
-            "tools": [ "iperf3" ],
+            "tools": [ "bwctliperf3", "iperf3" ],
             "_meta": {
                 "display-name": "iperf3 UDP Test Between Testbeds"
             }
@@ -525,7 +528,7 @@
             "test": "throughput_iperf3_tcp_test_v6",
             "schedule": "repeat-PT4H",
             "archives": [ "iu-central-archive" ],
-            "tools": [ "iperf3" ],
+            "tools": [ "bwctliperf3", "iperf3" ],
             "_meta": {
                 "display-name": "IPv6 iperf3 TCP Test Between Testbeds"
             }
@@ -536,7 +539,7 @@
             "test": "throughput_iperf3_udp_test_v6",
             "schedule": "repeat-PT4H",
             "archives": [ "iu-central-archive" ],
-            "tools": [ "iperf3" ],
+            "tools": [ "bwctliperf3", "iperf3" ],
             "_meta": {
                 "display-name": "IPv6 iperf3 UDP Test Between Testbeds"
             }
@@ -585,4 +588,3 @@
     }
     
 }
-
