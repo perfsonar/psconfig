@@ -19,6 +19,7 @@ use YAML qw(LoadFile);
 use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
 use perfSONAR_PS::Utils::ISO8601 qw/duration_to_seconds/;
 use perfSONAR_PS::Utils::Logging;
+use perfSONAR_PS::Client::PSConfig::Archive;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Config;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Grid;
@@ -198,10 +199,29 @@ sub _run_handle_psconfig {
         };
         $jq_obj->{'schedule'} = $psconfig->schedule($task->schedule_ref())->data() if($task->schedule_ref());
         $jq_obj->{'archives'} = [];
-        if($task->archive_refs()){
-            foreach my $archive_ref(@{$task->archive_refs()}){
-                push @{$jq_obj->{'archives'}}, $psconfig->archive($archive_ref)->{'data'};
-            }            
+        #Build archive list (have to dig in to host, hence the generator)
+        my $jq_tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
+                psconfig => $psconfig,
+                pscheduler_url => $self->pscheduler_url(),
+                task_name => $task_name,
+                default_archives => $self->default_archives(),
+                use_psconfig_archives => 1
+            );
+       
+        if($jq_tg->start()){
+            my $jq_archive_map = {};
+            while($jq_tg->next()){
+                 foreach my $a(@{$jq_tg->expanded_archives()}){
+                    my $a_obj = new perfSONAR_PS::Client::PSConfig::Archive(data => $a );
+                    my $checksum = $a_obj->checksum();
+                    next if($jq_archive_map->{$checksum});
+                    $jq_archive_map->{$checksum} = $a;
+                 }
+            }
+            foreach my $jq_archive_checksum(keys %{$jq_archive_map}){
+                push @{$jq_obj->{'archives'}}, $jq_archive_map->{$jq_archive_checksum};
+            } 
+            $jq_tg->stop();
         }
         
         ##
