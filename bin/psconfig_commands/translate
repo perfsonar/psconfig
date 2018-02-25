@@ -9,10 +9,11 @@ translate - Translate a legacy MeshConfig JSON file to a pSConfig file
 translate [options] FILE
  
  Options:
-   -h | --help       help message
-   -B | --bind ADDR  local address to bind to when sending http/https requests
-   -q | --quiet      suppress output to stdout and stderr
-   --timeout N       number of seconds to wait to retrieve JSON
+   -h | --help                    help message
+   -B | --bind ADDR               local address to bind to when sending http/https requests
+   -q | --quiet                   suppress output to stdout and stderr
+   --timeout N                    number of seconds to wait to retrieve JSON
+   --use-force-bidirectional      honor the force_bidirectional setting in MeshConfig tests
 
 =head1 ARGUMENTS
 
@@ -43,9 +44,17 @@ Suppresses output to stdout and stderr. Useful when scripting and only concerned
 =item B<--timeout N>
  
 The integer number of seconds to wait to retrieve JSON. Default is 0, which is no timeout. 
-The timeout is applied to each individual request separately. For example, if you have two 
-includes and a 30 second timeout, your program may spend up to 90 seconds retrieving 
-files: 30s for the original file and 30s for both includes
+
+=item B<--use-force-bidirectional>
+ 
+If force_bidirectional encountered in MeshConfig test, create an additional pSConfig task 
+where second participant schedules test if its running an agent (if one end is no-agent 
+then the side with the agent will setup both tests whether force_bidirectional is present 
+or not). force_bidirectional tells both the source and dest to each ask 
+for a test in both directions, meaning you get four tests instead of two. Default is false.
+Using this option is NOT recommended for most cases since force_bidirectional largely just 
+adds load on hosts, makes firewall problems more likely, and makes dashboards more confusing 
+with little to no benefit. 
 
 =back
  
@@ -70,11 +79,13 @@ my $bind;
 my $quiet;
 my $help;
 my $timeout = 0;
+my $use_force_bidirectional;
 GetOptions(
     'help|h' => \$help,
     'bind|B=s' => \$bind,
     'quiet|q' => \$quiet,
-    'timeout=i' => \$timeout
+    'timeout=i' => \$timeout,
+    'use-force-bidirectional' => \$use_force_bidirectional,
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
 
 #parse arguments
@@ -116,6 +127,11 @@ if($meshconfig_client->error()){
     }
     exit 2;
 } 
+
+#enable force bidirectional if we need to
+if($use_force_bidirectional){
+    $meshconfig->use_force_bidirectional(1);
+}
 
 #translate
 my $psconfig = $meshconfig->translate();
