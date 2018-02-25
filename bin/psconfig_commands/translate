@@ -1,0 +1,134 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+translate - Translate a legacy MeshConfig JSON file to a pSConfig file
+ 
+=head1 SYNOPSIS
+ 
+translate [options] FILE
+ 
+ Options:
+   -h | --help       help message
+   -B | --bind ADDR  local address to bind to when sending http/https requests
+   -q | --quiet      suppress output to stdout and stderr
+   --timeout N       number of seconds to wait to retrieve JSON
+
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<FILE>
+ 
+A path to a local file on the filesystem or an http(s) URL pointing at the JSON to validate.  
+
+=back
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<-B | --bind ADDR>
+ 
+Local address to bind to when sending http/https requests
+
+=item B<-q | --quiet>
+ 
+Suppresses output to stdout and stderr. Useful when scripting and only concerned about exit code.
+
+=item B<--timeout N>
+ 
+The integer number of seconds to wait to retrieve JSON. Default is 0, which is no timeout. 
+The timeout is applied to each individual request separately. For example, if you have two 
+includes and a 30 second timeout, your program may spend up to 90 seconds retrieving 
+files: 30s for the original file and 30s for both includes
+
+=back
+ 
+=head1 DESCRIPTION
+ 
+B<This program> will read a legacy MeshConfig JSON file from local filesystem or an http(s) URL and validate the JSON and convert it to a pSConfig file.
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
+
+use perfSONAR_PS::Client::PSConfig::Translators::MeshConfig::ApiConnect;
+use perfSONAR_PS::Client::PSConfig::ApiFilters;
+
+#parse options
+my $bind;
+my $quiet;
+my $help;
+my $timeout = 0;
+GetOptions(
+    'help|h' => \$help,
+    'bind|B=s' => \$bind,
+    'quiet|q' => \$quiet,
+    'timeout=i' => \$timeout
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV == 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Must specify a URL or file path to JSON file.",
+        -exitval => $exitval,
+        -verbose => 0   
+    }) unless($quiet);
+    exit $exitval;
+}elsif(@ARGV > 1){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Only one file or URL can be specified on the command-line",
+        -exitval => $exitval,
+        -verbose => 0
+    }) unless($quiet);
+    exit $exitval;
+}
+#TODO: Validate URL and only add prefix if not a url but is existing file?
+#unless otherwise specified assume a file
+my $json_url = shift @ARGV;
+chomp $json_url;
+
+#read file  
+my $meshconfig_filters = new perfSONAR_PS::Client::PSConfig::ApiFilters(timeout => $timeout);
+my $meshconfig_client = new perfSONAR_PS::Client::PSConfig::Translators::MeshConfig::ApiConnect(url => $json_url, filters => $meshconfig_filters);
+if($bind){
+    $meshconfig_client->bind_address($bind);
+}
+my $meshconfig = $meshconfig_client->get_config();
+if($meshconfig_client->error()){
+    unless($quiet){
+        print STDERR "Error retrieving JSON. Encountered the following error:\n\n";
+        print STDERR "   " . $meshconfig_client->error() . "\n";
+    }
+    exit 2;
+} 
+
+#translate
+my $psconfig = $meshconfig->translate();
+unless($psconfig){
+    if($meshconfig->error()){
+        print STDERR "Error translating JSON. Encountered the following error(s):\n\n";
+        print STDERR $meshconfig->error() . "\n";
+    }else{
+        print STDERR "Error translating JSON.\n";
+    }
+    exit 1;
+}
+
+#exit
+print $psconfig->json({"pretty" => 1, "canonical" => 1}) unless($quiet);
+exit 0;
