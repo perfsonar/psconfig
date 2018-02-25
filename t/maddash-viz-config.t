@@ -8,7 +8,7 @@ use lib "$Bin/../lib";
 use Test::More;
 use Data::Dumper;
 
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::Config;
 use perfSONAR_PS::PSConfig::MaDDash::Visualization::VizDefaults;
@@ -44,10 +44,10 @@ is($vizconfig->defaults($viz_defaults)->checksum(), $viz_defaults->checksum());
 
 ## vars
 my $var1;
-ok($var1 = new perfSONAR_PS::PSConfig::JQTransform());
+ok($var1 = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($var1->script('.foo'));
 my $var2;
-ok($var2 = new perfSONAR_PS::PSConfig::JQTransform());
+ok($var2 = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($var2->script('.bar'));
 is($vizconfig->vars({'var1' => $var1})->{'var1'}->checksum(), $var1->checksum());
 is($vizconfig->var('var1')->checksum(), $var1->checksum());

@@ -12,7 +12,7 @@ A client for reading in JQTransform files
 
 use Mouse;
 use perfSONAR_PS::Client::PSConfig::BaseConnect;
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseConnect';
 
@@ -20,7 +20,7 @@ our $VERSION = 4.1;
 
 sub config_obj {
     #return a perfSONAR_PS::Client::PSConfig::JQTransform object
-    return new perfSONAR_PS::PSConfig::JQTransform();
+    return new perfSONAR_PS::Client::PSConfig::JQTransform();
 }
 
 

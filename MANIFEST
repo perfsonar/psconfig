@@ -30,7 +30,6 @@ etc/maddash-agent.json
 etc/pscheduler-agent-logger.conf
 etc/pscheduler-agent.json
 lib/perfSONAR_PS/PSConfig/ArchiveConnect.pm
-lib/perfSONAR_PS/PSConfig/JQTransform.pm
 lib/perfSONAR_PS/PSConfig/BaseAgent.pm
 lib/perfSONAR_PS/PSConfig/CLI/Constants.pm
 lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm

@@ -35,7 +35,7 @@ is($remote1->bind_address('10.0.0.1'), '10.0.0.1');
 is($remote1->configure_archives(1), 1);
 is($remote1->ssl_ca_file('path/to/ca'), 'path/to/ca');
 my $transform;
-ok($transform = new perfSONAR_PS::PSConfig::JQTransform());
+ok($transform = new perfSONAR_PS::Client::PSConfig::JQTransform());
 is($transform->script(['junk;jq'])->[0], 'junk;jq');
 is($transform->apply({"foo" => "bar"}), undef);
 ok($transform->error());

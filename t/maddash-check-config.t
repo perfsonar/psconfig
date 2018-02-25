@@ -8,7 +8,7 @@ use lib "$Bin/../lib";
 use Test::More;
 use Data::Dumper;
 
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::Config;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::CheckDefaults;
@@ -46,7 +46,7 @@ is($chkconfig->requires($requires)->checksum(), $requires->checksum());
 
 ## archive_accessor
 my $archive_accessor;
-ok($archive_accessor = new perfSONAR_PS::PSConfig::JQTransform());
+ok($archive_accessor = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($archive_accessor->script('.url'));
 is($chkconfig->archive_accessor($archive_accessor)->checksum(), $archive_accessor->checksum());
 
@@ -83,10 +83,10 @@ is($chkconfig->defaults($check_defaults)->checksum(), $check_defaults->checksum(
 
 ## vars
 my $var1;
-ok($var1 = new perfSONAR_PS::PSConfig::JQTransform());
+ok($var1 = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($var1->script('.foo'));
 my $var2;
-ok($var2 = new perfSONAR_PS::PSConfig::JQTransform());
+ok($var2 = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($var2->script('.bar'));
 is($chkconfig->vars({'var1' => $var1})->{'var1'}->checksum(), $var1->checksum());
 is($chkconfig->var('var1')->checksum(), $var1->checksum());

@@ -1,7 +1,7 @@
 package perfSONAR_PS::PSConfig::Remote;
 
 use Mouse;
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
@@ -57,7 +57,7 @@ Get/sets JQTransform object with jq for transforming JSON before processing
 
 sub transform {
     my ($self, $val) = @_;
-    return $self->_field_class('transform', 'perfSONAR_PS::PSConfig::JQTransform', $val);
+    return $self->_field_class('transform', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 
