@@ -1,0 +1,2 @@
+plugins/checks usr/lib/perfsonar/psconfig/
+plugins/reports usr/lib/perfsonar/psconfig/

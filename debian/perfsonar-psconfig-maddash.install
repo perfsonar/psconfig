@@ -1,0 +1,7 @@
+etc/maddash-agent.json etc/perfsonar/psconfig
+etc/maddash-agent-logger.conf etc/perfsonar/psconfig
+bin/psconfig_maddash_agent usr/lib/perfsonar/psconfig/bin
+bin/psconfig_commands/maddash-* usr/lib/perfsonar/psconfig/bin/psconfig_commands/
+scripts/psconfig-maddash-agent.service lib/systemd/system
+lib/perfSONAR_PS/PSConfig/MaDDash/* usr/lib/perfsonar/psconfig/lib/perfSONAR_PS/PSConfig/MaDDash/
+lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm usr/lib/perfsonar/psconfig/lib/perfSONAR_PS/PSConfig/CLI/

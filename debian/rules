@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@ --with systemd
+
+# Standard make install not needed
+override_dh_auto_install:
+
+# Skip tests linking to the perl-shared package
+override_dh_auto_test:
+	find t -type l -delete
+	dh_auto_test

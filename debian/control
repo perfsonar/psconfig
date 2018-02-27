@@ -1,0 +1,51 @@
+Source: perfsonar-psconfig
+Section: misc
+Priority: extra
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl,
+ libparams-validate-perl, libperfsonar-psconfig-perl
+Standards-Version: 3.9.3
+Homepage: http://www.perfsonar.net
+Vcs-Git: https://github.com/perfsonar/psconfig.git
+Vcs-Browser: https://github.com/perfsonar/psconfig/tree/debian/jessie
+
+Package: perfsonar-psconfig-utils
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ libperfsonar-psconfig-perl
+Description: pSConfig Utilities
+ Library and common command-line tools used for pSConfig.
+
+Package: perfsonar-psconfig-pscheduler
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-utils (= ${binary:Version}),
+ libperfsonar-pscheduler-perl, liblinux-inotify2-perl
+Description: pSConfig pScheduler Agent
+ Downloads a centralized JSON file describing the tests to run,
+ and uses it to generate appropriate pScheduler tasks.
+
+Package: perfsonar-psconfig-maddash
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
+ libmouse-perl, libyaml-perl, liblinux-inotify2-perl
+Description: pSConfig MaDDash Agent
+ Downloads a centralized JSON file describing the tests a mesh is running,
+ and generates a MaDDash configuration.
+
+Package: perfsonar-psconfig-maddash-checks
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-maddash (= ${binary:Version}),
+ nagios-plugins-perfsonar
+Description: pSConfig MaDDash Agent checks
+ Default set of check plugins for the pSConfig MaDDash Agent.
+
+Package: perfsonar-psconfig-maddash-visualizations
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-maddash (= ${binary:Version}),
+ perfsonar-graphs, nagios-plugins-perfsonar, perfsonar-traceroute-viewer
+Description: pSConfig MaDDash Agent visualizations
+ Default set of visualization plugins for the pSConfig MaDDash Agent.

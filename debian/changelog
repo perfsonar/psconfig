@@ -1,0 +1,5 @@
+perfsonar-psconfig (4.1~0.0.a1-1) perfsonar-jessie-staging; urgency=medium
+
+  * Port to Debian.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Fri, 23 Feb 2018 14:47:29 +0100
