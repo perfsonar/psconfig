@@ -1,7 +1,7 @@
-bin/psconfig usr/lib/perfsonar/psconfig/bin
-bin/psconfig_commands/agents usr/lib/perfsonar/psconfig/bin/psconfig_commands/
-bin/psconfig_commands/remote usr/lib/perfsonar/psconfig/bin/psconfig_commands/
-bin/psconfig_commands/validate usr/lib/perfsonar/psconfig/bin/psconfig_commands/
-lib/perfSONAR_PS/PSConfig/*.pm usr/lib/perfsonar/psconfig/lib/perfSONAR_PS/PSConfig/
-lib/perfSONAR_PS/PSConfig/CLI/Constants.pm usr/lib/perfsonar/psconfig/lib/perfSONAR_PS/PSConfig/CLI/
+bin/psconfig usr/lib/perfsonar/bin
+bin/psconfig_commands/agents usr/lib/perfsonar/bin/psconfig_commands/
+bin/psconfig_commands/remote usr/lib/perfsonar/bin/psconfig_commands/
+bin/psconfig_commands/validate usr/lib/perfsonar/bin/psconfig_commands/
+lib/perfSONAR_PS/PSConfig/*.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/
+lib/perfSONAR_PS/PSConfig/CLI/Constants.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/CLI/
 doc/* usr/share/doc/perfsonar/psconfig/
