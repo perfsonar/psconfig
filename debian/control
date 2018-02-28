@@ -46,6 +46,6 @@ Package: perfsonar-psconfig-maddash-visualizations
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-maddash (= ${binary:Version}),
- perfsonar-graphs, nagios-plugins-perfsonar, perfsonar-traceroute-viewer
+ perfsonar-toolkit-graphs, nagios-plugins-perfsonar, perfsonar-traceroute-viewer
 Description: pSConfig MaDDash Agent visualizations
  Default set of visualization plugins for the pSConfig MaDDash Agent.
