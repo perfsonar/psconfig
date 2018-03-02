@@ -5,6 +5,6 @@ Depends: perfsonar-psconfig-pscheduler
 Tests: psconfig-pscheduler-agent
 Restrictions: needs-root
 
-Depends: perfsonar-maddash-pscheduler
+Depends: perfsonar-psconfig-maddash
 Tests: psconfig-maddash-agent
 Restrictions: needs-root
