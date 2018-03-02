@@ -13,3 +13,7 @@ override_dh_auto_install:
 override_dh_auto_test:
 	find t -type l -delete
 	dh_auto_test
+
+override_dh_installinit:
+	dh_installinit --package=perfsonar-psconfig-maddash --name=psconfig-maddash-agent
+	dh_installinit --package=perfsonar-psconfig-pscheduler --name=psconfig-pscheduler-agent
