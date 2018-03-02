@@ -15,7 +15,8 @@ Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  libdata-validate-domain-perl, libdata-validate-ip-perl,
  libjson-validator-perl, liblog-log4perl-perl,
  libmouse-perl, libnet-cidr-perl, liburi-perl,
- libperfsonar-perl, libperfsonar-psconfig-perl
+ libperfsonar-perl, libperfsonar-psconfig-perl,
+ liblog-dispatch-filerotate-perl
 Description: pSConfig Utilities
  Library and common command-line tools used for pSConfig.
 
