@@ -1,7 +1,7 @@
 Depends: perfsonar-psconfig-utils
 Tests: psconfig-utils
 
-Depends: perfsonar-psconfig-pscheduler
+Depends: perfsonar-psconfig-pscheduler, pscheduler-server
 Tests: psconfig-pscheduler-agent
 Restrictions: needs-root
 
