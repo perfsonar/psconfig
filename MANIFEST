@@ -60,6 +60,7 @@ lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Config.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/ConfigConnect.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Schema.pm
+lib/perfSONAR_PS/PSConfig/PScheduler/Translator.pm
 lib/perfSONAR_PS/PSConfig/Remote.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConfig.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConnect.pm
