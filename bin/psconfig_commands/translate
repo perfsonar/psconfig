@@ -24,6 +24,7 @@ translate [options] FILE
    --disable-bwctl                do not explicitly use bwctl* pscheduler tools in translated output 
    --global-archive-dir DIR       the directory to save archive files if --save-global-archives enabled.
    --save-global-archives         save global archives in --global-archive-dir
+   --include-added-by-mesh        include tests with added_by_mesh set
    --use-archive-details          use summaries and retry policies, and do not combine measurement_archives with same URL
 
 =head1 ARGUMENTS
@@ -113,6 +114,10 @@ no effect.
 The directory to save archive files if --save-global-archives  enabled. Defaults to 
 /etc/perfsonar/psconfig/archives.d/. 
 
+=item B<--include-added-by-mesh>
+
+Include tests with added_by_mesh set
+
 =item B<--save-global-archives>
 
 Save global archives in --global-archive-dir. If not enabled, global archives are ignored.
@@ -162,6 +167,7 @@ my $input_type;
 my $use_force_bidirectional;
 my $disable_bwctl;
 my $global_archive_dir;
+my $include_added_by_mesh;
 my $save_global_archives;
 my $use_archive_details;
 GetOptions(
@@ -174,6 +180,7 @@ GetOptions(
     'use-force-bidirectional' => \$use_force_bidirectional,
     'disable-bwctl' => \$disable_bwctl,
     'global-archive-dir=s' => \$global_archive_dir,
+    'include-added-by-mesh' => \$include_added_by_mesh,
     'save-global-archives' => \$save_global_archives,
     'use-archive-details' => \$use_archive_details,
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
@@ -239,6 +246,9 @@ unless($input_type && $input_type ne 'meshconfig_agent_tasks_conf'){
     if($global_archive_dir){
         $meshconfig_tasks_translator->global_archive_dir($global_archive_dir);
     }
+    if($include_added_by_mesh){
+        $meshconfig_tasks_translator->include_added_by_mesh($include_added_by_mesh);
+    }
     if($save_global_archives){
         $meshconfig_tasks_translator->save_global_archives($save_global_archives);
     }
@@ -253,7 +263,6 @@ unless(@{$config_client->translator_configs()}){
     print STDERR "No valid translators found for input file.\n";
     exit 2;
 }
-#TODO: handle -o option
 
 #read configuration and try to translate
 my $psconfig = $config_client->get_config();
