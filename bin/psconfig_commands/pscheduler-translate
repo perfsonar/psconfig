@@ -2,7 +2,7 @@
 
 =head1 NAME
  
-translate - Translate a legacy MeshConfig JSON file to a pSConfig file
+pscheduler-translate - Translate a meshconfig-agent.conf file to a pscheduler-agent.json file
  
 =head1 SYNOPSIS
  
@@ -59,7 +59,7 @@ block AND --save-requesting-agent is enabled.
 
 =head1 DESCRIPTION
  
-B<This program> will read a meshconfig-agent.conf file from local filesystem and convert it to a psconfig-pscheduler.json file.
+B<This program> will read a meshconfig-agent.conf file from local filesystem and convert it to a pscheduler-agent.json file.
  
 =cut
 use strict;
@@ -70,8 +70,6 @@ use lib "$Bin/../../lib";
 use Getopt::Long qw(GetOptions);
 use Pod::Usage;
 
-use perfSONAR_PS::Client::PSConfig::Translators::ApiConnect;
-use perfSONAR_PS::Client::PSConfig::ApiFilters;
 use perfSONAR_PS::PSConfig::PScheduler::Translator;
 
 #parse options
