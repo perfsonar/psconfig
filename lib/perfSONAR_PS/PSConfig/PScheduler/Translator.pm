@@ -118,11 +118,11 @@ sub translate {
         my $url_obj = new URI($config->{'pscheduler_url'});
         $psconfig_agent_conf->pscheduler_assist_server($url_obj->host_port);
     }
-    $psconfig_agent_conf->pscheduler_fail_attempts($config->{'pscheduler_fail_attempts'}) if($config->{'pscheduler_fail_attempts'});
+    $psconfig_agent_conf->pscheduler_fail_attempts(int($config->{'pscheduler_fail_attempts'})) if($config->{'pscheduler_fail_attempts'});
     $psconfig_agent_conf->check_interval($self->_seconds_to_iso($config->{'check_interval'})) if($config->{'check_interval'});
     $psconfig_agent_conf->check_config_interval($self->_seconds_to_iso($config->{'check_config_interval'})) if($config->{'check_config_interval'});
     $psconfig_agent_conf->task_min_ttl($self->_seconds_to_iso($config->{'task_min_ttl'})) if($config->{'task_min_ttl'});
-    $psconfig_agent_conf->task_min_runs($config->{'task_min_runs'}) if($config->{'task_min_runs'});
+    $psconfig_agent_conf->task_min_runs(int($config->{'task_min_runs'})) if($config->{'task_min_runs'});
     $psconfig_agent_conf->task_renewal_fudge_factor($config->{'task_renewal_fudge_factor'} * 1.0) if($config->{'task_renewal_fudge_factor'});
     #Intentionally ignore below since they will still be in meshconfig directories
     #$psconfig_agent_conf->client_uuid_file($config->{'client_uuid_file'}) if($config->{'client_uuid_file'});
