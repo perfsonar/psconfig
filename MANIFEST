@@ -51,6 +51,7 @@ lib/perfSONAR_PS/PSConfig/MaDDash/Checks/StatusLabelsExtra.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/DefaultReports.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/TaskSelector.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Template.pm
+lib/perfSONAR_PS/PSConfig/MaDDash/Translator.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Visualization/Config.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Visualization/ConfigConnect.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Visualization/HttpGetOpt.pm
