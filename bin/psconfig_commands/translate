@@ -33,7 +33,7 @@ translate [options] FILE
 
 =item B<FILE>
  
-A path to a local file on the filesystem or an http(s) URL pointing at the JSON to validate.  
+A path to a local file on the filesystem or an http(s) URL to translate
 
 =back
 
@@ -133,7 +133,7 @@ accumulated over the years that don't need to be set and just cause problems.
  
 =head1 DESCRIPTION
  
-B<This program> will read a legacy file from local filesystem or an http(s) URL and validate the JSON and convert it to a pSConfig file.
+B<This program> will read a legacy MeshConfig JSON file or meshconfig-agent-tasks.conf file from local filesystem or an http(s) URL and convert it to a pSConfig file.
  
 =cut
 use strict;
@@ -191,7 +191,7 @@ if($help){
 }elsif(@ARGV == 0){
     my $exitval = 2;
     pod2usage({
-        -message => "Must specify a URL or file path to JSON file.",
+        -message => "Must specify a URL or file path.",
         -exitval => $exitval,
         -verbose => 0   
     }) unless($quiet);
