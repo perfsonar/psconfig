@@ -88,6 +88,9 @@ Group:			Applications/Communications
 Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:		maddash-server
+Requires:       perfsonar-graphs
+Requires:       nagios-plugins-perfsonar
+Requires:       perfsonar-traceroute-viewer
 Requires:       perl(Mo)
 Requires:       perl(YAML)
 Requires:       perl(Linux::Inotify2)
@@ -98,27 +101,6 @@ Provides:       perfsonar-meshconfig-guiagent
 The pSConfig MaDDash Agent downloads a centralized JSON file
 describing the tests a mesh is running, and generates a MaDDash configuration.
 
-
-%package maddash-checks
-Summary:		pSConfig MaDDash Agent
-Group:			Applications/Communications
-Requires:		perfsonar-psconfig-maddash = %{version}-%{release}
-Requires:       nagios-plugins-perfsonar
-
-%description maddash-checks
-A default set of check plugins for the pSConfig MaDDash Agent
-
-
-%package maddash-visualizations
-Summary:		pSConfig MaDDash Agent
-Group:			Applications/Communications
-Requires:		perfsonar-psconfig-maddash = %{version}-%{release}
-Requires:       perfsonar-graphs
-Requires:       nagios-plugins-perfsonar
-Requires:       perfsonar-traceroute-viewer
-
-%description maddash-visualizations
-A default set of visualization plugins for the pSConfig MaDDash Agent
 
 %pre utils
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
@@ -273,16 +255,8 @@ ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-ma
 %attr(0644,root,root) %{_unitdir}/%{service_maddash_agent}.service
 %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
 %{install_base}/lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm
-
-
-%files maddash-checks
-%defattr(0644,perfsonar,perfsonar,0755)
 %{psconfig_base}/checks/*
 %{psconfig_base}/reports/*
-
-
-%files maddash-visualizations
-%defattr(0644,perfsonar,perfsonar,0755)
 %{psconfig_base}/visualization/*
 
 
