@@ -8,7 +8,11 @@
       "display-name": "Loss",
       "visualization": {
         "type": "ps-graphs"
-      }
+      },
+      "priority" : {
+        "group" : "loss",
+        "level" : 1
+     }
     },
     "default_ping_loss": {
       "check": {
@@ -17,7 +21,11 @@
       "display-name": "Ping Loss",
       "visualization": {
         "type": "ps-graphs"
-      }
+      },
+      "priority" : {
+        "group" : "ping_loss",
+        "level" : 1
+     }
     },
     "default_throughput": {
       "check": {
@@ -26,7 +34,11 @@
       "display-name": "Throughput",
       "visualization": {
         "type": "ps-graphs"
-      }
+      },
+      "priority" : {
+        "group" : "throughput",
+        "level" : 1
+     }
     },
     "default_trace": {
       "check": {
@@ -35,7 +47,11 @@
       "display-name": "Path Count",
       "visualization": {
         "type": "ps-traceroute-viewer"
-      }
+      },
+      "priority" : {
+        "group" : "trace",
+        "level" : 1
+     }
     }
   }
 }
