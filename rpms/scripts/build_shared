@@ -1,4 +1,4 @@
 #!/bin/bash
 
-psrpm_build_perl libperfsonar perl-shared psconfig
+psrpm_build_perl libperfsonar perl-shared
 

@@ -27,6 +27,8 @@ if [ -e "$MESHCONFIG_GUIAGENT_CONF" ]; then
         fi
         echo "Moving to translated file to ${PSCONFIG_AGENT_JSON}" >> $LOGFILE
         mv $tmpfile $PSCONFIG_AGENT_JSON
+        chown perfsonar:perfsonar $PSCONFIG_AGENT_JSON
+        chmod 644 $PSCONFIG_AGENT_JSON 
         echo "Backing up $MESHCONFIG_GUIAGENT_CONF to ${MESHCONFIG_GUIAGENT_CONF}.${RUNTIME}" >> $LOGFILE
         mv $MESHCONFIG_GUIAGENT_CONF ${MESHCONFIG_GUIAGENT_CONF}.${RUNTIME}
     else

@@ -3,11 +3,16 @@ Makefile
 bin/psconfig_commands/agents
 bin/psconfig_commands/maddash-check-plugins
 bin/psconfig_commands/maddash-grid
+bin/psconfig_commands/maddash-migrate
 bin/psconfig_commands/maddash-stats
+bin/psconfig_commands/maddash-translate
 bin/psconfig_commands/maddash-viz-plugins
+bin/psconfig_commands/pscheduler-migrate
 bin/psconfig_commands/pscheduler-stats
 bin/psconfig_commands/pscheduler-tasks
+bin/psconfig_commands/pscheduler-translate
 bin/psconfig_commands/remote
+bin/psconfig_commands/translate
 bin/psconfig_commands/validate
 bin/psconfig
 bin/psconfig_pscheduler_agent

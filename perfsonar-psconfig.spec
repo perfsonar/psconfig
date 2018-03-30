@@ -11,7 +11,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 
-%define relnum 0.0.a1 
+%define relnum 0.1.a1 
 
 
 Name:			perfsonar-psconfig
@@ -74,7 +74,8 @@ Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
-
+Obsoletes:      perfsonar-meshconfig-agent
+Provides:       perfsonar-meshconfig-agent
 
 %description pscheduler
 The pSConfig pScheduler Agent downloads a centralized JSON file
@@ -90,7 +91,8 @@ Requires:		maddash-server
 Requires:       perl(Mo)
 Requires:       perl(YAML)
 Requires:       perl(Linux::Inotify2)
-
+Obsoletes:      perfsonar-meshconfig-guiagent
+Provides:       perfsonar-meshconfig-guiagent
 
 %description maddash
 The pSConfig MaDDash Agent downloads a centralized JSON file
@@ -192,11 +194,12 @@ mkdir -p %{config_base}/pscheduler.d/
 chown perfsonar:perfsonar %{config_base}/pscheduler.d/
 %systemd_post %{service_pscheduler_agent}.service
 if [ "$1" = "1" ]; then
+    #migrate meshconfig
+    psconfig pscheduler-migrate
     #if new install, then enable
     systemctl enable %{service_pscheduler_agent}.service
     systemctl start %{service_pscheduler_agent}.service
 fi
-
 
 
 %post maddash
@@ -210,6 +213,8 @@ mkdir -p %{psconfig_base}/visualization
 chown perfsonar:perfsonar %{psconfig_base}/visualization
 %systemd_post %{service_maddash_agent}.service
 if [ "$1" = "1" ]; then
+    #migrate meshconfig
+    psconfig maddash-migrate
     #if new install, then enable
     systemctl enable %{service_maddash_agent}.service
     systemctl start %{service_maddash_agent}.service
@@ -241,6 +246,7 @@ ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-ma
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/psconfig
 %attr(0755,perfsonar,perfsonar) %{command_base}/agents
 %attr(0755,perfsonar,perfsonar) %{command_base}/remote
+%attr(0755,perfsonar,perfsonar) %{command_base}/translate
 %attr(0755,perfsonar,perfsonar) %{command_base}/validate
 %{install_base}/lib/perfSONAR_PS/PSConfig/*.pm
 %{install_base}/lib/perfSONAR_PS/PSConfig/CLI/Constants.pm

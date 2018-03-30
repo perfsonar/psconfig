@@ -14,6 +14,8 @@ MESHCONFIG_AGENT_CONF='/etc/perfsonar/meshconfig-agent.conf'
 MESHCONFIG_AGENT_TASKS_CONF='/etc/perfsonar/meshconfig-agent-tasks.conf'
 MESHCONFIG_CLIENT_UUID='/var/lib/perfsonar/meshconfig/client_uuid'
 MESHCONFIG_PSC_TRACKER='/var/lib/perfsonar/meshconfig/psc_tracker'
+TOOLKIT_GUI_DIR='/var/lib/perfsonar/toolkit'
+TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF="${TOOLKIT_GUI_DIR}/gui-tasks.conf"
 #PSConfig files
 PSCONFIG_AGENT_JSON='/etc/perfsonar/psconfig/pscheduler-agent.json'
 PSCONFIG_TEMPLATE='/etc/perfsonar/psconfig/pscheduler.d/toolkit-webui.json'
@@ -33,6 +35,8 @@ if [ -e "$MESHCONFIG_AGENT_CONF" ]; then
         fi
         echo "Moving to translated file to ${PSCONFIG_AGENT_JSON}" >> $LOGFILE
         mv $tmpfile $PSCONFIG_AGENT_JSON
+        chown perfsonar:perfsonar $PSCONFIG_AGENT_JSON
+        chmod 644 $PSCONFIG_AGENT_JSON 
         echo "Backing up $MESHCONFIG_AGENT_CONF to ${MESHCONFIG_AGENT_CONF}.${RUNTIME}" >> $LOGFILE
         mv $MESHCONFIG_AGENT_CONF ${MESHCONFIG_AGENT_CONF}.${RUNTIME}
     else
@@ -55,9 +59,22 @@ if [ -e "$MESHCONFIG_AGENT_TASKS_CONF" ]; then
         fi
         echo "Moving to translated file to ${PSCONFIG_TEMPLATE}" >> $LOGFILE
         mv $tmpfile $PSCONFIG_TEMPLATE
+        chown perfsonar:perfsonar $PSCONFIG_TEMPLATE
+        chmod 644 $PSCONFIG_TEMPLATE 
     else
         echo "psconfig translate did not work, but it's probably not an error. It will only translate if there are tasks from the webui or created manually. Any global archives were still converted if this was the case." >> $LOGFILE
     fi
+    #special step for toolkit gui
+    if [ -e "$TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF" ]; then
+        echo "Backing up $TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF to ${TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF}.${RUNTIME}" >> $LOGFILE
+        cp $TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF "${TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF}.${RUNTIME}"
+    fi
+    #copy to toolkit gui locations
+    echo "Copying $MESHCONFIG_AGENT_TASKS_CONF to $TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF" >> $LOGFILE
+    mkdir -p $TOOLKIT_GUI_DIR
+    cp $MESHCONFIG_AGENT_TASKS_CONF $TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF
+    chown perfsonar:perfsonar $TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF
+    chmod 644 $TOOLKIT_GUI_MESHCONFIG_AGENT_TASKS_CONF 
     #always move since in most cases an error above is probably expected
     echo "Backing up $MESHCONFIG_AGENT_TASKS_CONF to ${MESHCONFIG_AGENT_TASKS_CONF}.${RUNTIME}" >> $LOGFILE
     mv $MESHCONFIG_AGENT_TASKS_CONF ${MESHCONFIG_AGENT_TASKS_CONF}.${RUNTIME}
