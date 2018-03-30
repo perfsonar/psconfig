@@ -208,7 +208,10 @@ sub _convert_grids {
                 foreach my $old_grid_name(@{$maddash_opt->{'grid_name'}}){
                     #remove the mesh name prefix
                     $old_grid_name =~ s/^.+? - //;
-                    $sel->add_task_name($self->_format_name($old_grid_name));
+                    $old_grid_name = $self->_format_name($old_grid_name);
+                    $sel->add_task_name($old_grid_name);
+                    #add this in case force_bidirectional is enabled
+                    $sel->add_task_name("${old_grid_name}_scheduled_by_dest");
                 }
                 $grid->selector($sel);
             }
