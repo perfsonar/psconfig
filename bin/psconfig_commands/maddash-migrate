@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#log file
+mkdir -p /var/log/perfsonar/
+LOGFILE="/var/log/perfsonar/psconfig-maddash-migrate.log"
+DATE=$(date)
+echo "[$DATE] Migration started" >> $LOGFILE
+
+# get timestamp
+RUNTIME=$(echo $DATE | sed -e "s/ /_/g" | sed -e "s/:/_/g")
+
+#MeshConfig files
+MESHCONFIG_GUIAGENT_CONF='/etc/perfsonar/meshconfig-guiagent.conf'
+#PSConfig files
+PSCONFIG_AGENT_JSON='/etc/perfsonar/psconfig/maddash-agent.json'
+
+#Migrate MeshConfig Agent file if exists
+echo "" >> $LOGFILE
+if [ -e "$MESHCONFIG_GUIAGENT_CONF" ]; then
+    tmpfile=$(mktemp)
+    echo "$MESHCONFIG_GUIAGENT_CONF exists, running 'psconfig maddash-translate -o $tmpfile $MESHCONFIG_GUIAGENT_CONF'" >> $LOGFILE
+    psconfig maddash-translate -o $tmpfile $MESHCONFIG_GUIAGENT_CONF >> $LOGFILE 2>&1
+    if [ $? -eq 0 ]; then
+        if [ -e "$PSCONFIG_AGENT_JSON" ]; then
+            echo "$PSCONFIG_AGENT_JSON exists, backing-up to ${PSCONFIG_AGENT_JSON}.${RUNTIME}" >> $LOGFILE
+            mv $PSCONFIG_AGENT_JSON "${PSCONFIG_AGENT_JSON}.${RUNTIME}"
+        fi
+        echo "Moving to translated file to ${PSCONFIG_AGENT_JSON}" >> $LOGFILE
+        mv $tmpfile $PSCONFIG_AGENT_JSON
+        echo "Backing up $MESHCONFIG_GUIAGENT_CONF to ${MESHCONFIG_GUIAGENT_CONF}.${RUNTIME}" >> $LOGFILE
+        mv $MESHCONFIG_GUIAGENT_CONF ${MESHCONFIG_GUIAGENT_CONF}.${RUNTIME}
+    else
+        echo "psconfig maddash-translate did not work, this is not an error if you didn't have any meshes configured" >> $LOGFILE
+    fi
+else
+    echo "$MESHCONFIG_GUIAGENT_CONF does not exist, so nothing to translate. That probably means this is a new install or has the host already been upgraded." >> $LOGFILE
+fi
+
+DATE=$(date)
+echo "" >> $LOGFILE
+echo "[$DATE] Migration complete" >> $LOGFILE
