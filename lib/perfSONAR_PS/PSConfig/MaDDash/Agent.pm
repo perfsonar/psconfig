@@ -64,6 +64,16 @@ sub _run_start {
     my($self, $agent_conf) = @_;
     
     ##
+    # Reset global valies to avoid leaks
+    $self->group_member_map({});
+    $self->group_map({});
+    $self->grids([]);
+    $self->dashboards([]);
+    $self->check_map({});
+    $self->agent_grids([]);
+    $self->report_map({});
+    
+    ##
     # Set defaults for config values
     unless($agent_conf->maddash_yaml_file()){
         my $default = "/etc/maddash/maddash-server/maddash.yaml";
@@ -402,6 +412,8 @@ sub _run_end {
     ##
     # Add dashboards
     foreach my $dashboard(@{$self->dashboards()}){
+        my @sorted_grids = sort {lc($a->{'name'}) cmp lc($b->{'name'})} @{$dashboard->{'grids'}};
+        $dashboard->{'grids'} = \@sorted_grids;
         push @{$maddash_yaml->{'dashboards'}}, $dashboard;
     }
     
