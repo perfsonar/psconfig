@@ -45,6 +45,8 @@ has 'dashboards' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'check_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
 has 'agent_grids' => (is => 'rw', isa => 'ArrayRef', default => sub{ [] });
 has 'report_map' => (is => 'rw', isa => 'HashRef', default => sub{ {} });
+has 'auto_dashboard_name_count' => (is => 'rw', isa => 'Int', default => 0);
+
 
 my $logger = get_logger(__PACKAGE__);
 
@@ -64,14 +66,8 @@ sub _run_start {
     my($self, $agent_conf) = @_;
     
     ##
-    # Reset global valies to avoid leaks
-    $self->group_member_map({});
-    $self->group_map({});
-    $self->grids([]);
-    $self->dashboards([]);
-    $self->check_map({});
-    $self->agent_grids([]);
-    $self->report_map({});
+    # Reset global values to avoid leaks
+    $self->__reset_globals();
     
     ##
     # Set defaults for config values
@@ -130,20 +126,25 @@ sub _run_handle_psconfig {
     # Initialize dashboards
     my $dashboard;
     my $dashboard_name = $psconfig->psconfig_meta_param(META_DISPLAY_NAME());
-    if($dashboard_name){
-         $dashboard = {
-            ADDED_BY_TAG() => 1,
-            "name" => $dashboard_name,
-            "grids" => []
-        };
-        push @{$self->dashboards()}, $dashboard;
+    unless($dashboard_name){
+        #set a default dashboard name
+        my $dashboard_id = $self->auto_dashboard_name_count() + 1;
+        $dashboard_name = "Dashboard $dashboard_id";
+        $self->auto_dashboard_name_count($dashboard_id);
     }
+    $dashboard = {
+        ADDED_BY_TAG() => 1,
+        "name" => $dashboard_name,
+        "grids" => []
+    };
+    push @{$self->dashboards()}, $dashboard;
     
     ##
     # Generate groups and grids
     foreach my $task_name(@{$psconfig->task_names()}){
-        $self->logf->global_context()->{'task_name'} = $task_name;
         my $task = $psconfig->task($task_name);
+        my $maddash_task_name = "$dashboard_name - $task_name";
+        $self->logf->global_context()->{'task_name'} = $maddash_task_name;
         my $group = $psconfig->group($task->group_ref());
         my $row_equal_col = 0;
         
@@ -156,12 +157,12 @@ sub _run_handle_psconfig {
         
         ##
         # build row group
-        my $row_id = $self->__generate_yaml_key($task_name . "-row");
+        my $row_id = $self->__generate_yaml_key($maddash_task_name . "-row");
         my $row_labels = $self->_build_maddash_group($row_id, $group->dimension(0), $psconfig);
         
         ##
         # build column group if two-dimensional
-        my $column_id = $self->__generate_yaml_key($task_name . "-col");
+        my $column_id = $self->__generate_yaml_key($maddash_task_name . "-col");
         my $col_labels = [];
         if($group->dimension_count() == 1){
             $self->group_map()->{$column_id} = [ "check" ]; #TODO: Make this better
@@ -272,9 +273,9 @@ sub _run_handle_psconfig {
             my $viz_plugin = $matching_agent_grid->visualization_plugin();
             
             #get grid name
-            my $grid_name = $task->psconfig_meta_param(META_DISPLAY_NAME());
+            my $grid_name = "$dashboard_name - " . $task->psconfig_meta_param(META_DISPLAY_NAME());
             unless($grid_name){
-                $grid_name = $task_name;
+                $grid_name = $maddash_task_name;
             }
             $grid_name .= ' - ' . $matching_agent_grid->display_name();
             
@@ -426,6 +427,10 @@ sub _run_end {
     ##
     # Output maddash yaml
     $self->_save_maddash_yaml($maddash_yaml, $agent_conf->maddash_yaml_file());
+    
+    ##
+    # Clear out globals to save memory
+    $self->__reset_globals();
 }
 
 sub _load_maddash_yaml {
@@ -1016,6 +1021,19 @@ sub _simplify_map {
     }
 
     return;
+}
+
+sub __reset_globals {
+    my ($self) = @_;
+    
+    $self->group_member_map({});
+    $self->group_map({});
+    $self->grids([]);
+    $self->dashboards([]);
+    $self->check_map({});
+    $self->agent_grids([]);
+    $self->report_map({});
+    $self->auto_dashboard_name_count(0);
 }
 
 sub __generate_yaml_key {
