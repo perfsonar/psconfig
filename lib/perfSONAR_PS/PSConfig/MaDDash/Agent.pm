@@ -143,6 +143,7 @@ sub _run_handle_psconfig {
     # Generate groups and grids
     foreach my $task_name(@{$psconfig->task_names()}){
         my $task = $psconfig->task($task_name);
+        next if(!$task || $task->disabled());
         my $maddash_task_name = "$dashboard_name - $task_name";
         $self->logf->global_context()->{'task_name'} = $maddash_task_name;
         my $group = $psconfig->group($task->group_ref());
