@@ -164,6 +164,9 @@ sub _run_handle_psconfig {
     
     #walk through tasks
     foreach my $task_name(@{$psconfig->task_names()}){
+        my $task = $psconfig->task($task_name);
+        next if(!$task || $task->disabled());
+        
         $self->logf->global_context()->{'task_name'} = $task_name;
         my $tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
             psconfig => $psconfig,

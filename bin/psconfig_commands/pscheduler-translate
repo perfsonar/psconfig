@@ -1,0 +1,191 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+pscheduler-translate - Translate a meshconfig-agent.conf file to a pscheduler-agent.json file
+ 
+=head1 SYNOPSIS
+ 
+pscheduler-translate [options] FILE
+ 
+ Options:
+   -h | --help                    detailed help message
+   -o | --output FILE             file to output translated JSON    
+   -q | --quiet                   suppress output to stdout and stderr
+   --save-requesting-agent        if local_host present, will convert and save in --requesting-agent-file
+   --requesting-agent-file FILE   the file path to save local_host conversion when --save-requesting-agent enabled
+   
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<FILE>
+ 
+A path to a local meshconfig-agent.conf file to translate
+
+=back
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<-o | --output FILE>
+ 
+File to output translated JSON.
+
+=item B<-q | --quiet>
+ 
+Suppresses output to stdout and stderr. Useful when scripting and only concerned about exit code.
+
+=item B<--save-requesting-agent>
+ 
+If local_host block present in meshconfig-agent.conf, will convert and save in 
+--requesting-agent-file. Most users did not use the local_host block in MeshConfig, it is 
+only for advanced users running dynamic meshes. This conversion script only converts the
+addresses and tags. Any other fields such a measurement-archives of address maps are ignored.
+You should likely be able to manually convert them if you so desire.
+
+=item B<--requesting-agent-file>
+ 
+The file path to save local_host conversion when --save-requesting-agent enabled. Defaults 
+to /etc/perfsonar/psconfig/requesting-agent.json which is also the default for the pSConfig
+agents. This option is only relevant if the input meshconfig-agent.conf has a local_host 
+block AND --save-requesting-agent is enabled. 
+
+
+=head1 DESCRIPTION
+ 
+B<This program> will read a meshconfig-agent.conf file from local filesystem and convert it to a pscheduler-agent.json file.
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
+
+use perfSONAR_PS::PSConfig::PScheduler::Translator;
+
+#parse options
+my $output_file;
+my $quiet;
+my $help;
+my $save_requesting_agent;
+my $requesting_agent_file;
+GetOptions(
+    'help|h' => \$help,
+    'output|o=s' => \$output_file,
+    'quiet|q' => \$quiet,
+    'save-requesting-agent' => \$save_requesting_agent,
+    'requesting-agent-file=s' => \$requesting_agent_file,
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV == 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Must specify a URL or file path.",
+        -exitval => $exitval,
+        -verbose => 0   
+    }) unless($quiet);
+    exit $exitval;
+}elsif(@ARGV > 1){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Only one file or URL can be specified on the command-line",
+        -exitval => $exitval,
+        -verbose => 0
+    }) unless($quiet);
+    exit $exitval;
+}
+
+#get location of config to translate
+my $filename = shift @ARGV;
+chomp $filename;
+
+#read file
+my $raw_config = &read_file($filename);
+
+#build translator
+my $agent_translator = new perfSONAR_PS::PSConfig::PScheduler::Translator();
+if($save_requesting_agent){
+    $agent_translator->save_requesting_agent(1);
+}
+if($requesting_agent_file){
+    $agent_translator->requesting_agent_file($requesting_agent_file);
+}
+
+#check if can translate
+unless($agent_translator->can_translate($raw_config)){
+    print STDERR "Unable to translate $filename. Does not appear to be in correct format.\n";
+    exit 2;
+}
+
+#read configuration and try to translate
+my $agent_json = $agent_translator->translate($raw_config);
+if($agent_translator->error()){
+    unless($quiet){
+        print STDERR $agent_translator->name() . " translator encountered the following errors:\n\n";
+        print STDERR $agent_translator->error() . "\n";
+    }
+    exit 2;
+} 
+
+#exit
+if($output_file){
+    &save_file($agent_json, $output_file, {"pretty" => 1, "canonical" => 1});
+    print "Translation successful. Result saved in file $output_file.\n" unless($quiet);
+}else{
+    print $agent_json->json({"pretty" => 1, "canonical" => 1}) unless($quiet);
+}
+
+exit 0;
+
+sub read_file() {
+    my $filename = shift;
+    chomp $filename;
+    $filename =~ s/^file:\/\///g;
+    my $raw_text;
+    
+    eval{
+        $raw_text = do {
+           open(my $fh, "<:encoding(UTF-8)", $filename) or die("Can't open $filename: $!");
+           local $/;
+           <$fh>
+        };
+    };
+    if($@){
+        print STDERR "Error reading $filename: $@\n";
+        exit 2;
+    }
+    
+    return $raw_text;
+}
+
+sub save_file() {
+    my ($agent_json, $filename, $formatting_params) = @_;
+    $formatting_params = {} unless $formatting_params;
+    chomp $filename;
+    $filename =~ s/^file:\/\///g;
+    unless($filename) {
+        print STDERR "No save_filename set\n";
+        exit 2;
+    }
+    eval{
+        open(my $fh, ">:encoding(UTF-8)", $filename) or die("Can't open $filename: $!");
+        print $fh $agent_json->json($formatting_params);
+        close $fh;
+    };
+    if($@){
+        print STDERR "Error saving $filename: $@\n";
+        exit 2;
+    }
+}

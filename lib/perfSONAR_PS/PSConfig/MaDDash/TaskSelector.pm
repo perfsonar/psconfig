@@ -2,7 +2,7 @@ package perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 
 use Mouse;
 
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
@@ -80,7 +80,7 @@ Get/sets JQTransform object for selecting tasks
 
 sub jq {
     my ($self, $val) = @_;
-    return $self->_field_class('jq', 'perfSONAR_PS::PSConfig::JQTransform', $val);
+    return $self->_field_class('jq', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 =item matches()

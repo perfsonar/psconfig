@@ -3,11 +3,16 @@ Makefile
 bin/psconfig_commands/agents
 bin/psconfig_commands/maddash-check-plugins
 bin/psconfig_commands/maddash-grid
+bin/psconfig_commands/maddash-migrate
 bin/psconfig_commands/maddash-stats
+bin/psconfig_commands/maddash-translate
 bin/psconfig_commands/maddash-viz-plugins
+bin/psconfig_commands/pscheduler-migrate
 bin/psconfig_commands/pscheduler-stats
 bin/psconfig_commands/pscheduler-tasks
+bin/psconfig_commands/pscheduler-translate
 bin/psconfig_commands/remote
+bin/psconfig_commands/translate
 bin/psconfig_commands/validate
 bin/psconfig
 bin/psconfig_pscheduler_agent
@@ -30,7 +35,6 @@ etc/maddash-agent.json
 etc/pscheduler-agent-logger.conf
 etc/pscheduler-agent.json
 lib/perfSONAR_PS/PSConfig/ArchiveConnect.pm
-lib/perfSONAR_PS/PSConfig/JQTransform.pm
 lib/perfSONAR_PS/PSConfig/BaseAgent.pm
 lib/perfSONAR_PS/PSConfig/CLI/Constants.pm
 lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm
@@ -52,6 +56,7 @@ lib/perfSONAR_PS/PSConfig/MaDDash/Checks/StatusLabelsExtra.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/DefaultReports.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/TaskSelector.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Template.pm
+lib/perfSONAR_PS/PSConfig/MaDDash/Translator.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Visualization/Config.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Visualization/ConfigConnect.pm
 lib/perfSONAR_PS/PSConfig/MaDDash/Visualization/HttpGetOpt.pm
@@ -61,6 +66,7 @@ lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Config.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/ConfigConnect.pm
 lib/perfSONAR_PS/PSConfig/PScheduler/Schema.pm
+lib/perfSONAR_PS/PSConfig/PScheduler/Translator.pm
 lib/perfSONAR_PS/PSConfig/Remote.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConfig.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConnect.pm

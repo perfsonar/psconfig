@@ -3,7 +3,7 @@ package perfSONAR_PS::PSConfig::MaDDash::Checks::Config;
 use Mouse;
 use JSON::Validator;
 
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 use perfSONAR_PS::PSConfig::MaDDash::TaskSelector;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::CheckDefaults;
 use perfSONAR_PS::PSConfig::MaDDash::Checks::CommandOpt;
@@ -68,7 +68,7 @@ Sets/gets archive-accessor
 sub archive_accessor{
     my ($self, $val) = @_;
     
-    return $self->_field_class('archive-accessor', 'perfSONAR_PS::PSConfig::JQTransform', $val);
+    return $self->_field_class('archive-accessor', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 =item status_labels()
@@ -102,7 +102,7 @@ Sets/gets vars map
 sub vars{
     my ($self, $val) = @_;
     
-    return $self->_field_class_map('vars', 'perfSONAR_PS::PSConfig::JQTransform', $val);
+    return $self->_field_class_map('vars', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 =item var()
@@ -114,7 +114,7 @@ Get/sets var at specified field
 sub var{
     my ($self, $field, $val) = @_;
     
-    return $self->_field_class_map_item('vars', $field, 'perfSONAR_PS::PSConfig::JQTransform', $val);
+    return $self->_field_class_map_item('vars', $field, 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 =item var_names()

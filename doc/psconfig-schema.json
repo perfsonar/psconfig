@@ -117,6 +117,7 @@
                 { "$ref": "#/pSConfig/AddressClassFilterAddressClassSpecification" },
                 { "$ref": "#/pSConfig/AddressClassFilterHostSpecification" },
                 { "$ref": "#/pSConfig/AddressClassFilterIPVersionSpecification" },
+                { "$ref": "#/pSConfig/AddressClassFilterJQSpecification" },
                 { "$ref": "#/pSConfig/AddressClassFilterNetmaskSpecification" },
                 { "$ref": "#/pSConfig/AddressClassFilterOperandSpecification" },
                 { "$ref": "#/pSConfig/AddressClassFilterNotSpecification" },
@@ -144,12 +145,32 @@
                     "type": "string",
                     "enum": [ "host" ]
                 },
-                "site": { "type": "string" },
                 "no-agent": { "type": "boolean" },
-                "tag": { "type": "string" }
+                "tag": { "type": "string" },
+                "jq": { 
+                    "$ref": "#/pSConfig/JQTransformSpecification",
+                    "description": "JQ script to select host properties. If result non-empty or JSON true then evaluates to true. JSON false or empty string is false."
+                    
+                }
             },
             "additionalProperties": false,
             "required": [ "type" ]
+        },
+        
+        "AddressClassFilterJQSpecification": {
+            "type": "object",
+            "properties": {
+                "type": { 
+                    "type": "string",
+                    "enum": [ "jq" ]
+                },
+                "jq": { 
+                    "$ref": "#/pSConfig/JQTransformSpecification",
+                    "description": "JQ script to select address properties. If result non-empty or JSON true then evaluates to true. JSON false or empty string is false."
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "type", "jq" ]
         },
         
         "AddressClassFilterIPVersionSpecification": {
@@ -333,12 +354,28 @@
             "properties": {
                 "archiver": { "type": "string" },
                 "data": { "$ref": "#/pSConfig/AnyJSON" },
-                "transform": { "$ref": "#/pSConfig/JQTransformSpecification" },
+                "transform": { "$ref": "#/pSConfig/ArchiveJQTransformSpecification" },
                 "ttl": { "$ref": "#/pSConfig/Duration" },
                 "_meta": { "$ref": "#/pSConfig/AnyJSON" }
             },
             "additionalProperties": false,
             "required": [ "archiver", "data"]
+        },
+        
+        "ArchiveJQTransformSpecification": {
+            "type": "object",
+            "properties": {
+                "script":   {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "output-raw": { "type": "boolean" },
+                "args": { "$ref": "#/pSConfig/AnyJSON" }
+            },
+            "additionalProperties": false,
+            "required": [ "script" ]
         },
         
         "Cardinal": {
@@ -462,7 +499,6 @@
         "HostSpecification": {
             "type": "object",
             "properties": {
-                "site": { "type": "string" },
                 "archives": { "type": "array", "items": { "$ref": "#/pSConfig/NameType" } },
                 "tags": { "type": "array", "items": { "type": "string" } },
                 "no-agent": { "type": "boolean" },
@@ -524,9 +560,7 @@
                         { "type": "string" },
                         { "type": "array", "items": { "type": "string" } }
                     ]
-                },
-                "output-raw": { "type": "boolean" },
-                "args": { "$ref": "#/pSConfig/AnyJSON" }
+                }
             },
             "additionalProperties": false,
             "required": [ "script" ]
@@ -593,6 +627,7 @@
                 "archives": { "type": "array", "items": { "$ref": "#/pSConfig/NameType" } },
                 "tools": { "type": "array", "items": { "type": "string" } },
                 "subtasks": { "type": "array", "items": { "$ref": "#/pSConfig/NameType" } },
+                "priority": { "type": "integer" },
                 "reference": { "$ref": "#/pSConfig/AnyJSON" },
                 "_meta": { "$ref": "#/pSConfig/AnyJSON" }
             },

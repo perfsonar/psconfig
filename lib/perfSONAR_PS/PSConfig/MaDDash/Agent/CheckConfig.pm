@@ -2,7 +2,7 @@ package perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig;
 
 use Mouse;
 
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 
 extends 'perfSONAR_PS::Client::PSConfig::BaseNode';
 
@@ -26,7 +26,7 @@ Get/sets JQTransform object for selecting the archive to use
 
 sub archive_selector {
     my ($self, $val) = @_;
-    return $self->_field_class('archive-selector', 'perfSONAR_PS::PSConfig::JQTransform', $val);
+    return $self->_field_class('archive-selector', 'perfSONAR_PS::Client::PSConfig::JQTransform', $val);
 }
 
 =item check_interval()

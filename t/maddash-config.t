@@ -8,7 +8,7 @@ use lib "$Bin/../lib";
 use Test::More;
 use Data::Dumper;
 
-use perfSONAR_PS::PSConfig::JQTransform;
+use perfSONAR_PS::Client::PSConfig::JQTransform;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Config;
 use perfSONAR_PS::PSConfig::MaDDash::Agent::Grid;
 use perfSONAR_PS::PSConfig::Remote;
@@ -41,7 +41,7 @@ is($remote1->bind_address('10.0.0.1'), '10.0.0.1');
 is($remote1->configure_archives(1), 1);
 is($remote1->ssl_ca_file('path/to/ca'), 'path/to/ca');
 my $transform;
-ok($transform = new perfSONAR_PS::PSConfig::JQTransform());
+ok($transform = new perfSONAR_PS::Client::PSConfig::JQTransform());
 is($transform->script(['junk;jq'])->[0], 'junk;jq');
 is($transform->apply({"foo" => "bar"}), undef);
 ok($transform->error());
@@ -114,7 +114,7 @@ is($task_sel->matches({'test' => {'type' => 'throughput'}, 'task-name' => 'task1
 is($task_sel->matches({'test' => {'type' => 'throughput'}, 'task-name' => 'task1', 'archives' => [{"archiver"=> 'rabbitmq'}]}), 1);
 #### jq
 my $task_sel_jq;
-ok($task_sel_jq = new perfSONAR_PS::PSConfig::JQTransform());
+ok($task_sel_jq = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($task_sel_jq->script('.test._meta.foo'));
 is($task_sel->jq($task_sel_jq)->checksum(), $task_sel_jq->checksum());
 is($grid1->selector($task_sel)->checksum(), $task_sel->checksum());
@@ -134,7 +134,7 @@ my $check_config;
 ok($check_config = new perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig());
 is($check_config->type("ps-nagios-throughput"), "ps-nagios-throughput");
 my $archive_sel;
-ok($archive_sel = new perfSONAR_PS::PSConfig::JQTransform());
+ok($archive_sel = new perfSONAR_PS::Client::PSConfig::JQTransform());
 ok($archive_sel->script('.'));
 is($check_config->archive_selector($archive_sel)->checksum(), $archive_sel->checksum());
 is($check_config->check_interval("PT4H"), "PT4H");

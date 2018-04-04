@@ -1,4 +1,57 @@
 {
-    "remotes": [],
-    "grids": {}
+  "remotes": [],
+  "grids": {
+    "default_loss": {
+      "check": {
+        "type": "ps-nagios-loss"
+      },
+      "display-name": "Loss",
+      "visualization": {
+        "type": "ps-graphs"
+      },
+      "priority" : {
+        "group" : "loss",
+        "level" : 1
+     }
+    },
+    "default_ping_loss": {
+      "check": {
+        "type": "ps-nagios-ping-loss"
+      },
+      "display-name": "Ping Loss",
+      "visualization": {
+        "type": "ps-graphs"
+      },
+      "priority" : {
+        "group" : "ping_loss",
+        "level" : 1
+     }
+    },
+    "default_throughput": {
+      "check": {
+        "type": "ps-nagios-throughput"
+      },
+      "display-name": "Throughput",
+      "visualization": {
+        "type": "ps-graphs"
+      },
+      "priority" : {
+        "group" : "throughput",
+        "level" : 1
+     }
+    },
+    "default_trace": {
+      "check": {
+        "type": "ps-nagios-traceroute"
+      },
+      "display-name": "Path Count",
+      "visualization": {
+        "type": "ps-traceroute-viewer"
+      },
+      "priority" : {
+        "group" : "trace",
+        "level" : 1
+     }
+    }
+  }
 }

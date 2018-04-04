@@ -45,7 +45,7 @@ has 'pscheduler_url' => (is => 'rw', isa => 'Str');
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
 has 'check_config_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 60 });
 has 'default_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::Archive]', default => sub { [] });
-has 'default_transforms' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::PSConfig::JQTransform]', default => sub { [] });
+has 'default_transforms' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::JQTransform]', default => sub { [] });
 has 'requesting_agent_addresses' => (is => 'rw', isa => 'HashRef');
 has 'debug' => (is => 'rw', isa => 'Bool', default => sub { 0 });
 has 'error' => (is => 'ro', isa => 'Str', writer => '_set_error');
