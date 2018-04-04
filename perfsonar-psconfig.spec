@@ -11,7 +11,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 
-%define relnum 0.1.a1 
+%define relnum 0.2.a1 
 
 
 Name:			perfsonar-psconfig
@@ -70,6 +70,8 @@ This package is the set of library and common command-line tools used for pSConf
 %package pscheduler
 Summary:		pSConfig pScheduler Agent
 Group:			Applications/Communications
+Requires:		perfsonar-psconfig-pscheduler-devel = %{version}-%{release}
+Requires(post):	perfsonar-psconfig-pscheduler-devel = %{version}-%{release}
 Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
@@ -81,10 +83,19 @@ Provides:       perfsonar-meshconfig-agent
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
 
+%package pscheduler-devel
+Summary:		pSConfig pScheduler Agent
+Group:			Applications/Communications
+Requires:       libperfsonar-pscheduler-perl
+
+%description pscheduler-devel
+Libraries for interacting with the pSConfig pScheduler Agent
 
 %package maddash
 Summary:		pSConfig MaDDash Agent
 Group:			Applications/Communications
+Requires:		perfsonar-psconfig-maddash-devel = %{version}-%{release}
+Requires(post):	perfsonar-psconfig-maddash-devel = %{version}-%{release}
 Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:		maddash-server
@@ -101,6 +112,13 @@ Provides:       perfsonar-meshconfig-guiagent
 The pSConfig MaDDash Agent downloads a centralized JSON file
 describing the tests a mesh is running, and generates a MaDDash configuration.
 
+%package maddash-devel
+Summary:		pSConfig pScheduler Agent
+Group:			Applications/Communications
+Requires:       libperfsonar-pscheduler-perl
+
+%description maddash-devel
+Libraries for interacting with the pSConfig MaDDash Agent
 
 %pre utils
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
@@ -111,6 +129,9 @@ describing the tests a mesh is running, and generates a MaDDash configuration.
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
+%pre pscheduler-devel
+/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %pre maddash
 /usr/sbin/groupadd perfsonar 2> /dev/null || :
@@ -118,6 +139,9 @@ describing the tests a mesh is running, and generates a MaDDash configuration.
 /usr/sbin/groupadd maddash 2> /dev/null || :
 /usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
 
+%pre maddash-devel
+/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
 %setup -q -n perfsonar-psconfig-%{version}.%{relnum}
@@ -243,8 +267,12 @@ ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-ma
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_pscheduler_agent}
 %attr(0755,perfsonar,perfsonar) %{command_base}/pscheduler-*
 %attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
-%{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/*
+%{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 
+%files pscheduler-devel
+%defattr(0644,perfsonar,perfsonar,0755)
+%{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/*
+%exclude %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 
 %files maddash
 %defattr(0644,perfsonar,perfsonar,0755)
@@ -253,12 +281,16 @@ ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-ma
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_maddash_agent}
 %attr(0755,perfsonar,perfsonar) %{command_base}/maddash-*
 %attr(0644,root,root) %{_unitdir}/%{service_maddash_agent}.service
-%{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
+%{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/Agent.pm
 %{install_base}/lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm
 %{psconfig_base}/checks/*
 %{psconfig_base}/reports/*
 %{psconfig_base}/visualization/*
 
+%files maddash-devel
+%defattr(0644,perfsonar,perfsonar,0755)
+%{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
+%exclude %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/Agent.pm
 
 %changelog
 * Wed Feb 14 2018 andy@es.net 4.1-0.0.a1
