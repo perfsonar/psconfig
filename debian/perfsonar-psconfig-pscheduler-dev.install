@@ -1,0 +1,4 @@
+lib/perfSONAR_PS/PSConfig/PScheduler/Config.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/PScheduler/
+lib/perfSONAR_PS/PSConfig/PScheduler/ConfigConnect.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/PScheduler/
+lib/perfSONAR_PS/PSConfig/PScheduler/Schema.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/PScheduler/
+lib/perfSONAR_PS/PSConfig/PScheduler/Translator.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/PScheduler/

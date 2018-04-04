@@ -25,20 +25,35 @@ Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}),
  libperfsonar-pscheduler-perl, liblinux-inotify2-perl,
- libfile-readbackwards-perl
+ libfile-readbackwards-perl, perfsonar-psconfig-pscheduler-dev
 Description: pSConfig pScheduler Agent
  Downloads a centralized JSON file describing the tests to run,
  and uses it to generate appropriate pScheduler tasks.
+
+Package: perfsonar-psconfig-pscheduler-dev
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends},
+ libperfsonar-pscheduler-perl
+Description: pSConfig pScheduler Development Libraries
+ Development libraries for interacting with the pSConfig pScheduler Agent.
 
 Package: perfsonar-psconfig-maddash
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
  libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
- libfile-readbackwards-perl, libhash-merge-perl
+ libfile-readbackwards-perl, libhash-merge-perl,
+ perfsonar-psconfig-maddash-dev
 Description: pSConfig MaDDash Agent
  Downloads a centralized JSON file describing the tests a mesh is running,
  and generates a MaDDash configuration.
+
+Package: perfsonar-psconfig-maddash-dev
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ libperfsonar-pscheduler-perl
+Description: pSConfig MaDDash Agent Development Libraries
+ Development Libraries for interactiving with the pSConfig MaDDash Agent.
 
 Package: perfsonar-psconfig-maddash-checks
 Architecture: all
