@@ -1,0 +1,198 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+publish - Validates a JSON file and publishes it to a web server
+ 
+=head1 SYNOPSIS
+ 
+publish FILE
+ 
+ Options:
+   -h | --help                  help message
+   -B | --bind ADDR             local address to bind to when sending http/https requests
+   -q | --quiet                 suppress output to stdout and stderr
+   --skip-validate              skips validate of JSON file
+   --timeout N                  number of seconds to wait to retrieve JSON
+   
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<FILE>
+ 
+The path to the pSConfig to publish. The file can be a local file or http/https URL. 
+
+=back
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<-B | --bind ADDR>
+ 
+Local address to bind to when sending http/https requests
+
+=item B<-q | --quiet>
+ 
+Suppresses output to stdout and stderr. Useful when scripting and only concerned about exit code.
+
+=item B<--skip-validate>
+ 
+Skip validation of JSON before copying
+
+=item B<--timeout N>
+ 
+The integer number of seconds to wait to retrieve JSON. Default is 0, which is no timeout. 
+
+=back
+ 
+=head1 DESCRIPTION
+ 
+B<This program> will publish a given pSConfig JSON template file by first validating the 
+JSON and copying to a web directory.
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+
+use Data::Validate::IP qw(is_ipv6);
+use DateTime;
+use File::Basename;
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
+use URI;
+
+use perfSONAR_PS::Client::PSConfig::ApiConnect;
+use perfSONAR_PS::Client::PSConfig::ApiFilters;
+use perfSONAR_PS::Utils::Host qw( discover_primary_address );
+
+#parse options
+my $help;
+my $bind;
+
+my $skip_validate;
+my $quiet;
+my $timeout=0;
+GetOptions(
+    'help|h' => \$help,
+    'bind|B=s' => \$bind,
+    'quiet|q' => \$quiet,
+    'skip-validate' => \$skip_validate,
+    'timeout=i' => \$timeout
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV == 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Must specify a file path or URL to JSON file.",
+        -exitval => $exitval,
+        -verbose => 0   
+    }) unless($quiet);
+    exit $exitval;
+}elsif(@ARGV > 1){
+    my $exitval = 2;
+    pod2usage({
+        -message => "Only one file or URL can be specified on the command-line",
+        -exitval => $exitval,
+        -verbose => 0
+    }) unless($quiet);
+    exit $exitval;
+}
+
+#get url
+my $json_url = shift @ARGV;
+chomp $json_url;
+
+#set output file
+my $default_file = '';
+my $uri_obj = new URI("$json_url");
+my $uri_path = $uri_obj->path;
+unless($uri_path){
+    print STDERR "Unable to determine base filename from given URL";
+    exit 1;
+}
+my($filename, $dirs, $suffix) = fileparse($uri_path);
+unless($filename){
+    print STDERR "Unable to determine base filename";
+    exit 1;
+}
+chomp $filename;
+$filename .= '.json' unless($filename =~ /\.json$/);
+my $output_file = "/usr/lib/perfsonar/web-psconfig/$filename";
+
+#read file  
+my $psconfig_filters = new perfSONAR_PS::Client::PSConfig::ApiFilters(timeout => $timeout);
+my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(url => $json_url, save_filename => $output_file, filters => $psconfig_filters);
+if($bind){
+    $psconfig_client->bind_address($bind);
+}
+my $psconfig = $psconfig_client->get_config();
+if($psconfig_client->error()){
+    unless($quiet){
+        print STDERR "Error loading JSON. Encountered the following error:\n\n";
+        print STDERR "   " . $psconfig_client->error() . "\n";
+    }
+    exit 2;
+} 
+
+#validate
+unless($skip_validate){
+    my @errors = $psconfig->validate();
+    if(@errors){
+        unless($quiet){
+            print STDERR "pSConfig JSON is not valid. Encountered the following validation errors:\n\n";
+            foreach my $error(@errors){
+                print STDERR "   Node: " . $error->path . "\n";
+                print STDERR "   Error: " . $error->message . "\n\n";
+            }
+        }    
+        exit 1;
+    }
+}
+
+#timestamp publish
+my $now=DateTime->now;
+$now->set_time_zone("UTC");
+my $iso_now = $now->ymd('-') . 'T' . $now->hms(':') . '+00:00';
+my $publisher_meta = {
+    "publish-source" => 'psconfig-publish-cli',
+    "publish-time" => $iso_now
+};
+$psconfig->psconfig_meta_param('psconfig-publisher', $publisher_meta);
+
+#save
+$psconfig_client->save_config($psconfig, {'pretty' => 0, 'canonical' => 1});
+if($psconfig_client->error()){
+     print STDERR "Error saving tempate: " . $psconfig_client->error();
+     exit 1;
+}
+## set file permissions
+chmod 0644, $output_file;
+
+#print success
+unless($quiet){
+    my $web_hostname = 'localhost';
+    my $external_addresses = discover_primary_address();
+    if ( $external_addresses ) {
+        $web_hostname = $external_addresses->{primary_address};
+        $web_hostname = "[$web_hostname]" if(is_ipv6($web_hostname));
+    }
+    my $published_url = "https://$web_hostname/psconfig/$filename";
+    print "Success! File saved to $output_file\n";
+    print "Published file can be accessed at $published_url\n";
+    print "Execute the following on a host running an agent to use this file:\n\n";
+    print "    psconfig remote add \"$published_url\"\n\n";
+}
+exit 0;
+

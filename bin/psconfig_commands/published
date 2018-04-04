@@ -1,0 +1,92 @@
+#!/usr/bin/perl
+
+=head1 NAME
+ 
+published - Lists published JSON documents
+ 
+=head1 SYNOPSIS
+ 
+published
+ 
+ Options:
+   -h | --help                  help message
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=back 
+
+=head1 DESCRIPTION
+ 
+B<This program> list the JSON files published the default pSConfig web directory
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+
+use Data::Validate::IP qw(is_ipv6);
+use Getopt::Long qw(GetOptions);
+use Pod::Usage;
+
+use perfSONAR_PS::Utils::Host qw( discover_primary_address );
+
+#parse options
+my $help;
+
+GetOptions(
+    'help|h' => \$help,
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}elsif(@ARGV != 0){
+    my $exitval = 2;
+    pod2usage({
+        -message => "This command does not accept any arguments. Did you mean to run 'psconfig publish' instead?",
+        -exitval => $exitval,
+        -verbose => 0   
+    });
+    exit $exitval;
+}
+
+#make url
+my $web_hostname = 'localhost';
+my $external_addresses = discover_primary_address();
+if ( $external_addresses ) {
+    $web_hostname = $external_addresses->{primary_address};
+    $web_hostname = "[$web_hostname]" if(is_ipv6($web_hostname));
+}
+my $base_url = "https://$web_hostname/psconfig";
+
+#list directory
+my $web_dir = "/usr/lib/perfsonar/web-psconfig";
+unless(opendir(PUBLISHED_FILES,  $web_dir)){
+    print STDERR "Could not open $web_dir: $!";
+    exit 1;
+}
+my $empty = 1;
+while (my $file = readdir(PUBLISHED_FILES)) {
+    next unless($file =~ /\.json$/);
+    print "\n[$file]\n";
+    print "    Local File: $web_dir/$file\n";
+    print "    Web URL: $base_url/$file\n";
+    $empty = 0;
+}
+if($empty){
+    print "No files currently published\n";
+}else{
+    print "\n";
+}
+
+
+exit 0;
+

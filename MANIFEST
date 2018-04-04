@@ -11,6 +11,8 @@ bin/psconfig_commands/pscheduler-migrate
 bin/psconfig_commands/pscheduler-stats
 bin/psconfig_commands/pscheduler-tasks
 bin/psconfig_commands/pscheduler-translate
+bin/psconfig_commands/publish
+bin/psconfig_commands/published
 bin/psconfig_commands/remote
 bin/psconfig_commands/translate
 bin/psconfig_commands/validate
@@ -30,6 +32,7 @@ doc/psconfig-schema.json
 doc/skeleton.json
 doc/transforms/esmond-auth-token.json
 doc/transforms/latency-testports.json
+etc/apache-psconfig-publisher.conf
 etc/maddash-agent-logger.conf
 etc/maddash-agent.json
 etc/pscheduler-agent-logger.conf
