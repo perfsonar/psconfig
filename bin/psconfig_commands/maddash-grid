@@ -15,6 +15,7 @@ remote add|delete|list [options]
    --name NAME                              Required for add. Name of grid to add. Used to identify the grid to update/delete.
    --check-type TYPE                        Required for add. Type of check to use for grid. 
    --visualization-type TYPE                Required for add. Type of visualization to use for grid. 
+   -f|--file FILE                           The file to edit. Defaults to /etc/perfsonar/psconfig/maddash-agent.json.
    --display-name NAME                      Name to use in generating title of grid. Defaults to --name if not specified.
    --priority-group GROUP                   Name of priority group. Only one check from group will be used.
    --priority-level LEVEL                   Priority level. Matching check with highest level will be chosen.
@@ -71,6 +72,10 @@ Required. Type of check to use for grid.
 =item B<--visualization-type TYPE>
  
 Required. Type of visualization to use for grid. 
+
+=item B<-f | --file FILE>
+ 
+The file to edit. Defaults to /etc/perfsonar/psconfig/maddash-agent.json.
 
 =item B<--display-name NAME>
  
@@ -144,8 +149,6 @@ Relative or absolute URL to be used when generating URL used for visualization. 
  
 Plug-in specific parameters as JSON or file staring with @. Defaults to visualization-plugin defaults if not specified.
 
-=back
-
 =item B<--quiet>
  
 Suppress output to stdout and stderr
@@ -153,7 +156,9 @@ Suppress output to stdout and stderr
 =item B<--force>
  
 Only valid for delete. Remove matching grids without prompting.
- 
+
+=back
+
 =head1 DESCRIPTION
  
 B<This program> will add/delete/list MaDDash grids to MaDDash agent configuration file. For 
@@ -189,6 +194,7 @@ my $help;
 my $name_opt;
 my $check_type_opt;
 my $visualization_type_opt;
+my $file_opt;
 my $display_name_opt;
 my $priority_group_opt;
 my $priority_level_opt;
@@ -213,6 +219,7 @@ GetOptions(
     'help|h' => \$help,
     'name=s' => \$name_opt,
     'check-type=s' => \$check_type_opt,
+    'f|file=s' => \$file_opt,
     'visualization-type=s' => \$visualization_type_opt,
     'display-name=s' => \$display_name_opt,
     'priority-group=s' => \$priority_group_opt,
@@ -300,6 +307,8 @@ if($action ne 'add' && $action ne 'delete' && $action ne 'list'){
 }
 
 #load config file
+$CONFIG_FILE = $file_opt if($file_opt);
+chomp $CONFIG_FILE;
 my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
 
 #build grid

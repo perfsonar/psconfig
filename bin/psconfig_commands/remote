@@ -11,6 +11,7 @@ remote add|delete|list [options] URL
  Options:
    -h | --help                  Help message
    --agent AGENT                Name of agent to use (e.g. pscheduler, maddash). Default is to look at all installed agents.
+   -f|--file FILE               The file to edit. Must specify --agent if using this option. Default is installed agent defaults.
    --transform JSON|@FILE       JSON transform object or a path to a file starting with @ that alters downloaded json
    --configure-archives         Indicates archives defined in remote URL should be used
    --bind-address ADDRESS       Local address to bind to when downloading JSON
@@ -48,6 +49,10 @@ Prints a help message and exits
 =item B<--agent AGENT>
  
 Name of agent to use (e.g. pscheduler, maddash). Default is to look at all installed agents.
+
+=item B<-f | --file FILE>
+ 
+The file to edit. Must specify --agent if using this option. Default is installed agent defaults.
 
 =item B<--transform JSON|@FILE>
  
@@ -95,6 +100,7 @@ use perfSONAR_PS::PSConfig::TransformConnect;
 #parse options
 my $help;
 my $agent_opt;
+my $file_opt;
 my $transform_opt;
 my $config_archives;
 my $bind_address;
@@ -102,6 +108,7 @@ my $quiet_opt;
 my $ssl_file;
 GetOptions(
     'help|h' => \$help,
+    'f|file=s' => \$file_opt,
     'transform=s' => \$transform_opt,
     'agent=s' => \$agent_opt,
     'configure-archives' => \$config_archives,
@@ -161,6 +168,12 @@ my $url;
 if(@ARGV > 0){
      $url = shift @ARGV ;
     chomp $url;
+}
+
+#check file_opt
+if($file_opt && !$agent_opt){
+    _error("Must specify --agent when specifying --file");
+    exit 2;
 }
 
 my $success_msg = "";
