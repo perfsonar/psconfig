@@ -61,7 +61,7 @@ if($help){
 #make url
 my $web_hostname = 'localhost';
 my $external_addresses = discover_primary_address();
-if ( $external_addresses ) {
+if ( $external_addresses and $external_addresses->{primary_address} ) {
     $web_hostname = $external_addresses->{primary_address};
     $web_hostname = "[$web_hostname]" if(is_ipv6($web_hostname));
 }
