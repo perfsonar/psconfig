@@ -13,3 +13,7 @@ psconfig remote list | grep -C 10 '^\['
 psconfig maddash-stats | grep -C 10 'PID.*[[:digit:]]\+$'
 
 psconfig maddash-grid list | grep -C 10 '^{'
+
+psconfig maddash-viz-plugins | grep ^ps-
+
+psconfig maddash-check-plugins | grep ^ps-
