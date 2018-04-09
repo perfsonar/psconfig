@@ -54,3 +54,10 @@ Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  libperfsonar-pscheduler-perl
 Description: pSConfig MaDDash Agent Development Libraries
  Development Libraries for interactiving with the pSConfig MaDDash Agent.
+
+Package: perfsonar-psconfig-publisher
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends},
+ perfsonar-psconfig-utils (= ${binary:Version}), apache2
+Description: pSConfig MaDDash Publisher
+ Environment for publishing pSConfig template files in standard way.
