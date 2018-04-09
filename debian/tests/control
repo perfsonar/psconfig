@@ -11,3 +11,4 @@ Restrictions: needs-root
 
 Depends: perfsonar-psconfig-publisher
 Tests: publisher
+Restrictions: needs-root
