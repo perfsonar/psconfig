@@ -9,6 +9,6 @@ Depends: perfsonar-psconfig-maddash
 Tests: maddash
 Restrictions: needs-root
 
-Depends: perfsonar-psconfig-publisher
+Depends: perfsonar-psconfig-publisher, curl
 Tests: publisher
 Restrictions: needs-root
