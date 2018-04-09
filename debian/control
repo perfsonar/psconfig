@@ -54,19 +54,3 @@ Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  libperfsonar-pscheduler-perl
 Description: pSConfig MaDDash Agent Development Libraries
  Development Libraries for interactiving with the pSConfig MaDDash Agent.
-
-Package: perfsonar-psconfig-maddash-checks
-Architecture: all
-Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
- perfsonar-psconfig-maddash (= ${binary:Version}),
- nagios-plugins-perfsonar
-Description: pSConfig MaDDash Agent checks
- Default set of check plugins for the pSConfig MaDDash Agent.
-
-Package: perfsonar-psconfig-maddash-visualizations
-Architecture: all
-Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
- perfsonar-psconfig-maddash (= ${binary:Version}),
- perfsonar-toolkit-graphs, nagios-plugins-perfsonar, perfsonar-traceroute-viewer
-Description: pSConfig MaDDash Agent visualizations
- Default set of visualization plugins for the pSConfig MaDDash Agent.
