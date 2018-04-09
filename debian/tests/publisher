@@ -6,4 +6,4 @@ psconfig publish /usr/share/doc/perfsonar/psconfig/example-1-simple.json
 
 psconfig published | grep example
 
-curl -k https://localhost/psconfig/example-1-simple.json | grep publish-time
+curl -k -s https://localhost/psconfig/example-1-simple.json | grep publish-time
