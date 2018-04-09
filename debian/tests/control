@@ -1,12 +1,12 @@
 Depends: perfsonar-psconfig-utils
-Tests: psconfig-utils
+Tests: utils
 
 Depends: perfsonar-psconfig-pscheduler
-Tests: psconfig-pscheduler-agent
+Tests: pscheduler
 Restrictions: needs-root
 
 Depends: perfsonar-psconfig-maddash
-Tests: psconfig-maddash-agent
+Tests: maddash
 Restrictions: needs-root
 
 Depends: perfsonar-psconfig-publisher
