@@ -22,6 +22,8 @@ Description: pSConfig Utilities
 
 Package: perfsonar-psconfig-pscheduler
 Architecture: all
+Replaces: perfsonar-meshconfig-agent
+Breaks: perfsonar-meshconfig-agent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}),
  libperfsonar-pscheduler-perl, liblinux-inotify2-perl,
@@ -39,6 +41,8 @@ Description: pSConfig pScheduler Development Libraries
 
 Package: perfsonar-psconfig-maddash
 Architecture: all
+Replaces: perfsonar-meshconfig-guiagent
+Breaks: perfsonar-meshconfig-guiagent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
  libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
