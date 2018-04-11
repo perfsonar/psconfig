@@ -12,6 +12,8 @@ publish FILE
    -h | --help                  help message
    -B | --bind ADDR             local address to bind to when sending http/https requests
    -q | --quiet                 suppress output to stdout and stderr
+   --pretty                     published file will contain pretty printed JSON
+   --skip-meta                  skip adding _meta object with publish details
    --skip-validate              skips validate of JSON file
    --timeout N                  number of seconds to wait to retrieve JSON
    
@@ -41,6 +43,14 @@ Local address to bind to when sending http/https requests
  
 Suppresses output to stdout and stderr. Useful when scripting and only concerned about exit code.
 
+=item B<--pretty>
+ 
+Published file will contain pretty printed JSON
+
+=item B<--skip-meta>
+ 
+Skip adding _meta object with publish details
+
 =item B<--skip-validate>
  
 Skip validation of JSON before copying
@@ -54,7 +64,7 @@ The integer number of seconds to wait to retrieve JSON. Default is 0, which is n
 =head1 DESCRIPTION
  
 B<This program> will publish a given pSConfig JSON template file by first validating the 
-JSON and copying to a web directory.
+JSON and then copying to a web directory.
  
 =cut
 use strict;
@@ -77,7 +87,8 @@ use perfSONAR_PS::Utils::Host qw( discover_primary_address );
 #parse options
 my $help;
 my $bind;
-
+my $pretty;
+my $skip_meta;
 my $skip_validate;
 my $quiet;
 my $timeout=0;
@@ -85,6 +96,8 @@ GetOptions(
     'help|h' => \$help,
     'bind|B=s' => \$bind,
     'quiet|q' => \$quiet,
+    'pretty' => \$pretty,
+    'skip-meta' => \$skip_meta,
     'skip-validate' => \$skip_validate,
     'timeout=i' => \$timeout
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
@@ -162,17 +175,19 @@ unless($skip_validate){
 }
 
 #timestamp publish
-my $now=DateTime->now;
-$now->set_time_zone("UTC");
-my $iso_now = $now->ymd('-') . 'T' . $now->hms(':') . '+00:00';
-my $publisher_meta = {
-    "publish-source" => 'psconfig-publish-cli',
-    "publish-time" => $iso_now
-};
-$psconfig->psconfig_meta_param('psconfig-publisher', $publisher_meta);
+unless($skip_meta){
+    my $now=DateTime->now;
+    $now->set_time_zone("UTC");
+    my $iso_now = $now->ymd('-') . 'T' . $now->hms(':') . '+00:00';
+    my $publisher_meta = {
+        "publish-source" => 'psconfig-publish-cli',
+        "publish-time" => $iso_now
+    };
+    $psconfig->psconfig_meta_param('psconfig-publisher', $publisher_meta);
+}
 
 #save
-$psconfig_client->save_config($psconfig, {'pretty' => 0, 'canonical' => 1});
+$psconfig_client->save_config($psconfig, {'pretty' => ($pretty ? 1 : 0), 'canonical' => 1});
 if($psconfig_client->error()){
      print STDERR "Error saving tempate: " . $psconfig_client->error();
      exit 1;
