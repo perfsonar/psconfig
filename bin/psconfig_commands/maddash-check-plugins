@@ -14,6 +14,8 @@ maddash-check-plugin [options]
    --file FILE          A plugin file to examine/display instead of iterating over default plugins directory.
    --quiet              Suppress output to stdout and stderr
    --detail             Print details of all plugins found
+   --defaults           Print default values for parameters that can be changed by grid definition in all plugins found
+   
    
 =back
 
@@ -36,7 +38,12 @@ Suppress output to stdout and stderr
 
 =item B<--detail>
  
-Print details of all plugins found
+Print details of all plugins found.
+
+=item B<--defaults>
+ 
+Print default values for parameters that can be changed by grid definition in all plugins found
+
  
 =head1 DESCRIPTION
  
@@ -64,12 +71,14 @@ my $type_opt;
 my $file_opt;
 my $quiet_opt;
 my $detail_opt;
+my $defaults_opt;
 GetOptions(
     'help|h' => \$help,
     'type=s' => \$type_opt,
     'file=s' => \$file_opt,
     'quiet' => \$quiet_opt,
-    'detail' => \$detail_opt
+    'detail' => \$detail_opt,
+    'defaults' => \$defaults_opt,
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
 
 #parse arguments
@@ -101,13 +110,13 @@ my $exitval = 0;
 my $check_plugin_dir;
 my $success_msg = "";
 if($file_opt){
-     $success_msg = "\nThe file $file_opt is a valid plugin with type " unless($detail_opt);
+     $success_msg = "\nThe file $file_opt is a valid plugin with type " unless($detail_opt || $defaults_opt);
 }else{
     #load config file
     my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
 
     #verify the check plugins provided are valid
-    $success_msg = "\nThe following pSConfig MaDDash agent check plugins are installed:\n\n" unless($detail_opt);
+    $success_msg = "\nThe following pSConfig MaDDash agent check plugins are installed:\n\n" unless($detail_opt || $defaults_opt);
     $check_plugin_dir = $agent_conf->check_plugin_directory();
     unless($check_plugin_dir){
         $check_plugin_dir = "/usr/lib/perfsonar/psconfig/checks/";
@@ -190,6 +199,9 @@ sub _output_plugin{
     my $out = "";
     if($detail_opt){
         $out = $plugin->json({pretty=>1}) . "\n";
+    }elsif($defaults_opt){
+        $out = $plugin->type() . ":\n";
+        $out .= $plugin->defaults()->json({pretty=>1}) . "\n";
     }else{
         $out = $plugin->type() . "\n";
     }
