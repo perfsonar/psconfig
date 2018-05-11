@@ -327,14 +327,14 @@ $check->report_yaml_file($check_report_yaml_file_opt) if($check_report_yaml_file
 $check->retry_interval($check_retry_interval_opt) if($check_retry_interval_opt);
 $check->retry_attempts($check_retry_attempts_opt) if(defined $check_retry_attempts_opt);
 $check->timeout($check_timeout_opt) if($check_timeout_opt);
-$check->params(_parse_transform($check_params_opt)) if($check_params_opt);
+$check->params(_parse_json_opt($check_params_opt)) if($check_params_opt);
 $grid->check($check) if(keys %{$check->data()});
 
 ##build visualization
 my $viz = new perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig();
 $viz->type($visualization_type_opt) if($visualization_type_opt);
 $viz->base_url($visualization_base_url_opt) if($visualization_base_url_opt);
-$viz->params(_parse_transform($visualization_params_opt)) if($visualization_params_opt);
+$viz->params(_parse_json_opt($visualization_params_opt)) if($visualization_params_opt);
 $grid->visualization($viz) if(keys %{$viz->data()});
 
 ##build selector
@@ -535,6 +535,51 @@ sub _parse_transform {
     }
     
     return $jqt;
+}
+
+sub _load_json_file {
+    my ($filename) = @_;
+    
+    #remove prefix
+    chomp $filename;
+    $filename =~ s/^file:\/\///g;
+    my $json_text;
+    eval{
+        $json_text = do {
+           open(my $fh, "<:encoding(UTF-8)", $filename) or die("Can't open $filename: $!");
+           local $/;
+           <$fh>
+        };
+    };
+    if($@){
+        _error("Error reading JSON file: $@");
+    }
+    
+    return $json_text;
+}
+
+sub _parse_json_opt {
+    my ($json_opt) = @_;
+    
+    #get json text
+    my $json_txt;
+    if($json_opt =~ /^\@/){
+        $json_opt =~ s/^\@//;
+        $json_txt = _load_json_file($json_opt);
+    }else{
+       $json_txt = $json_opt;
+    }
+    
+    #convert to json
+    my $json;
+    eval{
+        $json = from_json($json_txt);
+    };
+    if($@){
+         _error("Error parsing JSON provided at command-line $json_txt: $@");
+    }
+    
+    return $json;
 }
 
 sub _parse_comma_list {
