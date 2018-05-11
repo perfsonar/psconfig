@@ -204,8 +204,8 @@ unless($quiet){
         $web_hostname = "[$web_hostname]" if(is_ipv6($web_hostname));
     }
     my $published_url = "https://$web_hostname/psconfig/$filename";
-    print "Success! File saved to $output_file\n";
-    print "Published file can be accessed at $published_url\n";
+    print "Success! File saved to $output_file\n\n";
+    print "Published file can be accessed at $published_url\n\n";
     print "Execute the following on a host running an agent to use this file:\n\n";
     print "    psconfig remote add \"$published_url\"\n\n";
 }
