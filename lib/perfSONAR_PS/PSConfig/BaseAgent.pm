@@ -298,6 +298,7 @@ sub run {
         
     ##
     # Process remotes
+    my %psconfig_checksum_tracker = ();
     foreach my $remote(@{$agent_conf->remotes()}){
         #create api filters 
         my $filters = new perfSONAR_PS::Client::PSConfig::ApiFilters(
@@ -312,6 +313,13 @@ sub run {
         #process tasks
         $self->logf()->global_context({"config_src" => 'remote', 'config_url' => $remote->url()});
         my $processed_psconfig = $self->_process_psconfig($psconfig_client, $remote->transform());
+        my $processed_psconfig_checksum = $processed_psconfig->checksum();
+        if($psconfig_checksum_tracker{$processed_psconfig_checksum}){
+            $logger->warn($self->logf()->format("Checksum matches another psconfig already read, so skipping"));
+            next;
+        }else{
+            $psconfig_checksum_tracker{$processed_psconfig_checksum} = 1;
+        }
         $self->_run_handle_psconfig($processed_psconfig, $agent_conf, $remote) if($processed_psconfig);
         $self->logf()->global_context({});
     }
@@ -325,7 +333,7 @@ sub run {
     while (my $include_file = readdir(INCLUDE_FILES)) {
         next unless($include_file =~ /\.json$/);
         my $abs_file = $self->include_directory() . "/$include_file";
-        my $log_ctx = {"transform_file" => $abs_file};
+        my $log_ctx = {"template_file" => $abs_file};
         $logger->debug($self->logf()->format("Loading include file $abs_file", $log_ctx));
         #create client
         my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(
@@ -334,6 +342,13 @@ sub run {
         #process tasks
         $self->logf()->global_context({"config_src" => 'include', 'config_file' => $abs_file});
         my $processed_psconfig = $self->_process_psconfig($psconfig_client);
+        my $processed_psconfig_checksum = $processed_psconfig->checksum();
+        if($psconfig_checksum_tracker{$processed_psconfig_checksum}){
+            $logger->warn($self->logf()->format("Checksum matches another psconfig already read, so skipping", $log_ctx));
+            next;
+        }else{
+            $psconfig_checksum_tracker{$processed_psconfig_checksum} = 1;
+        }
         $self->_run_handle_psconfig($processed_psconfig, $agent_conf) if($processed_psconfig);
         $self->logf()->global_context({});
     }
