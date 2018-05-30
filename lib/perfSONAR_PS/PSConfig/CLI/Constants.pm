@@ -4,6 +4,11 @@ package perfSONAR_PS::PSConfig::CLI::Constants;
 use strict;
 use warnings;
 
+##
+# Add this ro make sure imports happen in correct order on Debian 8 and Ubuntu 14.
+# If we don't add this then some command will complain about handling boolean values.
+use perfSONAR_PS::Client::Utils;
+
 use constant {
     CLI_AGENTS => [
         {
