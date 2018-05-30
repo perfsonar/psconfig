@@ -19,7 +19,7 @@ Name:			perfsonar-psconfig
 Version:		4.1
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR pSConfig Agents
-License:		Distributable, see LICENSE
+License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
 Source0:		perfsonar-psconfig-%{version}.%{relnum}.tar.gz
@@ -273,6 +273,7 @@ systemctl restart httpd &>/dev/null || :
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/psconfig
 %attr(0755,perfsonar,perfsonar) %{command_base}/agents
 %attr(0755,perfsonar,perfsonar) %{command_base}/remote
@@ -286,6 +287,7 @@ systemctl restart httpd &>/dev/null || :
 
 %files pscheduler
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_pscheduler_agent}
@@ -295,11 +297,13 @@ systemctl restart httpd &>/dev/null || :
 
 %files pscheduler-devel
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/*
 %exclude %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 
 %files maddash
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %config(noreplace) %{config_base}/maddash-agent.json
 %config(noreplace) %{config_base}/maddash-agent-logger.conf
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_maddash_agent}
@@ -313,11 +317,13 @@ systemctl restart httpd &>/dev/null || :
 
 %files maddash-devel
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
 %exclude %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/Agent.pm
 
 %files publisher
 %defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
 /etc/httpd/conf.d/apache-psconfig-publisher.conf
 %attr(0755,perfsonar,perfsonar) %{command_base}/publish
 %attr(0755,perfsonar,perfsonar) %{command_base}/published
