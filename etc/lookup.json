@@ -1,0 +1,25 @@
+{
+    "ls-urls": [],
+    "queries": {
+        "throughput_iface": {
+            "record-type": "interface",
+            "filters": {
+                "pscheduler-tests": "throughput"
+            },
+            "output":{
+                "tags": ["throughput"],
+                "_meta": {
+                    "organization": "Example Organization"
+                },
+                "archives": { 
+                    "example_archive": {
+                        "archiver": "esmond",
+                        "data": {
+                            "url": "https://example-archive/esmond/perfsonar/archive"
+                        }
+                    } 
+                }
+            }
+        }
+    }
+}
