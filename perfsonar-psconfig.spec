@@ -12,7 +12,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 
-%define relnum 0.2.a1 
+%define relnum 0.3.a1
 
 
 Name:			perfsonar-psconfig
@@ -127,6 +127,7 @@ Group:			Applications/Communications
 Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires:		httpd
 Requires:		mod_ssl
+Requires:		libperfsonar-sls-perl
 Requires(post): httpd
 
 %description publisher
@@ -324,9 +325,12 @@ systemctl restart httpd &>/dev/null || :
 %files publisher
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
+%config(noreplace) %{config_base}/lookup.json
 /etc/httpd/conf.d/apache-psconfig-publisher.conf
 %attr(0755,perfsonar,perfsonar) %{command_base}/publish
 %attr(0755,perfsonar,perfsonar) %{command_base}/published
+%attr(0755,perfsonar,perfsonar) %{command_base}/lookup
+%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/Lookup/*
 
 %changelog
 * Wed Feb 14 2018 andy@es.net 4.1-0.0.a1
