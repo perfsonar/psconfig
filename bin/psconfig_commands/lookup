@@ -121,14 +121,14 @@ my ($lookup_conf_client, $lookup_conf) = _load_config($CONFIG_FILE);
 exit 1 unless($lookup_conf);
 
 #get URLS from bootstrap file if not specified
-unless(@{$lookup_conf->ls_urls()}){
+unless($lookup_conf->ls_urls() && @{$lookup_conf->ls_urls()}){
     my $ls_infos = discover_lookup_services();
     foreach my $ls_info(@{$ls_infos}){
         $lookup_conf->add_ls_url($ls_info->{'locator'});
     }
 }
 #if still no LSes then exit
-unless(@{$lookup_conf->ls_urls()}){
+unless($lookup_conf->ls_urls() && @{$lookup_conf->ls_urls()}){
     _error("Unable to find any lookup services.");
     exit 1;
 }
