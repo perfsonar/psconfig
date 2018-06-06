@@ -2,19 +2,20 @@
 
 =head1 NAME
  
-maddash-grid - Add/delete/list MaDDash grids to MaDDash agent configuration file. For 
+maddash-grid - Add/edit/delete/list MaDDash grids in MaDDash agent configuration file. For 
 delete and list, any grid that matches all the provided parameters will be listed. If no
 options are given, all grids will be matched for deleting/listing.  
  
 =head1 SYNOPSIS
  
-remote add|delete|list [options]
+remote add|edit|delete|list [options]
  
  Options:
    -h | --help                              Help message
    --name NAME                              Required for add. Name of grid to add. Used to identify the grid to update/delete.
    --check-type TYPE                        Required for add. Type of check to use for grid. 
    --visualization-type TYPE                Required for add. Type of visualization to use for grid. 
+   -f|--file FILE                           The file to edit. Defaults to /etc/perfsonar/psconfig/maddash-agent.json.
    --display-name NAME                      Name to use in generating title of grid. Defaults to --name if not specified.
    --priority-group GROUP                   Name of priority group. Only one check from group will be used.
    --priority-level LEVEL                   Priority level. Matching check with highest level will be chosen.
@@ -44,7 +45,9 @@ remote add|delete|list [options]
  
 The action to perform
 
-add: Adds grid to MaDDash agent config file. If agent with same name already exists then overwrites it.
+add: Adds grid to MaDDash agent config file. If agent with same name already exists then overwrites it completely.
+
+edit: Edits an existing grid in MaDDash agent config file. It only changes the options set at command-line, it will not alter values of unspecified options.
 
 delete: Deletes any entry with the matching options from the agent configuration file
 
@@ -71,6 +74,10 @@ Required. Type of check to use for grid.
 =item B<--visualization-type TYPE>
  
 Required. Type of visualization to use for grid. 
+
+=item B<-f | --file FILE>
+ 
+The file to edit. Defaults to /etc/perfsonar/psconfig/maddash-agent.json.
 
 =item B<--display-name NAME>
  
@@ -144,8 +151,6 @@ Relative or absolute URL to be used when generating URL used for visualization. 
  
 Plug-in specific parameters as JSON or file staring with @. Defaults to visualization-plugin defaults if not specified.
 
-=back
-
 =item B<--quiet>
  
 Suppress output to stdout and stderr
@@ -153,10 +158,12 @@ Suppress output to stdout and stderr
 =item B<--force>
  
 Only valid for delete. Remove matching grids without prompting.
- 
+
+=back
+
 =head1 DESCRIPTION
  
-B<This program> will add/delete/list MaDDash grids to MaDDash agent configuration file. For 
+B<This program> will add/edit/delete/list MaDDash grids to MaDDash agent configuration file. For 
 delete and list, any grid that matches all the provided parameters will be listed. If no
 options are given, all grids will be matched for deleting/listing.  
  
@@ -189,6 +196,7 @@ my $help;
 my $name_opt;
 my $check_type_opt;
 my $visualization_type_opt;
+my $file_opt;
 my $display_name_opt;
 my $priority_group_opt;
 my $priority_level_opt;
@@ -213,6 +221,7 @@ GetOptions(
     'help|h' => \$help,
     'name=s' => \$name_opt,
     'check-type=s' => \$check_type_opt,
+    'f|file=s' => \$file_opt,
     'visualization-type=s' => \$visualization_type_opt,
     'display-name=s' => \$display_name_opt,
     'priority-group=s' => \$priority_group_opt,
@@ -262,7 +271,7 @@ chomp $action;
 $action = lc($action);
 
 #make sure we valid
-if($action ne 'add' && $action ne 'delete' && $action ne 'list'){
+if($action ne 'add' && $action ne 'edit' && $action ne 'delete' && $action ne 'list'){
     my $exitval = 2;
     pod2usage({
         -message => "Invalid action given: $action. Must be one of add, delete or list.",
@@ -297,18 +306,40 @@ if($action ne 'add' && $action ne 'delete' && $action ne 'list'){
         });
         exit $exitval;
     }
+}elsif($action eq 'edit'){
+    #make sure we have required parameters
+    if(!$name_opt){
+        my $exitval = 2;
+        pod2usage({
+            -message => "Missing required parameter --name",
+            -exitval => $exitval,
+            -verbose => 0
+        });
+        exit $exitval;
+    }
 }
 
 #load config file
+$CONFIG_FILE = $file_opt if($file_opt);
+chomp $CONFIG_FILE;
 my ($agent_conf_client, $agent_conf) = _load_config($CONFIG_FILE);
 
-#build grid
-my $grid = new perfSONAR_PS::PSConfig::MaDDash::Agent::Grid();
-$grid->display_name($display_name_opt ? $display_name_opt : $name_opt);
-my $empty_checksum = $grid->checksum();
+#lookup grid or build new one
+my $grid;
+my $empty_checksum = ''; #not used by add/edit
+if($action eq 'edit'){
+    chomp $name_opt;
+    $grid = $agent_conf->grid($name_opt);
+    $grid->display_name($display_name_opt) if($display_name_opt);
+    _error("Unable to find grid named $name_opt to edit") unless($grid);
+}else{
+    $grid = new perfSONAR_PS::PSConfig::MaDDash::Agent::Grid();
+    $grid->display_name($display_name_opt ? $display_name_opt : $name_opt);
+    $empty_checksum = $grid->checksum();
+}
 
 ##build check
-my $check = new perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig();
+my $check = $grid->check() ? $grid->check() : new perfSONAR_PS::PSConfig::MaDDash::Agent::CheckConfig();
 $check->type($check_type_opt) if($check_type_opt);
 $check->archive_selector(_parse_transform($check_archive_selector_opt)) if($check_archive_selector_opt);
 $check->check_interval($check_interval_opt) if($check_interval_opt);
@@ -318,18 +349,18 @@ $check->report_yaml_file($check_report_yaml_file_opt) if($check_report_yaml_file
 $check->retry_interval($check_retry_interval_opt) if($check_retry_interval_opt);
 $check->retry_attempts($check_retry_attempts_opt) if(defined $check_retry_attempts_opt);
 $check->timeout($check_timeout_opt) if($check_timeout_opt);
-$check->params(_parse_transform($check_params_opt)) if($check_params_opt);
+$check->params(_parse_json_opt($check_params_opt)) if($check_params_opt);
 $grid->check($check) if(keys %{$check->data()});
 
 ##build visualization
-my $viz = new perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig();
+my $viz = $grid->visualization() ? $grid->visualization() : new perfSONAR_PS::PSConfig::MaDDash::Agent::VisualizationConfig();
 $viz->type($visualization_type_opt) if($visualization_type_opt);
 $viz->base_url($visualization_base_url_opt) if($visualization_base_url_opt);
-$viz->params(_parse_transform($visualization_params_opt)) if($visualization_params_opt);
+$viz->params(_parse_json_opt($visualization_params_opt)) if($visualization_params_opt);
 $grid->visualization($viz) if(keys %{$viz->data()});
 
 ##build selector
-my $sel = new perfSONAR_PS::PSConfig::MaDDash::TaskSelector();
+my $sel = $grid->selector() ? $grid->selector() : new perfSONAR_PS::PSConfig::MaDDash::TaskSelector();
 $sel->test_type(_parse_comma_list($selector_test_type_opt)) if($selector_test_type_opt);
 $sel->task_name(_parse_comma_list($selector_task_name_opt)) if($selector_task_name_opt);
 $sel->archive_type(_parse_comma_list($selector_archive_type_opt)) if($selector_archive_type_opt);
@@ -337,7 +368,7 @@ $sel->jq(_parse_transform($selector_jq_opt)) if($selector_jq_opt);
 $grid->selector($sel) if(keys %{$sel->data()});
 
 ##build priority
-my $prio = new perfSONAR_PS::PSConfig::MaDDash::Agent::GridPriority();
+my $prio = $grid->priority() ? $grid->priority() : new perfSONAR_PS::PSConfig::MaDDash::Agent::GridPriority();
 $prio->group($priority_group_opt) if($priority_group_opt);
 $prio->level($priority_level_opt) if(defined $priority_level_opt);
 $grid->priority($prio) if(keys %{$prio->data()});
@@ -349,7 +380,7 @@ my $is_name_only = ($name_opt && $grid_checksum eq $empty_checksum);
 #perform action
 my $success_msg = "";
 chomp $name_opt if($name_opt);
-if($action eq 'add'){
+if($action eq 'add' || $action eq 'edit'){
     #verify the check plugins provided are valid
     my $check_plugin_dir = $agent_conf->check_plugin_directory();
     unless($check_plugin_dir){
@@ -526,6 +557,51 @@ sub _parse_transform {
     }
     
     return $jqt;
+}
+
+sub _load_json_file {
+    my ($filename) = @_;
+    
+    #remove prefix
+    chomp $filename;
+    $filename =~ s/^file:\/\///g;
+    my $json_text;
+    eval{
+        $json_text = do {
+           open(my $fh, "<:encoding(UTF-8)", $filename) or die("Can't open $filename: $!");
+           local $/;
+           <$fh>
+        };
+    };
+    if($@){
+        _error("Error reading JSON file: $@");
+    }
+    
+    return $json_text;
+}
+
+sub _parse_json_opt {
+    my ($json_opt) = @_;
+    
+    #get json text
+    my $json_txt;
+    if($json_opt =~ /^\@/){
+        $json_opt =~ s/^\@//;
+        $json_txt = _load_json_file($json_opt);
+    }else{
+       $json_txt = $json_opt;
+    }
+    
+    #convert to json
+    my $json;
+    eval{
+        $json = from_json($json_txt);
+    };
+    if($@){
+         _error("Error parsing JSON provided at command-line $json_txt: $@");
+    }
+    
+    return $json;
 }
 
 sub _parse_comma_list {

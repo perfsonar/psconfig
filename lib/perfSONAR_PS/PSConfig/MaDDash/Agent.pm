@@ -274,9 +274,11 @@ sub _run_handle_psconfig {
             my $viz_plugin = $matching_agent_grid->visualization_plugin();
             
             #get grid name
-            my $grid_name = "$dashboard_name - " . $task->psconfig_meta_param(META_DISPLAY_NAME());
-            unless($grid_name){
-                $grid_name = $maddash_task_name;
+            my $grid_name = "$dashboard_name - ";
+            if($task->psconfig_meta_param(META_DISPLAY_NAME())){
+                $grid_name .= $task->psconfig_meta_param(META_DISPLAY_NAME());
+            }else{
+                $grid_name .= $maddash_task_name;
             }
             $grid_name .= ' - ' . $matching_agent_grid->display_name();
             
@@ -573,7 +575,7 @@ sub _build_group_members {
         #look for a pstoolkiturl (special maddash variable)
         my $display_url = $address->psconfig_meta_param(META_DISPLAY_URL());
         if($display_url){
-            $group_member->{'pstoolkiturl'} = $display_name;
+            $group_member->{'pstoolkiturl'} = $display_url;
         }
         
         #get ready to build a map
