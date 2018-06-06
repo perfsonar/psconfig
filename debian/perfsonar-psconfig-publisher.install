@@ -1,3 +1,6 @@
+bin/psconfig_commands/lookup usr/lib/perfsonar/bin/psconfig_commands/
 bin/psconfig_commands/publish usr/lib/perfsonar/bin/psconfig_commands/
 bin/psconfig_commands/published usr/lib/perfsonar/bin/psconfig_commands/
 etc/apache-psconfig-publisher.conf etc/apache2/conf-available/
+etc/lookup.json etc/psconfig/
+lib/perfSONAR_PS/PSConfig/CLI/Lookup usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/CLI/
