@@ -5,7 +5,10 @@
         "archive-type": ["esmond"]
     },
     "defaults": {
-        "base-url": "/perfsonar-graphs/graphWidget.cgi"
+        "base-url": "/perfsonar-graphs/graphWidget.cgi",
+        "params": {
+            "tool": ""
+        }
     },
     "vars": {},
     "http-get-opts": {
@@ -23,6 +26,10 @@
             "required": true,
             "condition": "1",
             "arg": "%maUrl"
+        },
+        "tool": {
+            "condition": "{% viz.params.tool %}",
+            "arg": "{%  viz.params.tool %}"
         } 
     }
 }
