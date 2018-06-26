@@ -10,12 +10,12 @@
     
         "type": {
             "type": "string",
-            "description": "Type of check. Used by other config files to reference this check."
+            "description": "Type of visualization. Used by other config files to reference this plugin."
         }, 
         
         "requires": {
             "$ref": "#/pSConfig/TaskSelector",
-            "description": "Indicates minimum requirements a task must meet to use this task"
+            "description": "Indicates minimum requirements a task must meet to use this plugin"
         },
         
         "defaults": {
@@ -25,12 +25,12 @@
         
         "vars": {
             "$ref": "#/pSConfig/VizVars",
-            "description": "Custom variables that can be used in command-opts, command-args and maddash-check-params in format {% var.VARNAME %}"
+            "description": "Custom variables that can be used in http-get-opts through template variable {% viz.vars.VARNAME %}"
         },
         
         "http-get-opts": {
             "$ref": "#/pSConfig/HttpGetOpts",
-            "description": "A list of command line options to be used with check. Keys must start with - the value is an object defining when and how to use check"
+            "description": "A list of HTTP GET options to be used in URL."
         }
     },
     
@@ -126,7 +126,7 @@
                 },
                 "params": {
                     "$ref": "#/pSConfig/AnyJSON",
-                    "description": "Plug-in specific parameters. Can use with {% params.PARAMNAME %}"
+                    "description": "Plug-in specific parameters. Can use with {% viz.params.PARAMNAME %}"
                 }
             },
             "additionalProperties": false,

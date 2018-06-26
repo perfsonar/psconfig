@@ -2,7 +2,7 @@ PACKAGE=perfsonar-psconfig
 ROOTPATH=/usr/lib/perfsonar
 CONFIGPATH=/etc/perfsonar/psconfig
 VERSION=4.1
-RELEASE=0.3.a1
+RELEASE=0.4.b1
 
 default:
 	@echo No need to build the package. Just run \"make install\"

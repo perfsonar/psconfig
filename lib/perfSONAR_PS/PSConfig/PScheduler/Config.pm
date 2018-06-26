@@ -1,7 +1,12 @@
 package perfSONAR_PS::PSConfig::PScheduler::Config;
 
 use Mouse;
+
 use JSON::Validator;
+#Ignore warning related to re-defining host verification method used by JSON::Validator
+no warnings 'redefine';
+use Data::Validate::Domain;
+
 use perfSONAR_PS::PSConfig::Remote;
 use perfSONAR_PS::PSConfig::PScheduler::Schema qw(psconfig_pscheduler_json_schema);
 
@@ -245,6 +250,8 @@ Validates this object against JSON schema. Returns error messages of a 0 length 
 sub validate {
     my $self = shift;
     my $validator = new JSON::Validator();
+    ##NOTE: Below works around the strict TLD requirements of JSON::Validator
+    local *Data::Validate::Domain::is_domain = \&Data::Validate::Domain::is_hostname;
     $validator->schema(psconfig_pscheduler_json_schema());
 
     return $validator->validate($self->data());
