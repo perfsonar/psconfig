@@ -33,6 +33,7 @@ extends 'perfSONAR_PS::PSConfig::BaseAgent';
 
 use constant META_DISPLAY_NAME => 'display-name';
 use constant META_DISPLAY_URL => 'display-url';
+use constant META_DISPLAY_SET => 'display-set';
 use constant ADDED_BY_TAG => 'added_by_psconfig';
 use constant OLD_ADDED_BY_TAG => 'added_by_mesh_agent';
 
@@ -576,6 +577,11 @@ sub _build_group_members {
         my $display_url = $address->psconfig_meta_param(META_DISPLAY_URL());
         if($display_url){
             $group_member->{'pstoolkiturl'} = $display_url;
+        }
+        #look for a displayset (special maddash variable)
+        my $display_set = $address->psconfig_meta_param(META_DISPLAY_SET());
+        if($display_set){
+            $group_member->{'displayset'} = $display_set;
         }
         
         #get ready to build a map

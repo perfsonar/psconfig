@@ -22,6 +22,14 @@
             "condition": "{% col %}",
             "arg": "{% col %}"
         },
+        "displaysetsrc": {
+            "condition": "1",
+            "arg": "%row.displayset"
+        },
+        "displaysetdest": {
+            "condition": "1",
+            "arg": "%col.displayset"
+        },
         "url": {
             "required": true,
             "condition": "1",
