@@ -166,7 +166,7 @@ if($action eq 'add' || $action eq 'delete'){
 #get url
 my $url;
 if(@ARGV > 0){
-     $url = shift @ARGV ;
+    $url = shift @ARGV;
     chomp $url;
 }
 
@@ -212,6 +212,10 @@ foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
             $jqt->script($transform_opt);
             $remote->transform($jqt);
         }
+    }
+    if($remote->validation_error()){
+        _error($remote->validation_error());
+        exit 2;
     }
     my $remote_checksum = $remote->checksum();
     my $is_url_only = ($url && $remote_checksum eq $url_only_checksum);

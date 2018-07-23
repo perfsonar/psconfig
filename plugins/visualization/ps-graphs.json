@@ -22,10 +22,23 @@
             "condition": "{% col %}",
             "arg": "{% col %}"
         },
+        "displaysetsrc": {
+            "condition": "1",
+            "arg": "%row.displayset"
+        },
+        "displaysetdest": {
+            "condition": "1",
+            "arg": "%col.displayset"
+        },
         "url": {
             "required": true,
             "condition": "1",
             "arg": "%maUrl"
+        },
+        "reverseurl": {
+            "required": true,
+            "condition": "1",
+            "arg": "%maUrlReverse"
         },
         "tool": {
             "condition": "{% viz.params.tool %}",
