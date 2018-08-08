@@ -17,7 +17,7 @@
         "mahost": {
             "required": true,
             "condition": "1",
-            "arg": "%maUrl"
+            "arg": "{% ma_url_forward %}"
         },
         "stime": {
             "required": true,

@@ -24,21 +24,21 @@
         },
         "displaysetsrc": {
             "condition": "1",
-            "arg": "%row.displayset"
+            "arg": "{% row.displayset %}"
         },
         "displaysetdest": {
             "condition": "1",
-            "arg": "%col.displayset"
+            "arg": "{% col.displayset %}"
         },
         "url": {
             "required": true,
             "condition": "1",
-            "arg": "%maUrl"
+            "arg": "{% ma_url_forward %}"
         },
         "reverseurl": {
             "required": true,
             "condition": "1",
-            "arg": "%maUrlReverse"
+            "arg": "{% ma_url_reverse %}"
         },
         "tool": {
             "condition": "{% viz.params.tool %}",

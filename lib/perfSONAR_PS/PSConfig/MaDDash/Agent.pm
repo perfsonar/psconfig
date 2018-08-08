@@ -358,6 +358,7 @@ sub _run_handle_psconfig {
                 #flip row and column
                 $template->row($col_str);
                 $template->col($row_str);
+                $template->flip_ma_url(1);
                 my $rev_check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 1, $log_ctx);
                 next unless($rev_check_name);
                 push @{$grid->{checks}}, $rev_check_name;
