@@ -313,10 +313,12 @@ sub _run_handle_psconfig {
             # A bit of a hack, but this is how we handle labels
             # TODO: Can't currently handle group members that have name and label.
             #  Probably requires changes to MaDDash 'command' option to support.
+            $tg->start(); #call this to load group
             my $default_label = "address";
-            if($tg->group() && $tg->group()->can('default_label') && $tg->group()->default_label()){
-                $default_label = $tg->group()->default_label();
+            if($tg->group() && $tg->group()->can('default_address_label') && $tg->group()->default_address_label()){
+                $default_label = $tg->group()->default_address_label();
             }
+            $tg->stop(); #reset until we need it again
             my $check_vars = $check_plugin->expand_vars($jq_obj);
             if(!$check_vars || $check_plugin->error()){
                 $logger->error($self->logf()->format("Error expanding check plugin vars: ".$check_plugin->error(), $log_ctx));
