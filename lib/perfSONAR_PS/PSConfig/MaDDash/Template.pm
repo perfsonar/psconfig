@@ -27,6 +27,7 @@ has 'check_defaults' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Ch
 has 'viz_defaults' => (is => 'rw', isa => 'perfSONAR_PS::PSConfig::MaDDash::Visualization::VizDefaults');
 has 'check_vars' => (is => 'rw', isa => 'HashRef', default => sub { {} });
 has 'viz_vars' => (is => 'rw', isa => 'HashRef', default => sub { {} });
+has 'flip_ma_url' => (is => 'rw', isa => 'Bool', default => sub { 0 });
 
 sub _expand_var {
     my ($self, $template_var) = @_;
@@ -36,6 +37,14 @@ sub _expand_var {
         $val = $self->_parse_row();
     }elsif($template_var eq 'col'){
         $val = $self->_parse_col();
+    }elsif($template_var eq 'row.displayset'){
+        $val = $self->_parse_row_displayset();
+    }elsif($template_var eq 'col.displayset'){
+        $val = $self->_parse_col_displayset();
+    }elsif($template_var eq 'ma_url_forward'){
+        $val = $self->_parse_ma_url_forward();
+    }elsif($template_var eq 'ma_url_reverse'){
+        $val = $self->_parse_ma_url_reverse();
     }elsif($template_var eq 'check.warning'){
         $val = $self->_parse_warning();
     }elsif($template_var eq 'check.critical'){
@@ -71,6 +80,46 @@ sub _parse_col {
     my ($self) = @_;
 
     return $self->__format_return_string($self->col());
+}
+
+sub _parse_row_displayset {
+    my ($self) = @_;
+    
+    if($self->flip_ma_url()){
+        return '%col.displayset';
+    }
+    
+    return '%row.displayset';
+}
+
+sub _parse_col_displayset {
+    my ($self) = @_;
+    
+    if($self->flip_ma_url()){
+        return '%row.displayset';
+    }
+    
+    return '%col.displayset';
+}
+
+sub _parse_ma_url_forward {
+    my ($self) = @_;
+    
+    if($self->flip_ma_url()){
+        return '%maUrlReverse';
+    }
+    
+    return '%maUrl';
+}
+
+sub _parse_ma_url_reverse {
+    my ($self) = @_;
+    
+    if($self->flip_ma_url()){
+        return '%maUrl';
+    }
+    
+    return '%maUrlReverse';
 }
 
 sub _parse_warning {

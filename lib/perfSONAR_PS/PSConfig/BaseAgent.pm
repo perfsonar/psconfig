@@ -313,6 +313,9 @@ sub run {
         #process tasks
         $self->logf()->global_context({"config_src" => 'remote', 'config_url' => $remote->url()});
         my $processed_psconfig = $self->_process_psconfig($psconfig_client, $remote->transform());
+        unless($processed_psconfig){
+            next;
+        }
         my $processed_psconfig_checksum = $processed_psconfig->checksum();
         if($psconfig_checksum_tracker{$processed_psconfig_checksum}){
             $logger->warn($self->logf()->format("Checksum matches another psconfig already read, so skipping"));

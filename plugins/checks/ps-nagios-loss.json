@@ -43,8 +43,8 @@
     "command-opts": {
         "-u": {
             "required": true,
-            "condition": "%maUrl",
-            "arg": "%maUrl"
+            "condition": "{% ma_url_forward %}",
+            "arg": "{% ma_url_forward %}"
         },
         "-s": {
             "required": true,

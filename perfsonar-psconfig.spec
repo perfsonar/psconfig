@@ -12,7 +12,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 
-%define relnum 0.5.b1
+%define relnum 1
 
 
 Name:			perfsonar-psconfig
