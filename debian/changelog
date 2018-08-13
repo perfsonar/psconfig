@@ -1,5 +1,5 @@
-perfsonar-psconfig (4.1~5.b1-1) perfsonar-jessie-staging; urgency=medium
+perfsonar-psconfig (4.1-1) perfsonar-release; urgency=medium
 
-  * Port to Debian.
+  * Initial port to Debian.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 23 Jul 2018 17:53:36 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 18:13:01 +0000
