@@ -106,11 +106,10 @@
         "AdministratorSpecification": {
             "type": "object",
             "properties": {
-                "email": { "type": "string" },
-                "name": { "type": "string" }
+                "email": { "$ref": "#/MeshConfig/StringNullable" },
+                "name": { "$ref": "#/MeshConfig/StringNullable" }
             },
-            "additionalProperties": false,
-            "required": [ "name", "email" ]
+            "additionalProperties": false
         },
         
         "BindMapSpecification": {
@@ -468,13 +467,13 @@
         "LocationSpecification": {
             "type": "object",
             "properties": {
-                "street_address": { "type": "string" },
-                "country": { "type": "string" },
-                "city": { "type": "string" },
-                "state": { "type": "string" },
-                "latitude": { "type": "string" },
-                "longitude": { "type": "string" },
-                "postal_code": { "type": "string" }
+                "street_address": { "$ref": "#/MeshConfig/StringNullable" },
+                "country": { "$ref": "#/MeshConfig/StringNullable" },
+                "city": { "$ref": "#/MeshConfig/StringNullable" },
+                "state": { "$ref": "#/MeshConfig/StringNullable" },
+                "latitude": { "$ref": "#/MeshConfig/StringNullable" },
+                "longitude": { "$ref": "#/MeshConfig/StringNullable" },
+                "postal_code": { "$ref": "#/MeshConfig/StringNullable" }
             },
             "additionalProperties": false
         },

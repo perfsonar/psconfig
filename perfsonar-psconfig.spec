@@ -16,7 +16,7 @@
 
 
 Name:			perfsonar-psconfig
-Version:		4.1
+Version:		4.1.1
 Release:		%{relnum}%{?dist}
 Summary:		perfSONAR pSConfig Agents
 License:		ASL 2.0
