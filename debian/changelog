@@ -1,3 +1,9 @@
+perfsonar-psconfig (4.1.1-1) perfsonar-release; urgency=medium
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 17:24:35 +0000
+
 perfsonar-psconfig (4.1-1) perfsonar-release; urgency=medium
 
   * Initial port to Debian.
