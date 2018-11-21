@@ -3,14 +3,14 @@
         "example-archive-central": {
             "archiver": "esmond",
             "data": {
-                "url": "https://archive.perfsonar.net/esmond/perfsonar/archive/",
+                "url": " https://{% scheduled_by_address %}/esmond/perfsonar/archive/",
                 "measurement-agent": "{% scheduled_by_address %}"
             }
         }
     },
     
     "addresses": {
-        "host-a.perfsonar.net": { "address": "host-a.perfsonar.net" },
+        "host-a.perfsonar.net": { "address": "2001:4118:900:cc00::111" },
         "host-b.perfsonar.net": { "address": "host-b.perfsonar.net" },
         "host-c.perfsonar.net": { "address": "host-c.perfsonar.net" }
     },
