@@ -1082,6 +1082,7 @@ sub __quote_ipv6_address {
     $yaml =~ s/($IPv6_re)/\'$1\'/gm;
     $yaml =~ s/\'\'/\'/gm;
     $yaml =~ s/\=\'($IPv6_re)\'/=$1/gm;
+    $yaml =~ s/\['($IPv6_re)\'\]/[$1]/gm;
     $yaml =~ s/([^=])(https?)\:\/\/\'($IPv6_re)\'(\/.+)?/$1'$2:\/\/[$3]$4'/gm; #outside of get parameter
     $yaml =~ s/(\=https?)\:\/\/\'($IPv6_re)\'(\/.+)?/$1:\/\/[$2]$3/gm; #in get parameter
     return $yaml; 
