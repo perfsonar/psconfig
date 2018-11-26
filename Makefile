@@ -1,7 +1,7 @@
 PACKAGE=perfsonar-psconfig
 ROOTPATH=/usr/lib/perfsonar
 CONFIGPATH=/etc/perfsonar/psconfig
-VERSION=4.1.2
+VERSION=4.1.4
 RELEASE=1
 
 default:
