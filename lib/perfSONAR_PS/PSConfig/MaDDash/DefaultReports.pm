@@ -72,7 +72,7 @@ reports:
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first throughput test to run on this host."
                                         - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host" 
-                                        - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP port 5101"                           
+                                        - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP port 5201"                           
                             - 
                                 type: rule
                                 selector:
@@ -86,7 +86,7 @@ reports:
                                     message: "Unable to run and/or query any outgoing throughput tests."
                                     solutions:
                                         - "Verify you are not blocking any of the required outgoing throughput ports in your firewall"
-                                        - "Verify the remote sites allow your host to access TCP port 443 and TCP/UDP port 5101"
+                                        - "Verify the remote sites allow your host to access TCP port 443 and TCP/UDP port 5201"
                                         - "Verify the limits defined in /etc/pscheduler/limits.conf on each side are properly defined and not being exceeded by the tests"
                             - 
                                 type: rule
@@ -100,7 +100,7 @@ reports:
                                     category: CONFIGURATION
                                     message: "Unable to run and/or query any incoming throughput tests."
                                     solutions:
-                                        - "Verify your host and router firewalls are allowing TCP port 443 and TCP/UDP port 5101"
+                                        - "Verify your host and router firewalls are allowing TCP port 443 and TCP/UDP port 5201"
                                         - "Verify the limits defined in /etc/pscheduler/limits.conf are properly defined and not being exceeded by the tests"
                             - 
                                 type: matchAll
@@ -142,7 +142,7 @@ reports:
                                                     category: CONFIGURATION
                                                     message: "A majority (but not all) of tests initiated by this site are failing in both incoming and outgoing directions"
                                                     solutions:
-                                                        - "Check if the sites that are failing are blocking TCP port 443 or TCP/UDP port 5101."
+                                                        - "Check if the sites that are failing are blocking TCP port 443 or TCP/UDP port 5201."
                                                         - "Verify that /var/log/perfsonar/meshconfig-agent.log does not contain any errors."
                                                         - "Verify that /etc/perfsonar/meshconfig-agent-tasks.conf contains the proper tests"
                                                         - "Restart perfsonar-meshconfig-agent, it may not have picked-up configuration changes ('/etc/init.d/perfsonar-meshconfig-agent restart' or 'systemctl restart perfsonar-meshconfig-agent')"
@@ -338,7 +338,7 @@ reports:
                                     message: "Site is down"
                                     solutions:
                                         - "Verify the host is up"
-                                        - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP port 5101" 
+                                        - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP port 5201" 
                                         - "If recently added to the mesh, verify the mesh config file has been downloaded by the end-hosts since the update. It may also take several hours for the first BWCTL test to run on this host."
                                         - "If recently removed from the mesh, verify that the perfSONAR MeshConfig GUIAgent has run recently and you are looking at an accurate test mesh"
                                         - "Verify NTP is synced on this host"                                                                   
@@ -364,7 +364,7 @@ reports:
                                             category: CONFIGURATION
                                             message: "Tests are failing in the outgoing direction"
                                             solutions:
-                                                - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP ports 5101 in their host and router firewalls"
+                                                - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP ports 5201 in their host and router firewalls"
                                     - 
                                         type: rule
                                         selector:
@@ -380,7 +380,7 @@ reports:
                                             category: CONFIGURATION
                                             message: "Tests are failing in the incoming direction"
                                             solutions:
-                                                - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP ports 5101 in their host and router firewalls"
+                                                - "Verify the local and remote sites allow access to TCP port 443 and TCP/UDP ports 5201 in their host and router firewalls"
                                     -
                                         type: rule
                                         selector:
