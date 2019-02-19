@@ -11,18 +11,18 @@
 %define service_pscheduler_agent    psconfig-pscheduler-agent
 %define service_maddash_agent       psconfig-maddash-agent
 
-
-%define relnum 1
-
+#Version variables set by automated scripts
+%define perfsonar_auto_version 4.1.5
+%define perfsonar_auto_relnum 1
 
 Name:			perfsonar-psconfig
-Version:		4.1.5
-Release:		%{relnum}%{?dist}
+Version:		%{perfsonar_auto_version}
+Release:		%{perfsonar_auto_relnum}%{?dist}
 Summary:		perfSONAR pSConfig Agents
 License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
-Source0:		perfsonar-psconfig-%{version}.%{relnum}.tar.gz
+Source0:		perfsonar-psconfig-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 
@@ -157,7 +157,7 @@ Environment for publishing pSConfig template files in standard way
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfsonar-psconfig-%{version}.%{relnum}
+%setup -q -n perfsonar-psconfig-%{version}.%{perfsonar_auto_relnum}
 
 
 %build
