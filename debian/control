@@ -1,0 +1,67 @@
+Source: perfsonar-psconfig
+Section: misc
+Priority: extra
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl,
+ libparams-validate-perl, libperfsonar-psconfig-perl
+Standards-Version: 3.9.3
+Homepage: http://www.perfsonar.net
+Vcs-Git: https://github.com/perfsonar/psconfig.git
+Vcs-Browser: https://github.com/perfsonar/psconfig/tree/debian/jessie
+
+Package: perfsonar-psconfig-utils
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ libdata-validate-domain-perl, libdata-validate-ip-perl,
+ libjson-validator-perl, liblog-log4perl-perl,
+ libmouse-perl, libnet-cidr-perl, liburi-perl,
+ libperfsonar-perl, libperfsonar-psconfig-perl,
+ liblog-dispatch-filerotate-perl
+Description: pSConfig Utilities
+ Library and common command-line tools used for pSConfig.
+
+Package: perfsonar-psconfig-pscheduler
+Architecture: all
+Replaces: perfsonar-meshconfig-agent
+Breaks: perfsonar-meshconfig-agent
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-utils (= ${binary:Version}),
+ libperfsonar-pscheduler-perl, liblinux-inotify2-perl,
+ libfile-readbackwards-perl, perfsonar-psconfig-pscheduler-dev
+Description: pSConfig pScheduler Agent
+ Downloads a centralized JSON file describing the tests to run,
+ and uses it to generate appropriate pScheduler tasks.
+
+Package: perfsonar-psconfig-pscheduler-dev
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends},
+ libperfsonar-pscheduler-perl
+Description: pSConfig pScheduler Development Libraries
+ Development libraries for interacting with the pSConfig pScheduler Agent.
+
+Package: perfsonar-psconfig-maddash
+Architecture: all
+Replaces: perfsonar-meshconfig-guiagent
+Breaks: perfsonar-meshconfig-guiagent
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
+ libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
+ libfile-readbackwards-perl, libhash-merge-perl,
+ perfsonar-psconfig-maddash-dev
+Description: pSConfig MaDDash Agent
+ Downloads a centralized JSON file describing the tests a mesh is running,
+ and generates a MaDDash configuration.
+
+Package: perfsonar-psconfig-maddash-dev
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ libperfsonar-pscheduler-perl
+Description: pSConfig MaDDash Agent Development Libraries
+ Development Libraries for interactiving with the pSConfig MaDDash Agent.
+
+Package: perfsonar-psconfig-publisher
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends},
+ perfsonar-psconfig-utils (= ${binary:Version}), apache2
+Description: pSConfig MaDDash Publisher
+ Environment for publishing pSConfig template files in standard way.
