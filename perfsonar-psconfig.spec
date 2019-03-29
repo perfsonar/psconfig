@@ -12,8 +12,8 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 4.1.6
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.0.a1
 
 Name:			perfsonar-psconfig
 Version:		%{perfsonar_auto_version}
