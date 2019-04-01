@@ -1,8 +1,8 @@
-perfsonar-psconfig (4.1.7~0-1) perfsonar-release; urgency=low
+perfsonar-psconfig (4.1.7~0-1) perfsonar-patch-snapshot; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 23 Feb 2019 17:47:58 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 01 Apr 2019 12:09:39 +0000
 
 perfsonar-psconfig (4.1.6-1) perfsonar-release; urgency=low
 
