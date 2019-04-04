@@ -158,7 +158,11 @@ sub _run_handle_psconfig {
     
     #Init variables
     my $configure_archives = 0; #make sure defined
-    if($remote && $remote->configure_archives()){
+    if(!$remote){
+        #configure archives if not from a remote source
+        $configure_archives = 1;
+    }elsif($remote && $remote->configure_archives()){
+        #configure archives if from a remote source and said it is ok
         $configure_archives = 1;
     }
     
