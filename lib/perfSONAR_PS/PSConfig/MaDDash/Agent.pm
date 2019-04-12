@@ -149,6 +149,7 @@ sub _run_handle_psconfig {
         $self->logf->global_context()->{'task_name'} = $maddash_task_name;
         my $group = $psconfig->group($task->group_ref());
         my $row_equal_col = 0;
+        my $unidirectional = 0;
         
         ##
         # check dimension count
@@ -179,6 +180,9 @@ sub _run_handle_psconfig {
                         last;
                     }
                 }
+            }
+            if($group->can('unidirectional') && $group->unidirectional()){
+                $unidirectional = 1;
             }
         }
         
@@ -356,7 +360,7 @@ sub _run_handle_psconfig {
             push @{$grid->{checks}}, $check_name;
             
             #build reverse if not a mesh
-            unless($row_equal_col){
+            unless($row_equal_col || $unidirectional){
                 #flip row and column
                 $template->row($col_str);
                 $template->col($row_str);
