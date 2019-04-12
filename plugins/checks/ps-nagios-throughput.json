@@ -35,8 +35,10 @@
             "script": [ 
                 "if .test.spec.udp==true then",
                 "   \"udp\"",
-                "else",
+                "elif .test.type==\"throughput\" then",
                 "   \"tcp\"" ,
+                "else",
+                "   \"\"" ,
                 "end"
             ]
         },
