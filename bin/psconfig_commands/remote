@@ -185,14 +185,15 @@ foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
         next;
     }
     #see if file exists
-    unless(-e $cli_agent->{config_file}){
+    my $config_file = $file_opt ? $file_opt : $cli_agent->{config_file};
+    unless(-e $config_file){
         next;
     }
     #should be good to do some work now
     $agent_found = 1;
     
     #load config file
-    my ($agent_conf_client, $agent_conf) = _load_config($cli_agent->{config_file}, $cli_agent->{client_class}, $cli_agent_name);
+    my ($agent_conf_client, $agent_conf) = _load_config($config_file, $cli_agent->{client_class}, $cli_agent_name);
     next unless($agent_conf_client);
     
     #build remote
