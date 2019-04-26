@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-#TODO: Fix remote command file usage and any other wierdness?
-#TODO: package
-
 =head1 NAME
  
 agentctl - View/set/unset properties for pSConfig agents
