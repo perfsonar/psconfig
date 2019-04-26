@@ -1,0 +1,438 @@
+#!/usr/bin/perl
+
+#TODO: Fix remote command file usage and any other wierdness?
+#TODO: package
+
+=head1 NAME
+ 
+agentctl - View/set/unset properties for pSConfig agents
+ 
+=head1 SYNOPSIS
+ 
+agentctl [options] agent [prop [value1 [value2...]]]
+ 
+ Options:
+   -h | --help      Help message
+   -f|--file FILE   The file to edit. Defaults to standard location if unspecified.
+   -a|--all         List all properties and their values even if they are undefined
+   --unset          Remove the option specified by name argument
+   --quiet          Suppress output to stdout and stderr
+=head1 ARGUMENTS
+
+=over 8
+
+=item B<agent>
+ 
+The name of the agent to which to apply this command. If a ? is given then a list
+of installed agents will be displayed. Note: ? is a shell wildcard so you may 
+need to escape it with \?.
+
+=item B<prop>
+ 
+The name of the property on which to operate. If not provided, then all set 
+properties will be listed (unless --all is given, then both set and unset properties 
+are listed). If given with no value then the current value will be displayed. If
+given with the --unset option then the option will be removed from the 
+configuration. If a ? is given then a list of available properties will be 
+displayed. If given with one or more  values, then the option will be set 
+to the given value(s).
+
+=item B<value>
+ 
+An optional value to which to set the parameter. If multiple given separated by
+spaces then treated as an array. If given in the form "x->y" then treated as a 
+key/value pair. If a ? is given then documentation of the property specified 
+will be displayed.
+
+=back
+
+=head1 OPTIONS
+ 
+=over 8
+ 
+=item B<-h | --help>
+ 
+Prints a help message and exits
+
+=item B<-f|--file FILE>
+ 
+The file to edit. Defaults to standard location if unspecified.
+
+=item B<-a|--all>
+ 
+List all properties and their value even if they are undefined. Only applies when no name argument provided.
+
+=item B<--unset>
+ 
+Remove the property specified by name argument
+
+=item B<--quiet>
+ 
+Suppress output to stdout and stderr
+
+=back
+ 
+=head1 DESCRIPTION
+ 
+B<This program> will display, set and unset properties associated with the 
+pSConfig agent. It ultimately just edits the specified agent's JSON 
+configuration file. It will validate any provided properties before saving to 
+help catch errors. It is also a convenient way to see the available properties 
+by providing a ? as one of the arguments.
+ 
+=cut
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../../lib";
+
+use Getopt::Long qw(GetOptions);
+use JSON qw( from_json to_json );
+use Module::Load;
+use Pod::Usage;
+
+use perfSONAR_PS::PSConfig::CLI::Constants;
+
+#parse options
+my $help;
+my $file_opt;
+my $all_opt;
+my $unset_opt;
+my $quiet_opt;
+GetOptions(
+    'help|h' => \$help,
+    'f|file=s' => \$file_opt,
+    'a|all' => \$all_opt,
+    'unset' => \$unset_opt,
+    'quiet' => \$quiet_opt,
+) or pod2usage({ -verbose => 0, -exitval => 2 });
+
+#parse arguments
+if($help){
+    pod2usage({ -exitval => 0, -verbose => 2, -noperldoc => 1});
+}
+
+my $agent_name = "";
+if(@ARGV > 0){
+    $agent_name = lc(shift @ARGV);
+    chomp $agent_name;
+}
+
+my $opt_name = "";
+if(@ARGV > 0){
+    $opt_name = lc(shift @ARGV);
+    chomp $opt_name;
+}
+my @values = @ARGV;
+
+#see if file exists if given
+if($file_opt && ! -e $file_opt){
+    _error("File $file_opt does not exist");
+    exit 2;
+}
+
+#make sure we have a valid agent
+my $ignore_props = {};
+my $cli_agent = {};
+my $agent_found = 0;
+my $config_file = $file_opt;
+my @valid_agents = ();
+foreach my $cli_agent_tmp(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
+    my $config_file_tmp = $file_opt ? $file_opt : $cli_agent_tmp->{config_file};
+    unless(-e $config_file_tmp){
+        next;
+    }
+    if($agent_name && $agent_name eq lc($cli_agent_tmp->{name})){
+        $agent_found = 1;
+        $cli_agent = $cli_agent_tmp;
+        $config_file = $cli_agent_tmp->{config_file} unless($config_file);
+        $ignore_props = $cli_agent_tmp->{agentctl_ignore};
+        last;
+    }
+    push @valid_agents, lc($cli_agent_tmp->{name});
+}
+if(!$agent_name){
+    _error("You must specify an agent. Valid values are:\n");
+    foreach my $valid_agent(@valid_agents){
+        _error("$valid_agent");
+    }
+    exit 2;
+}elsif($agent_name eq '?'){
+    foreach my $valid_agent(@valid_agents){
+        _success("$valid_agent\n");
+    }
+    exit 0;
+}elsif(!$agent_found){
+    _error("Invalid agent '$agent_name' specified. Valid values are:\n");
+    foreach my $valid_agent(@valid_agents){
+        _error("$valid_agent");
+    }
+    exit 2;
+}
+
+#make sure we have sensible combination of options
+if($unset_opt && @values > 0){
+    _error("You cannot specify anything after the option name when using --unset");
+    exit 2;
+}elsif($unset_opt && !$opt_name){
+    _error("You cannot use --unset without an argument with the name of the option to unset");
+    exit 2;
+}
+
+#load config file
+my ($agent_conf_client, $agent_conf) = _load_config($config_file, $cli_agent->{client_class}, $cli_agent->{name});
+exit 1 if(!$agent_conf_client);
+
+#load schema
+my $schema = $agent_conf->schema();
+if(!$schema->{'properties'}){
+    _error("Error with schema, missing properties. File a bug with perfSONAR devolopers.");
+    exit 3;
+}
+
+#Check opt_name existence and validity
+if(!$opt_name){
+    #list all option and return
+    my $found_prop = 0;
+    foreach my $schema_prop(keys %{$schema->{'properties'}}){
+        #skip parameters we don't want to handle
+        next if($ignore_props->{$schema_prop});
+        #skip parameter that aren't set unless --all
+        next unless($agent_conf->data()->{$schema_prop} || $all_opt);
+        _print_opt($schema, $schema_prop, $agent_conf->data()->{$schema_prop});
+        $found_prop = 1;
+    }
+    unless($found_prop){
+        _success("No options currently set\n");
+    }
+    exit 0;
+}elsif($opt_name eq '?'){
+    foreach my $schema_prop(keys %{$schema->{'properties'}}){
+        #skip parameters we don't want to handle
+        next if($ignore_props->{$schema_prop});
+        _success("$schema_prop\n");
+    }
+    exit 0;
+}elsif(!_is_valid_opt($schema, $opt_name)){
+    _error("Invalid option $opt_name");
+    exit 1;
+}
+
+my $schema_prop_info = $schema->{'properties'}->{$opt_name};
+if(@values == 1 && $values[0] eq '?'){
+    #provide details about option
+    _success("\n$opt_name\n\n");
+    my $type_info = _type_info($schema_prop_info);
+    _success("Type: " . $type_info->{'type'} . "\n\n");
+    _success("Description:\n" . $type_info->{'description'} . "\n\n");
+    _success("Example: " . $type_info->{'example'} . "\n\n");
+}elsif(@values > 0){
+    my $parsed_value = _parse_opt_value($schema_prop_info, \@values);
+    exit 1 unless(defined $parsed_value);
+    $agent_conf->data()->{$opt_name} = $parsed_value;
+    exit 1 unless(_save_file($agent_conf_client, $agent_conf, $cli_agent->{name}));
+    _success("Successfully set $opt_name in $config_file\n");
+}elsif($unset_opt){
+    #unset an option
+    delete $agent_conf->data()->{$opt_name};
+    exit 1 unless(_save_file($agent_conf_client, $agent_conf, $cli_agent->{name}));
+    _success("Successfully unset $opt_name in $config_file\n");
+}else{
+    #display an option
+    _print_opt($schema, $opt_name, $agent_conf->data()->{$opt_name});
+}
+    
+exit 0;
+
+#Subroutines
+sub _success{
+    my $msg = shift;
+    print "$msg" if($msg && !$quiet_opt);
+}
+
+sub _error{
+    my ($msg, $cli_agent_name) = @_;
+    print STDERR "$cli_agent_name\n" if($cli_agent_name && !$quiet_opt);
+    print STDERR "$msg\n" unless($quiet_opt);
+}
+
+sub _is_valid_opt{
+    my ($schema, $opt_name) = @_;
+    if($schema->{'properties'}->{$opt_name} && !$ignore_props->{$opt_name}){
+        return 1;
+    }
+    return 0;
+}
+
+sub _type_info{
+    my ($schema_prop_info) = @_;
+    
+    #get description
+    my $description = $schema_prop_info->{'description'};
+    if(!$description){
+        $description = "n/a";
+    }
+    
+    #get type
+    my $raw_type = $schema_prop_info->{'type'};
+    $raw_type = $schema_prop_info->{'$ref'} if(!$raw_type);
+    my $translated_type = "unrecognized";
+    my $example = "";
+    if($raw_type eq 'array'){
+        my $items = $schema_prop_info->{'items'};
+        my $items_type_info = _type_info($items);
+        $translated_type = $items_type_info->{'type'} . " list";
+        $example = $items_type_info->{'example'};
+    }elsif($raw_type eq '#/pSConfig/URLHostPort'){
+        $translated_type = "Hostname/IP and Port";
+        $example = "10.1.1.1:8443";
+    }elsif($raw_type eq '#/pSConfig/Cardinal'){
+        $translated_type = "Integer > 0";
+        $example = "5";
+    }elsif($raw_type eq '#/pSConfig/Host'){
+        $translated_type = "Hostname or IP Address";
+        $example = "10.1.1.1";
+    }elsif($raw_type eq '#/pSConfig/AddressMap'){
+        $translated_type = "Address Map (remote=local)";
+        $example = "10.1.1.2=10.1.1.1";
+    }elsif($raw_type eq '#/pSConfig/Duration'){
+        $translated_type = "ISO8601 Duration";
+        $example = "PT60S";
+    }elsif($raw_type eq '#/pSConfig/Probablilty'){
+        $translated_type = "Decimal between 0 and 1";
+        $example = "0.5";
+    }elsif($raw_type eq 'string'){
+        $translated_type = "String";
+        $example = "foo";
+    }
+    
+    return {
+        'type' => $translated_type,
+        'raw_type' => $raw_type,
+        'description' => $description,
+        'example' => $example
+    };
+}
+
+sub _parse_opt_value{
+    my ($schema_prop_info, $values) = @_;
+    my $type_info = _type_info($schema_prop_info);
+    my $raw_type = $type_info->{'raw_type'};
+    my $parsed_value;
+    
+    if($raw_type eq 'array'){
+        $parsed_value = [];
+        foreach my $v(@{$values}){
+            push @{$parsed_value}, $v;
+        }
+    }elsif($raw_type eq '#/pSConfig/AddressMap'){
+        $parsed_value = {};
+        foreach my $v(@{$values}){
+            my @kv = split '=', $v;
+            if(@kv != 2){
+                _error('Invalid value $v. Must be in form key=value.');
+                return;
+            }
+            $parsed_value->{$kv[0]} = $kv[1];
+        }
+    }elsif(@{$values} > 1){
+        _error("Property does not accept multiple values.");
+    }elsif(@{$values} > 0){
+        $parsed_value = $values[0];
+    }
+    
+    return $parsed_value;
+}
+
+sub _format_opt_value{
+    my ($schema, $opt_name, $values) = @_;
+    
+    my $parsed_value = "";
+    if(!defined $values){
+        $parsed_value = 'UNDEF';
+    }elsif(ref $values eq 'ARRAY'){
+        $parsed_value = join ' ', @{$values};
+    }elsif(ref $values eq 'HASH'){
+        foreach my $k(keys %{$values}){
+            $parsed_value .= "$k=" . $values->{$k} . " ";
+        }
+    }else{
+        $parsed_value = $values;
+    }
+    
+    return $parsed_value;
+}
+
+sub _print_opt{
+    my ($schema, $opt_name, $values) = @_;
+    my $opt_value = _format_opt_value($schema, $opt_name, $values);
+    _success("$opt_name = $opt_value\n");
+}
+
+sub _load_config {
+    my ($config_file, $config_class, $cli_agent_name) = @_;
+    
+    ##
+    # Load client class
+    eval{
+        load  $config_class;
+    };
+    if($@){
+        _error("\n[$cli_agent_name agent] It does not appear the agent is full installed. You may want to reinstall.");
+        return;
+    }
+    
+    ##
+    #load config file
+    my $agent_conf_client = $config_class->new(
+        url => $config_file,
+        save_filename => $config_file
+    );
+    if($agent_conf_client->error()){
+        _error("Error opening $config_file: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
+    } 
+    my $agent_conf = $agent_conf_client->get_config();
+    if($agent_conf_client->error()){
+        _error("Error parsing $config_file: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
+    }
+    my @agent_conf_errors = $agent_conf->validate();
+    if(@agent_conf_errors){
+        my $err = "Unable to load $config_file because it is not valid. The following errors were encountered: \n";
+        foreach my $error(@agent_conf_errors){
+            $err .= "    JSON Path: " . $error->path . "\n";
+            $err .= "    Error: " . $error->message . "\n";
+        }
+        _error($err, $cli_agent_name);
+        return;
+    }
+    
+    return ($agent_conf_client, $agent_conf);
+}
+
+sub _save_file{
+    my ($agent_conf_client, $agent_conf, $cli_agent_name) = @_;
+    
+    #validate before saving
+    my @agent_conf_errors = $agent_conf->validate();
+    if(@agent_conf_errors){
+        my $err = "$config_file is not valid after applying change. The following errors were encountered: \n";
+        foreach my $error(@agent_conf_errors){
+            $err .= "    JSON Path: " . $error->path . "\n";
+            $err .= "    Error: " . $error->message . "\n";
+        }
+        _error($err, $cli_agent_name);
+        return;
+    }
+    
+    #save
+    $agent_conf_client->save_config($agent_conf, {'pretty' => 1});
+    if($agent_conf_client->error()){
+        _error("Error saving configuration: " . $agent_conf_client->error(), $cli_agent_name);
+        return;
+    }
+    
+    return 1;
+}

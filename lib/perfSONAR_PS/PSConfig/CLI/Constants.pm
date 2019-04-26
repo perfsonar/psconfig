@@ -15,13 +15,20 @@ use constant {
             name => 'pScheduler',
             config_file => '/etc/perfsonar/psconfig/pscheduler-agent.json',
             command => '/usr/lib/perfsonar/bin/psconfig_pscheduler_agent',
-            client_class => 'perfSONAR_PS::PSConfig::PScheduler::ConfigConnect'
+            client_class => 'perfSONAR_PS::PSConfig::PScheduler::ConfigConnect',
+            agentctl_ignore => {
+                "remotes" => 1
+            }
         },
         {
             name => 'MaDDash',
             config_file => '/etc/perfsonar/psconfig/maddash-agent.json',
             command => '/usr/lib/perfsonar/bin/psconfig_maddash_agent',
-            client_class => 'perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect'
+            client_class => 'perfSONAR_PS::PSConfig::MaDDash::Agent::ConfigConnect',
+            agentctl_ignore => {
+                "remotes" => 1,
+                "grids" => 1
+            }
         }
     ]
 };

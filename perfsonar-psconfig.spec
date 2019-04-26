@@ -276,6 +276,7 @@ systemctl restart httpd &>/dev/null || :
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/psconfig
+%attr(0755,perfsonar,perfsonar) %{command_base}/agentctl
 %attr(0755,perfsonar,perfsonar) %{command_base}/agents
 %attr(0755,perfsonar,perfsonar) %{command_base}/remote
 %attr(0755,perfsonar,perfsonar) %{command_base}/translate

@@ -252,9 +252,20 @@ sub validate {
     my $validator = new JSON::Validator();
     ##NOTE: Below works around the strict TLD requirements of JSON::Validator
     local *Data::Validate::Domain::is_domain = \&Data::Validate::Domain::is_hostname;
-    $validator->schema(psconfig_pscheduler_json_schema());
+    $validator->schema($self->schema());
 
     return $validator->validate($self->data());
+}
+
+=item schema()
+
+Returns the JSON schema for this config
+
+=cut
+
+sub schema {
+    my $self = shift;
+    return psconfig_pscheduler_json_schema();
 }
 
 
