@@ -27,10 +27,11 @@
         "params": {
             "time-range": "86400",
             "tool": "",
-            "event-type": "pscheduler-raw",
             "function": "",
             "jq": ".time",
+            "use-parse": "",
             "units": "s",
+            "scale": "",
             "label-ok-symbol": "<",
             "label-warning-symbol": ">=",
             "label-critical-symbol": ">="
@@ -40,6 +41,11 @@
         "test_url": { 
             "script": [
                 ".test.spec.url"
+            ]
+        },
+        "parse": { 
+            "script": [
+                ".test.spec.parse"
             ]
         }
     },
@@ -51,12 +57,24 @@
             "arg": "{% ma_url_forward %}"
         },
         "--event-type": {
-            "condition": "{% check.params.event-type %}",
-            "arg": "{% check.params.event-type %}"
+            "condition": "1",
+            "arg": "pscheduler-raw"
+        },
+        "--metadata-params": {
+            "condition": "1",
+            "arg": "pscheduler-test-type http"
         },
         "--measurement-agent": {
             "condition": "{% row %}",
             "arg": "{% row %}"
+        },
+        "--metadata-params": {
+            "condition": "{% check.vars.test_url %}",
+            "arg": "pscheduler-http-url {% check.vars.test_url %}"
+        },
+        "--metadata-params": {
+            "condition": "{% check.params.use-parse %}",
+            "arg": "pscheduler-http-parse {% check.vars.parse %}"
         },
         "--function": {
             "condition": "{% check.params.function %}",
@@ -89,9 +107,14 @@
             "condition": "{% check.timeout.seconds %}",
             "arg": "{% check.timeout.seconds %}"
         },
-        "--metadata-params": {
-            "condition": "{% check.vars.test_url %}",
-            "arg": "pscheduler-http-url={% check.vars.test_url %}"
-        }
+        "--units": {
+            "condition": "{% check.params.units %}",
+            "arg": "{% check.params.units %}"
+        },
+        "--scale": {
+            "condition": "{% check.params.scale %}",
+            "arg": "{% check.params.scale %}"
+        },
+        
     }
 }
