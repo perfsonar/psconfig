@@ -11,8 +11,8 @@
     },
     "status-labels": {
         "ok": "Value {% check.params.label-ok-symbol %} {% check.warning %}{% check.params.units %}",
-        "warning": "Value {% label-warning-symbol %} {% check.params.units %}",
-        "critical": "Value {% label-critical-symbol %} {% check.params.units %}",
+        "warning": "Value {% check.params.label-warning-symbol %} {% check.params.units %}",
+        "critical": "Value {% check.params.label-critical-symbol %} {% check.params.units %}",
         "notrun": "Check has not run yet",
         "unknown": "Unable to find test data"
     },
@@ -66,7 +66,7 @@
             "condition": "1",
             "arg": "pscheduler-raw"
         },
-        "--metadata-params": {
+        "--metadata-params__http": {
             "condition": "1",
             "arg": "pscheduler-test-type http"
         },
@@ -74,11 +74,11 @@
             "condition": "{% row %}",
             "arg": "{% row %}"
         },
-        "--metadata-params": {
+        "--metadata-params__url": {
             "condition": "{% check.vars.test_url %}",
             "arg": "pscheduler-http-url {% check.vars.test_url %}"
         },
-        "--metadata-params": {
+        "--metadata-params__parse": {
             "condition": "{% check.params.use-parse %}",
             "arg": "pscheduler-http-parse {% check.vars.parse %}"
         },
@@ -124,7 +124,6 @@
         "--scale": {
             "condition": "{% check.params.scale %}",
             "arg": "{% check.params.scale %}"
-        },
-        
+        }        
     }
 }

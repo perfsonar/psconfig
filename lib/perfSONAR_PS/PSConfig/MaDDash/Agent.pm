@@ -746,7 +746,9 @@ sub _build_check {
         foreach my $expanded_command_opt(keys %{$expanded_command_opts}){
             my $cmd_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Checks::CommandOpt('data' => $expanded_command_opts->{$expanded_command_opt});
             if($cmd_opt_obj->condition() && $cmd_opt_obj->condition() ne 'false'){
-                push  @command, $expanded_command_opt;
+                my $final_command_opt = $expanded_command_opt;
+                $final_command_opt =~ s/__.+$//;
+                push  @command, $final_command_opt;
                 push  @command, $cmd_opt_obj->arg() if($cmd_opt_obj->arg());
             }elsif($cmd_opt_obj->required()){
                 $logger->error($self->logf()->format("Unable to generate command because unable generate $expanded_command_opt command option", $log_ctx));
