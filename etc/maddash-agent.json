@@ -1,6 +1,32 @@
 {
   "remotes": [],
   "grids": {
+    "default_dns": {
+      "check": {
+        "type": "ps-nagios-dns"
+      },
+      "display-name": "DNS Query Time",
+      "visualization": {
+        "type": "blank"
+      },
+      "priority" : {
+        "group" : "dns",
+        "level" : 1
+      }
+    },
+    "default_http": {
+      "check": {
+        "type": "ps-nagios-http"
+      },
+      "display-name": "HTTP Request Time",
+      "visualization": {
+        "type": "blank"
+      },
+      "priority" : {
+        "group" : "http",
+        "level" : 1
+      }
+    },
     "default_loss": {
       "check": {
         "type": "ps-nagios-loss"

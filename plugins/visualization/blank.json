@@ -1,0 +1,9 @@
+{
+    "type": "blank",
+    "requires": {},
+    "defaults": {
+        "base-url": "about:blank",
+        "params": {}
+    },
+    "http-get-opts": {}
+}
