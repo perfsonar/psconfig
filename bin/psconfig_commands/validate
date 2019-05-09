@@ -124,7 +124,7 @@ if($psconfig_client->error()){
     exit 2;
 } 
 
-#validate
+#validate schema
 my @errors = $psconfig->validate();
 if(@errors){
     unless($quiet){
@@ -137,34 +137,154 @@ if(@errors){
     exit 1;
 }
 
-#exit unless we need to expand includes
-_success() unless(!$skip_expand && $psconfig->includes() && @{$psconfig->includes()} > 0);
-
-#expand includes
-$psconfig_client->expand_config($psconfig);
-if($psconfig_client->error()){
-    unless($quiet){
-        my @errors = split "\n", $psconfig_client->error();
-        print STDERR "Error(s) encountered expanding includes:\n\n";
-        foreach my $error(@errors){
-            chomp $error;
-            print STDERR "   $error\n" if($error);
+######################
+#handle includes
+if(!$skip_expand && $psconfig->includes() && @{$psconfig->includes()} > 0){
+    #expand includes
+    $psconfig_client->expand_config($psconfig);
+    if($psconfig_client->error()){
+        unless($quiet){
+            my @errors = split "\n", $psconfig_client->error();
+            print STDERR "Error(s) encountered expanding includes:\n\n";
+            foreach my $error(@errors){
+                chomp $error;
+                print STDERR "   $error\n" if($error);
+            }
+            
         }
-        
+        exit 1;
     }
-    exit 1;
+
+    #validate again after expansion
+    @errors = $psconfig->validate();
+    if(@errors){
+        unless($quiet){
+            print STDERR "pSConfig JSON is not valid after expanding includes. Encountered the following validation errors:\n\n";
+            foreach my $error(@errors){
+                print STDERR "   Node: " . $error->path . "\n";
+                print STDERR "   Error: " . $error->message . "\n\n";
+            }
+        }    
+        exit 1;
+    }
 }
 
-#validate again after expansion
-@errors = $psconfig->validate();
-if(@errors){
-    unless($quiet){
-        print STDERR "pSConfig JSON is not valid after expanding includes. Encountered the following validation errors:\n\n";
-        foreach my $error(@errors){
-            print STDERR "   Node: " . $error->path . "\n";
-            print STDERR "   Error: " . $error->message . "\n\n";
+######################
+#validate references
+my $ref_errors = [];
+#check addresses
+foreach my $addr_name(@{$psconfig->address_names()}){
+    my $address = $psconfig->address($addr_name);
+    my $host_ref = $address->host_ref();
+    my $context_refs = $address->context_refs();
+    #check host ref
+    if($host_ref && !$psconfig->host($host_ref)){
+        push @{$ref_errors}, "Address $addr_name references a host object $host_ref that does not exist.";
+    }
+    #check context refs
+    if($context_refs){
+        foreach my $context_ref(@{$context_refs}){
+            if(!$psconfig->context($context_ref)){
+                push @{$ref_errors}, "Address $addr_name references a context object $context_ref that does not exist.";
+            }
         }
-    }    
+    }
+    #check remote addresses
+    foreach my $remote_name(@{$address->remote_address_names()}){
+        #check remote context refs
+        my $remote = $address->remote_address($remote_name);
+        if($remote->context_refs()){
+            foreach my $context_ref(@{$remote->context_refs()}){
+                if(!$psconfig->context($context_ref)){
+                    push @{$ref_errors}, "Address $addr_name has a remote definition for $remote_name using a context object $context_ref that does not exist.";
+                }
+            }
+        }
+        #check remote labels
+        foreach my $label_name(@{$remote->label_names()}){
+            my $label = $address->label($label_name);
+            if($label->context_refs()){
+                foreach my $context_ref(@{$label->context_refs()}){
+                    if(!$psconfig->context($context_ref)){
+                        push @{$ref_errors}, "Address $addr_name has a label $label_name using a context object $context_ref that does not exist.";
+                    }
+                }
+            }
+        }
+    }
+    #check labels
+    foreach my $label_name(@{$address->label_names()}){
+        my $label = $address->label($label_name);
+        #check label context refs
+        if($label->context_refs()){
+            foreach my $context_ref(@{$label->context_refs()}){
+                if(!$psconfig->context($context_ref)){
+                    push @{$ref_errors}, "Address $addr_name has a label $label_name using a context object $context_ref that does not exist.";
+                }
+            }
+        }
+    }
+}
+#check groups
+foreach my $group_name(@{$psconfig->group_names()}){
+    my $group = $psconfig->group($group_name);
+    if($group->type() eq 'disjoint'){
+        foreach my $a_addr_sel(@{$group->a_addresses()}){
+            ref_check_addr_select($a_addr_sel, $group_name, $psconfig, $ref_errors);
+        }
+        foreach my $b_addr_sel(@{$group->b_addresses()}){
+            ref_check_addr_select($b_addr_sel, $group_name, $psconfig, $ref_errors);
+        }
+    }elsif($group->can('addresses')){
+        foreach my $addr_sel(@{$group->addresses()}){
+            ref_check_addr_select($addr_sel, $group_name, $psconfig, $ref_errors);
+        }
+    }
+}
+#check hosts
+foreach my $host_name(@{$psconfig->host_names()}){
+    my $host = $psconfig->host($host_name);
+    if($host->archive_refs()){
+        foreach my $archive_ref(@{$host->archive_refs()}){
+            if($archive_ref && !$psconfig->archive($archive_ref)){
+                push @{$ref_errors}, "Host $host_name references an archive $archive_ref that does not exist.";
+            }
+        }
+    }
+}
+#check tasks
+foreach my $task_name(@{$psconfig->task_names()}){
+    my $task = $psconfig->task($task_name);
+    my $group_ref = $task->group_ref();
+    my $test_ref = $task->test_ref();
+    my $schedule_ref = $task->schedule_ref();
+    
+    #check group ref
+    if($group_ref && !$psconfig->group($group_ref)){
+        push @{$ref_errors}, "Task $task_name references a group $group_ref that does not exist.";
+    }
+    #check test ref
+    if($test_ref && !$psconfig->test($test_ref)){
+        push @{$ref_errors}, "Task $task_name references a test $test_ref that does not exist.";
+    }
+    #check schedule ref
+    if($schedule_ref && !$psconfig->schedule($schedule_ref)){
+        push @{$ref_errors}, "Task $task_name references a schedule $schedule_ref that does not exist.";
+    }
+    #check archive refs
+    if($task->archive_refs()){
+        foreach my $archive_ref(@{$task->archive_refs()}){
+            if($archive_ref && !$psconfig->archive($archive_ref)){
+                push @{$ref_errors}, "Task $task_name references an archive $archive_ref that does not exist.";
+            }
+        }
+    }
+}
+#print any errors
+if(@{$ref_errors}){
+    foreach my $ref_error(@{$ref_errors}){
+        _error($ref_error); 
+    }
     exit 1;
 }
 
@@ -174,4 +294,32 @@ _success();
 sub _success{
     print "pSConfig JSON is valid\n" unless($quiet);
     exit 0;
+}
+
+sub _error{
+    my ($msg) = @_;
+    print STDERR "$msg\n" unless($quiet);
+}
+
+sub ref_check_addr_select{
+    my ($addr_sel, $group_name, $psconfig, $errors) = @_;
+    
+    if($addr_sel->can('name')){
+        my $addr_name = $addr_sel->name();
+        my $addr_obj = $psconfig->address($addr_name);
+        unless($addr_obj){
+            push @{$errors}, "Group $group_name references an address object $addr_name that does not exist.";
+            return;
+        }
+        my $addr_label_name = $addr_sel->label();
+        if($addr_label_name && !$addr_obj->label($addr_label_name)){
+            push @{$errors}, "Group $group_name references a label $addr_label_name for address object $addr_name that does not exist.";
+        }
+    }elsif($addr_sel->can('class')){
+        my $class_name = $addr_sel->class();
+        unless($psconfig->address_class()){
+            push @{$errors}, "Group $group_name references a class object $class_name that does not exist.";
+            return;
+        }
+    }
 }
