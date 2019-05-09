@@ -30,6 +30,7 @@
             "function": "",
             "jq": ".time",
             "use-parse": "",
+            "use-host": "",
             "units": "s",
             "scale": "",
             "label-ok-symbol": "<",
@@ -46,6 +47,11 @@
         "parse": { 
             "script": [
                 ".test.spec.parse"
+            ]
+        },
+        "host": { 
+            "script": [
+                ".test.spec.host"
             ]
         }
     },
@@ -75,6 +81,10 @@
         "--metadata-params": {
             "condition": "{% check.params.use-parse %}",
             "arg": "pscheduler-http-parse {% check.vars.parse %}"
+        },
+        "--metadata-params": {
+            "condition": "{% check.params.use-host %}",
+            "arg": "pscheduler-http-host {% check.vars.host %}"
         },
         "--function": {
             "condition": "{% check.params.function %}",
