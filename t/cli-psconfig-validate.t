@@ -25,7 +25,7 @@ sub assert_cmd {
     my $expected_stdout = $parameters->{expected_stdout};
     my $expected_stderr = $parameters->{expected_stderr};
     
-    my @cmd = ("$Bin/../bin/psconfig", "validate");
+    my @cmd = ("$Bin/../bin/psconfig", "validate", "--skip-pscheduler");
     push @cmd, @{$args} if($args);
     
     #run command
@@ -67,7 +67,7 @@ my $invalid_json_file = "$input_dir/invalid.json";
 my $valid_includes_json_file = "$input_dir/valid.json";
 my $invalid_includes_json_file = "$input_dir/valid.json";
 
-assert_cmd(args => [$valid_json_file], expected_status => 0, expected_stdout => "pSConfig JSON is valid\n");
+assert_cmd(args => [$valid_json_file], expected_status => 0);
 assert_cmd(args => [$invalid_json_file], expected_status => 1);
 
 ########
