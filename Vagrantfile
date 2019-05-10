@@ -74,7 +74,7 @@ Vagrant.configure("2") do |config|
             yum install -y epel-release
             yum install -y  http://software.internet2.edu/rpms/el7/x86_64/RPMS.main/perfSONAR-repo-0.8-1.noarch.rpm
             yum clean all
-            yum install -y perfSONAR-repo-staging perfSONAR-repo-nightly
+            yum install -y perfSONAR-repo-staging
             yum clean all
             yum install -y gcc\
                 kernel-devel\
@@ -214,6 +214,7 @@ Vagrant.configure("2") do |config|
                 perl-Sub-Name\
                 perl-Sys-Statistics-Linux\
                 perl-Template-Toolkit\
+                perl-Term-ProgressBar\
                 perl-TermReadKey\
                 perl-Test-Harness\
                 perl-Test-Simple\
