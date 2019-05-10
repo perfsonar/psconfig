@@ -1,5 +1,11 @@
 #!/usr/bin/perl
 
+#TODO: Auto-detect pscheduler server and do shallow validation by default
+#TODO: Add option to skip pscheduler validation
+#TODO: Add verbose option and Output
+#TODO: Give a list of certain tasks to Validate
+#TODO: Better document validation behavior
+
 =head1 NAME
  
 validate - Validate a pSConfig JSON file
@@ -9,11 +15,13 @@ validate - Validate a pSConfig JSON file
 validate [options] FILE
  
  Options:
-   -h | --help       help message
-   -B | --bind ADDR  local address to bind to when sending http/https requests
-   -q | --quiet      suppress output to stdout and stderr
-   --skip-expand     skip expanding any include directives
-   --timeout N       number of seconds to wait to retrieve JSON
+   -h | --help              help message
+   -B | --bind ADDR         local address to bind to when sending http/https requests
+   -q | --quiet             suppress output to stdout and stderr
+   --pscheduler-server ADDR address of pscheduler server to contact to validate test and archiver specs in use by tasks. If not specified, pscheduler will not be contacted.
+   --deep                   perform 'deep' validation where every task has its template variables expanded and is validated
+   --skip-expand            skip expanding any include directives
+   --timeout N              number of seconds to wait to retrieve JSON
 
 =head1 ARGUMENTS
 
@@ -41,9 +49,21 @@ Local address to bind to when sending http/https requests
  
 Suppresses output to stdout and stderr. Useful when scripting and only concerned about exit code.
 
+=item B<--pscheduler-server ADDR>
+ 
+Address of pscheduler server to contact to validate test and archiver specs in use by tasks. If not specified, pscheduler will not be contacted.
+
+=item B<--deep>
+ 
+Perform 'deep' validation where every task has its template variables expanded and is validated. This is much more thourough but can take a significant amount of time for large templates. By default, if a pscheduler server can be detected only one instance of each task is validated. This can miss address and host-specific validation errors in archives and contexts since not every potential task is tested. 
+
 =item B<--skip-expand>
  
 Skip expanding include directives and just validate schema prior to processing includes.
+
+=item B<--skip-pscheduler>
+ 
+Skip validating specs against pscheduler.
 
 =item B<--timeout N>
  
@@ -66,20 +86,28 @@ use FindBin qw($Bin);
 use lib "$Bin/../../lib";
 use Getopt::Long qw(GetOptions);
 use Pod::Usage;
+use URI;
 
 use perfSONAR_PS::Client::PSConfig::ApiConnect;
 use perfSONAR_PS::Client::PSConfig::ApiFilters;
+use perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator;
+use perfSONAR_PS::Client::PScheduler::ApiConnect;
+use perfSONAR_PS::Client::Utils qw(send_http_request);
 
 #parse options
 my $bind;
 my $quiet;
 my $help;
+my $deep;
 my $skip_expand;
+my $pscheduler_server;
 my $timeout = 0;
 GetOptions(
     'help|h' => \$help,
     'bind|B=s' => \$bind,
     'quiet|q' => \$quiet,
+    'pscheduler-server=s' => \$pscheduler_server,
+    'deep' => \$deep,
     'skip-expand' => \$skip_expand,
     'timeout=i' => \$timeout
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
@@ -109,6 +137,7 @@ if($help){
 my $json_url = shift @ARGV;
 chomp $json_url;
 
+######################
 #read file  
 my $psconfig_filters = new perfSONAR_PS::Client::PSConfig::ApiFilters(timeout => $timeout);
 my $psconfig_client = new perfSONAR_PS::Client::PSConfig::ApiConnect(url => $json_url, filters => $psconfig_filters);
@@ -124,6 +153,7 @@ if($psconfig_client->error()){
     exit 2;
 } 
 
+######################
 #validate schema
 my @errors = $psconfig->validate();
 if(@errors){
@@ -288,6 +318,95 @@ if(@{$ref_errors}){
     exit 1;
 }
 
+######################
+#validate specs against pscheduler
+if($pscheduler_server){
+    my $pscheduler = new perfSONAR_PS::Client::PScheduler::ApiConnect(
+        url => _build_pscheduler_url($pscheduler_server)
+    );
+    foreach my $task_name(@{$psconfig->task_names()}){
+        my $tg = new perfSONAR_PS::Client::PSConfig::Parsers::TaskGenerator(
+                psconfig => $psconfig,
+                task_name => $task_name,
+                use_psconfig_archives => 1
+            );
+        
+        my $task = $psconfig->task($task_name);
+        my $test_ref = $task->test_ref();
+        if($tg->start()){
+            while($tg->next()){
+                #test spec validation
+                print "$task_name\n";
+                my $validation = $pscheduler->get_test_spec_is_valid(
+                    $tg->expanded_test()->{type},
+                    $tg->expanded_test()->{spec}
+                );
+                if($pscheduler->error()){
+                    _error("Problem communicating with pscheduler while validating test spec $test_ref when used in task $task_name: \n");
+                    _error("    " . $pscheduler->error());
+                    _error("");
+                    exit 1;
+                }elsif(!$validation->{'valid'}){
+                    _error("Test spec $test_ref is invalid when used in task $task_name: \n");
+                    _error("    " . ($validation->{'error'} ? $validation->{'error'} : 'No error specified'));
+                    _error("");
+                    exit 1;
+                }
+                #archiver validation
+                if($tg->expanded_archives()){
+                    foreach my $expanded_archive(@{$tg->expanded_archives()}){
+                        #can't be sure of exact reference since may come from host or defaults
+                        my $archiver_type = $expanded_archive->{archiver};
+                        my $validation = $pscheduler->get_archiver_is_valid(
+                            $archiver_type,
+                            $expanded_archive->{data}
+                        );
+                        if($pscheduler->error()){
+                            _error("Problem communicating with pscheduler while validating archiver spec of type $archiver_type used in task $task_name: \n");
+                            _error("    " . $pscheduler->error());
+                            _error("");
+                            exit 1;
+                        }elsif(!$validation->{'valid'}){
+                            _error("Archiver of type $archiver_type is invalid when used in task $task_name: \n");
+                            _error("    " . ($validation->{'error'} ? $validation->{'error'} : 'No error specified'));
+                            _error("");
+                            exit 1;
+                        }
+                    }
+                }
+                #context validation
+                if($tg->expanded_contexts()){
+                    foreach my $expanded_context_list(@{$tg->expanded_contexts()}){
+                        foreach my $expanded_context(@{$expanded_context_list}){
+                            my $context_type = $expanded_context->{context};
+                            my $validation = $pscheduler->get_context_is_valid(
+                                $context_type,
+                                $expanded_context->{data}
+                            );
+                            if($pscheduler->error()){
+                                _error("Problem communicating with pscheduler while validating context spec of type $context_type used in task $task_name: \n");
+                                _error("    " . $pscheduler->error());
+                                _error("");
+                                exit 1;
+                            }elsif(!$validation->{'valid'}){
+                                _error("Context of type $context_type is invalid when used in task $task_name: \n");
+                                _error("    " . ($validation->{'error'} ? $validation->{'error'} : 'No error specified'));
+                                _error("");
+                                exit 1;
+                            }
+                        }
+                    }
+                }
+                
+                #break loop unless doing a deep validation
+                last unless($deep);
+            }
+        }else{
+            _error("Problem building specs to send to pscheduler: " . $tg->error());
+        }
+    }
+}
+
 _success();
 
 #Subroutines
@@ -322,4 +441,15 @@ sub ref_check_addr_select{
             return;
         }
     }
+}
+
+sub _build_pscheduler_url {
+    my ($hostport) = @_;
+    
+    my $uri = new URI();
+    $uri->scheme('https');
+    $uri->host_port($hostport);
+    $uri->path('pscheduler');
+    
+    return $uri->as_string;
 }
