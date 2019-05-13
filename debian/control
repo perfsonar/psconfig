@@ -5,8 +5,8 @@ Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
  Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl,
- libparams-validate-perl, libperfsonar-psconfig-perl
-Standards-Version: 3.9.3
+ libparams-validate-perl, libterm-progressbar-perl, libperfsonar-psconfig-perl
+Standards-Version: 3.9.8
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/psconfig.git
 Vcs-Browser: https://github.com/perfsonar/psconfig/tree/debian/jessie
@@ -18,7 +18,7 @@ Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  libjson-validator-perl, liblog-log4perl-perl,
  libmouse-perl, libnet-cidr-perl, liburi-perl,
  libperfsonar-perl, libperfsonar-psconfig-perl,
- liblog-dispatch-filerotate-perl
+ liblog-dispatch-filerotate-perl, libterm-progressbar-perl
 Description: pSConfig Utilities
  Library and common command-line tools used for pSConfig.
 
