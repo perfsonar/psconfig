@@ -156,7 +156,7 @@ if(!$agent_name){
     }
     exit 2;
 }elsif($agent_name eq '?'){
-    foreach my $valid_agent(@valid_agents){
+    foreach my $valid_agent(sort @valid_agents){
         _success("$valid_agent\n");
     }
     exit 0;
@@ -196,7 +196,7 @@ if(!$opt_name){
         #skip parameters we don't want to handle
         next if($ignore_props->{$schema_prop});
         #skip parameter that aren't set unless --all
-        next unless($agent_conf->data()->{$schema_prop} || $all_opt);
+        next unless(defined $agent_conf->data()->{$schema_prop} || $all_opt);
         _print_opt($schema, $schema_prop, $agent_conf->data()->{$schema_prop});
         $found_prop = 1;
     }
@@ -205,7 +205,7 @@ if(!$opt_name){
     }
     exit 0;
 }elsif($opt_name eq '?'){
-    foreach my $schema_prop(keys %{$schema->{'properties'}}){
+    foreach my $schema_prop(sort keys %{$schema->{'properties'}}){
         #skip parameters we don't want to handle
         next if($ignore_props->{$schema_prop});
         _success("$schema_prop\n");
@@ -281,6 +281,9 @@ sub _type_info{
         my $items_type_info = _type_info($items);
         $translated_type = $items_type_info->{'type'} . " list";
         $example = $items_type_info->{'example'};
+    }if($raw_type eq 'boolean'){
+        $translated_type = "Boolean";
+        $example = "true or false";
     }elsif($raw_type eq '#/pSConfig/URLHostPort'){
         $translated_type = "Hostname/IP and Port";
         $example = "10.1.1.1:8443";
@@ -335,6 +338,15 @@ sub _parse_opt_value{
         }
     }elsif(@{$values} > 1){
         _error("Property does not accept multiple values.");
+    }elsif(@{$values} > 0 && $raw_type eq 'boolean'){
+        if(lc($values[0]) eq 'true' || $values[0] eq '1'){
+            $parsed_value = JSON::true;
+        }elsif(lc($values[0]) eq 'false' || $values[0] eq '0'){
+            $parsed_value = JSON::false;
+        }else{
+            _error('Invalid value ' . $values[0] . '. Must be true or false');
+            return;
+        }
     }elsif(@{$values} > 0){
         $parsed_value = $values[0];
     }
