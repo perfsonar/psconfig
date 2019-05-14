@@ -64,6 +64,21 @@
             "description": "ISO8601 indicating how often to check for changes to the local configuration files. This includes this config file, the includes directory, the requesting-agent file and the archives directory. Default is 1 minute ('PT60S')."
         },
         
+        "disable-cache": {
+            "type": "boolean",
+            "description": "Boolean indicating that if a template cannot be accessed or is invalid, a cached version should NOT be used if exists. The cache prevents inaccessible or invalid templates from causing tasks to be deleted immediately. Items in cache expire, so it will only protect tasks from deletion while cache entry is valid. Default is false."
+        },
+        
+        "cache-directory": {
+            "type": "string",
+            "description": "Path to directory where templates should be cached. Default is /var/lib/maddash/template_cache."
+        },
+        
+        "cache-expires": {
+            "$ref": "#/pSConfig/Duration",
+            "description": "ISO8601 indicating how long to cache templates. Default is 1 day (P1D)."
+        },
+        
         "grids": {
             "type": "object",
             "patternProperties": { 

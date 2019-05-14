@@ -18,7 +18,8 @@ use constant {
             client_class => 'perfSONAR_PS::PSConfig::PScheduler::ConfigConnect',
             agentctl_ignore => {
                 "remotes" => 1
-            }
+            },
+            default_cache_dir => '/var/lib/perfsonar/psconfig/template_cache'
         },
         {
             name => 'MaDDash',
@@ -28,7 +29,8 @@ use constant {
             agentctl_ignore => {
                 "remotes" => 1,
                 "grids" => 1
-            }
+            },
+            default_cache_dir => '/var/lib/maddash/template_cache'
         }
     ]
 };

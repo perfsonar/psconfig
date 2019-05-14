@@ -94,7 +94,14 @@ sub _run_start {
         $logger->debug($self->logf()->format( "No task-renewal-fudge-factor specified. Defaulting to $default" ));
         $agent_conf->task_renewal_fudge_factor($default);
     }
-
+    # Set cache directory per agent. Will not work to share since agents may
+    #  have different permissions
+    unless($agent_conf->cache_directory()){
+        my $default = "/var/lib/perfsonar/psconfig/template_cache";
+        $logger->debug($self->logf()->format("No cache-dir specified. Defaulting to $default"));
+        $agent_conf->cache_directory($default);
+    }
+    
     ##
     # Set defaults for pscheduler binding addresses
     unless($agent_conf->pscheduler_bind_map()){

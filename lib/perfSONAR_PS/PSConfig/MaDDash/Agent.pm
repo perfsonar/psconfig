@@ -77,6 +77,13 @@ sub _run_start {
         $logger->debug($self->logf()->format("No maddash-yaml-file specified. Defaulting to $default"));
         $agent_conf->maddash_yaml_file($default);
     }
+    # Set cache directory per agent. Will not work to share since agents may
+    #  have different permissions
+    unless($agent_conf->cache_directory()){
+        my $default = "/var/lib/maddash/template_cache";
+        $logger->debug($self->logf()->format("No cache-dir specified. Defaulting to $default"));
+        $agent_conf->cache_directory($default);
+    }
     unless($agent_conf->check_plugin_directory()){
         my $default = "/usr/lib/perfsonar/psconfig/checks/";
         $logger->debug($self->logf()->format("No check-plugin-directory specified. Defaulting to $default"));

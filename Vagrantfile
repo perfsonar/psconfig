@@ -98,6 +98,7 @@ Vagrant.configure("2") do |config|
                 perl-CGI\
                 perl-CGI-Ajax\
                 perl-CGI-Session\
+                perl-CHI\
                 perl-Class-Accessor\
                 perl-Class-Factory-Util\
                 perl-Class-Load\
