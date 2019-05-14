@@ -70,20 +70,18 @@ sub _run_start {
         $agent_conf->pscheduler_tracker_file($default);
     }
     
-    my $task_min_ttl_seconds = 86400;
     if($agent_conf->task_min_ttl()) {
-        my $task_min_ttl;
-        eval{ $task_min_ttl = duration_to_seconds($agent_conf->task_min_ttl()) };
+        my $task_min_ttl_seconds;
+        eval{ $task_min_ttl_seconds = duration_to_seconds($agent_conf->task_min_ttl()) };
         if($@){
-            $logger->error($self->logf()->format("Error parsing task-min-ttl. Defaulting to " . $self->task_min_ttl() . " seconds: $@"));
-        }elsif(!$task_min_ttl){
-            $logger->error($self->logf()->format("task_min_ttl has no value, sticking with default ". $self->task_min_ttl() . " seconds"));
+            $logger->error($self->logf()->format("Error parsing task-min-ttl. Defaulting to " . $self->task_min_ttl_seconds() . " seconds: $@"));
+        }elsif(!$task_min_ttl_seconds){
+            $logger->error($self->logf()->format("task_min_ttl has no value, sticking with default ". $self->task_min_ttl_seconds() . " seconds"));
         }else{
-            $task_min_ttl_seconds = $task_min_ttl;
+            $self->task_min_ttl_seconds($task_min_ttl_seconds);
         }
-        $logger->debug($self->logf()->format("task_min_ttl is $task_min_ttl_seconds seconds"));
+        $logger->debug($self->logf()->format("task_min_ttl is " . $self->task_min_ttl_seconds() . " seconds"));
     }
-    $self->task_min_ttl_seconds($task_min_ttl_seconds);
     
     unless ($agent_conf->task_min_runs()) {
         my $default = 2;
