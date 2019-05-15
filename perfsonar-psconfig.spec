@@ -35,6 +35,7 @@ A package that pulls in all the Mesh Configuration RPMs.
 Summary:		pSConfig Utilities
 Group:			Applications/Communications
 Requires:		perl
+Requires:       perl(CHI)
 Requires:		perl(Data::Dumper)
 Requires:		perl(Data::Validate::Domain)
 Requires:		perl(Data::Validate::IP)
@@ -78,6 +79,7 @@ Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
+Requires:       perl(CHI)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
 
@@ -106,6 +108,7 @@ Requires:       nagios-plugins-perfsonar
 Requires:       perfsonar-traceroute-viewer
 Requires:       perl(Mo)
 Requires:       perl(YAML)
+Requires:       perl(CHI)
 Requires:       perl(Linux::Inotify2)
 Obsoletes:      perfsonar-meshconfig-guiagent
 Provides:       perfsonar-meshconfig-guiagent

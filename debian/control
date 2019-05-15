@@ -14,7 +14,7 @@ Vcs-Browser: https://github.com/perfsonar/psconfig/tree/debian/jessie
 Package: perfsonar-psconfig-utils
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
- libdata-validate-domain-perl, libdata-validate-ip-perl,
+ libchi-perl, libdata-validate-domain-perl, libdata-validate-ip-perl,
  libjson-validator-perl, liblog-log4perl-perl,
  libmouse-perl, libnet-cidr-perl, liburi-perl,
  libperfsonar-perl, libperfsonar-psconfig-perl,
@@ -28,7 +28,7 @@ Replaces: perfsonar-meshconfig-agent
 Breaks: perfsonar-meshconfig-agent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}),
- libperfsonar-pscheduler-perl, liblinux-inotify2-perl,
+ libperfsonar-pscheduler-perl, libchi-perl, liblinux-inotify2-perl,
  libfile-readbackwards-perl, perfsonar-psconfig-pscheduler-dev
 Description: pSConfig pScheduler Agent
  Downloads a centralized JSON file describing the tests to run,
@@ -47,7 +47,7 @@ Replaces: perfsonar-meshconfig-guiagent
 Breaks: perfsonar-meshconfig-guiagent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
- libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
+ libchi-perl, libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
  libfile-readbackwards-perl, libhash-merge-perl,
  perfsonar-psconfig-maddash-dev
 Description: pSConfig MaDDash Agent

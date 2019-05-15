@@ -14,11 +14,13 @@ then does something with it
 
 use Mouse;
 
+use CHI;
 use Data::Dumper;
 use Data::Validate::Domain qw(is_hostname);
 use Data::Validate::IP qw(is_ipv4 is_ipv6 is_loopback_ipv4);
 use Net::CIDR qw(cidrlookup);
 use File::Basename;
+use JSON qw/ from_json /;
 use Log::Log4perl qw(get_logger);
 use URI;
 
@@ -45,6 +47,8 @@ has 'pscheduler_url' => (is => 'rw', isa => 'Str');
 has 'check_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 3600 });
 has 'check_config_interval_seconds' => (is => 'rw', isa => 'Int', default => sub { 60 });
 has 'default_archives' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::Archive]', default => sub { [] });
+has 'cache_expires_seconds' => (is => 'rw', isa => 'Int', default => sub { 86400 });
+has 'template_cache' => (is => 'rw', isa => 'Object|Undef', default => sub { undef });
 has 'default_transforms' => (is => 'rw', isa => 'ArrayRef[perfSONAR_PS::Client::PSConfig::JQTransform]', default => sub { [] });
 has 'requesting_agent_addresses' => (is => 'rw', isa => 'HashRef');
 has 'debug' => (is => 'rw', isa => 'Bool', default => sub { 0 });
@@ -158,7 +162,7 @@ sub run {
         $logger->error($self->logf()->format("Error reading " . $self->config_file() . ", not going to run any updates. Caused by: $@"));
         return;
     }
-        
+    
     ##
     # Set assist server - Host/Post to URL
     unless($agent_conf->pscheduler_assist_server()){
@@ -217,7 +221,41 @@ sub run {
     unless($self->_run_start($agent_conf)){
         return;
     }
-        
+    
+    ##
+    # Handle cache settings
+    $logger->debug($self->logf()->format("disable-cache is " . $agent_conf->disable_cache()));
+    if($agent_conf->cache_expires()) {
+        my $cache_expires_seconds;
+        eval{ $cache_expires_seconds = duration_to_seconds($agent_conf->cache_expires()) };
+        if($@){
+            $logger->error($self->logf()->format("Error parsing cache-expires. Defaulting to " . $self->cache_expires_seconds() . " seconds: $@"));
+        }elsif(!$cache_expires_seconds){
+            $logger->error($self->logf()->format("cache-expires has no value, sticking with default ". $self->cache_expires_seconds() . " seconds"));
+        }else{
+            $self->cache_expires_seconds($cache_expires_seconds);
+        }
+    }
+    $logger->debug($self->logf()->format("cache-expires is " . $self->cache_expires_seconds() . " seconds"));
+    
+    # Build cache client
+    if($agent_conf->disable_cache() || !$agent_conf->cache_directory()){
+        $self->template_cache(undef);
+    }else{
+        my $template_cache = CHI->new( 
+            driver => 'File', 
+            root_dir => $agent_conf->cache_directory(), 
+            expires_in => $self->cache_expires_seconds()
+        );
+        eval{
+            $template_cache->purge();
+        };
+        if($@){
+            $logger->debug("Unable to purge template cache directory. This is non-fatal so moving-on.");
+        }
+        $self->template_cache($template_cache);
+    }
+    
     ##
     # Process default archives directory
     #todo: make sure we handle this die correctly
@@ -365,11 +403,16 @@ sub run {
 sub _process_psconfig {
     my ($self, $psconfig_client, $transform) = @_;
     
+    #variable to track whether we are working with cached copy
+    my $using_cached = 0;
+    
     #get config
     my $psconfig = $psconfig_client->get_config();
     if($psconfig_client->error()){
         $logger->error($self->logf()->format("Error loading psconfig: " . $psconfig_client->error()));
-        return;
+        $psconfig = $self->_get_cached_template($psconfig_client->url());
+        return unless($psconfig);
+        $using_cached = 1;
     } 
     $logger->debug($self->logf()->format('Loaded pSConfig JSON', {'json' => $psconfig->json()}));
     
@@ -385,29 +428,50 @@ sub _process_psconfig {
                 'json_path' => $error->path
             }));
         }
-        return;
+        $psconfig = $self->_get_cached_template($psconfig_client->url());
+        return unless($psconfig);
+        $using_cached = 1;
     }
 
     #expand
-    $psconfig_client->expand_config($psconfig);
-    if($psconfig_client->error()){
-        $logger->error($self->logf()->format("Error expanding include directives in JSON: " . $psconfig_client->error()));
-        return;
-    }
-
-    #validate
-    @errors = $psconfig->validate();
-    if(@errors){
-        my $cat = "psconfig_schema_validation_error";
-        foreach my $error(@errors){
-           $logger->error($self->logf()->format($error->message, {
-                'category' => $cat,
-                'expanded' => 1,
-                'transformed' => 0,
-                'json_path' => $error->path
-            }));
+    if($psconfig->includes()){
+        $psconfig_client->expand_config($psconfig);
+        if($psconfig_client->error()){
+            $logger->error($self->logf()->format("Error expanding include directives in JSON: " . $psconfig_client->error()));
+            $psconfig = $self->_get_cached_template($psconfig_client->url());
+            return unless($psconfig);
+            $using_cached = 1;
         }
-        return;
+
+        #validate
+        @errors = $psconfig->validate();
+        if(@errors){
+            my $cat = "psconfig_schema_validation_error";
+            foreach my $error(@errors){
+               $logger->error($self->logf()->format($error->message, {
+                    'category' => $cat,
+                    'expanded' => 1,
+                    'transformed' => 0,
+                    'json_path' => $error->path
+                }));
+            }
+            $psconfig = $self->_get_cached_template($psconfig_client->url());
+            return unless($psconfig);
+            $using_cached = 1;
+        }
+    }
+    
+    #if we got this far, cache the template. do this prior to transforms or 
+    #we might get strange results. DO NOT do this if we are using a cached version
+    # or else the cached item will never expire
+    if($self->template_cache() && !$using_cached){
+        eval{
+            $self->template_cache()->set($psconfig_client->url(), $psconfig->json());
+            $logger->debug("Caching template " . $psconfig_client->url());
+        };
+        if($@){
+            $logger->debug("Error caching " . $psconfig_client->url() . "This is non-fatal.");
+        }
     }
     
     #apply default transforms
@@ -420,6 +484,47 @@ sub _process_psconfig {
     
     #set requesting agent
     $psconfig->requesting_agent_addresses($self->requesting_agent_addresses());
+    
+    return $psconfig;
+}
+
+sub _get_cached_template {
+    my ($self, $key) = @_;
+    
+    #if no cache, return
+    unless($self->template_cache()){
+        return;
+    }
+    
+    #check cache
+    my $psconfig_json;
+    eval{
+        my $cached_txt = $self->template_cache()->get($key);
+        $psconfig_json = from_json($cached_txt) if($cached_txt);
+    }; 
+    if($@){
+        $logger->debug("Unable to load cached template for $key: " . $@);
+    }
+    
+    #build psconfig object
+    my $psconfig;
+    if($psconfig_json){
+        $psconfig = new perfSONAR_PS::Client::PSConfig::Config(data => $psconfig_json);
+        my @errors = $psconfig->validate();
+        if(@errors){
+            $logger->debug("Invalid cached template found for for $key");
+            foreach my $error(@errors){
+                my $path = $error->path;
+                $logger->error($self->logf()->format($error->message, {
+                    'category' => "cached_schema_validation_error",
+                    'json_path' => $path
+
+                }));
+            }
+        }else{
+            $logger->info("Using cached JSON template for $key");
+        }
+    }
     
     return $psconfig;
 }
