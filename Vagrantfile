@@ -40,9 +40,9 @@ Vagrant.configure("2") do |config|
         #Install all requirements and perform initial setup
         psconfig.vm.provision "shell", inline: <<-SHELL
             # Create users
-            /usr/sbin/groupadd perfsonar 2> /dev/null || :
+            /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
             /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-            /usr/sbin/groupadd maddash 2> /dev/null || :
+            /usr/sbin/groupadd -r maddash 2> /dev/null || :
             /usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
 
             #setup directories first so don't conflict with rpms
