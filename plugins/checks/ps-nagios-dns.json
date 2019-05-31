@@ -11,8 +11,8 @@
     },
     "status-labels": {
         "ok": "Value {% check.params.label-ok-symbol %} {% check.warning %}{% check.params.units %}",
-        "warning": "Value {% check.params.label-warning-symbol %} {% check.params.units %}",
-        "critical": "Value {% check.params.label-critical-symbol %} {% check.params.units %}",
+        "warning": "Value {% check.params.label-warning-symbol %} {% check.warning %}{% check.params.units %}",
+        "critical": "Value {% check.params.label-critical-symbol %} {% check.critical %}{% check.params.units %}",
         "notrun": "Check has not run yet",
         "unknown": "Unable to find test data"
     },
