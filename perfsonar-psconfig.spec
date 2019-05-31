@@ -138,26 +138,26 @@ Requires(post): httpd
 Environment for publishing pSConfig template files in standard way
 
 %pre utils
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 
 %pre pscheduler
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %pre pscheduler-devel
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %pre maddash
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-/usr/sbin/groupadd maddash 2> /dev/null || :
+/usr/sbin/groupadd -r maddash 2> /dev/null || :
 /usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
 
 %pre maddash-devel
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
