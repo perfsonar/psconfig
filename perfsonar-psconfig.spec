@@ -13,7 +13,7 @@
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.2.b1
+%define perfsonar_auto_relnum 0.b2.1
 
 Name:			perfsonar-psconfig
 Version:		%{perfsonar_auto_version}
