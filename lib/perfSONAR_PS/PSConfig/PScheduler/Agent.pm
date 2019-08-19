@@ -70,20 +70,18 @@ sub _run_start {
         $agent_conf->pscheduler_tracker_file($default);
     }
     
-    my $task_min_ttl_seconds = 86400;
     if($agent_conf->task_min_ttl()) {
-        my $task_min_ttl;
-        eval{ $task_min_ttl = duration_to_seconds($agent_conf->task_min_ttl()) };
+        my $task_min_ttl_seconds;
+        eval{ $task_min_ttl_seconds = duration_to_seconds($agent_conf->task_min_ttl()) };
         if($@){
-            $logger->error($self->logf()->format("Error parsing task-min-ttl. Defaulting to " . $self->task_min_ttl() . " seconds: $@"));
-        }elsif(!$task_min_ttl){
-            $logger->error($self->logf()->format("task_min_ttl has no value, sticking with default ". $self->task_min_ttl() . " seconds"));
+            $logger->error($self->logf()->format("Error parsing task-min-ttl. Defaulting to " . $self->task_min_ttl_seconds() . " seconds: $@"));
+        }elsif(!$task_min_ttl_seconds){
+            $logger->error($self->logf()->format("task_min_ttl has no value, sticking with default ". $self->task_min_ttl_seconds() . " seconds"));
         }else{
-            $task_min_ttl_seconds = $task_min_ttl;
+            $self->task_min_ttl_seconds($task_min_ttl_seconds);
         }
-        $logger->debug($self->logf()->format("task_min_ttl is $task_min_ttl_seconds seconds"));
+        $logger->debug($self->logf()->format("task_min_ttl is " . $self->task_min_ttl_seconds() . " seconds"));
     }
-    $self->task_min_ttl_seconds($task_min_ttl_seconds);
     
     unless ($agent_conf->task_min_runs()) {
         my $default = 2;
@@ -96,7 +94,14 @@ sub _run_start {
         $logger->debug($self->logf()->format( "No task-renewal-fudge-factor specified. Defaulting to $default" ));
         $agent_conf->task_renewal_fudge_factor($default);
     }
-
+    # Set cache directory per agent. Will not work to share since agents may
+    #  have different permissions
+    unless($agent_conf->cache_directory()){
+        my $default = "/var/lib/perfsonar/psconfig/template_cache";
+        $logger->debug($self->logf()->format("No cache-dir specified. Defaulting to $default"));
+        $agent_conf->cache_directory($default);
+    }
+    
     ##
     # Set defaults for pscheduler binding addresses
     unless($agent_conf->pscheduler_bind_map()){
@@ -158,7 +163,11 @@ sub _run_handle_psconfig {
     
     #Init variables
     my $configure_archives = 0; #make sure defined
-    if($remote && $remote->configure_archives()){
+    if(!$remote){
+        #configure archives if not from a remote source
+        $configure_archives = 1;
+    }elsif($remote && $remote->configure_archives()){
+        #configure archives if from a remote source and said it is ok
         $configure_archives = 1;
     }
     

@@ -1,3 +1,9 @@
+perfsonar-psconfig (4.2.0-1) perfsonar-minor-staging; urgency=low
+
+  * New upstream version.
+
+ -- Andy Lake <andy@es.net>  Thu, 15 Aug 2019 01:09:50 +0000
+
 perfsonar-psconfig (4.1.6-1) perfsonar-release; urgency=low
 
   * New upstream version.

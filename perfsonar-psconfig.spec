@@ -12,7 +12,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 4.1.6
+%define perfsonar_auto_version 4.2.0
 %define perfsonar_auto_relnum 1
 
 Name:			perfsonar-psconfig
@@ -35,6 +35,7 @@ A package that pulls in all the Mesh Configuration RPMs.
 Summary:		pSConfig Utilities
 Group:			Applications/Communications
 Requires:		perl
+Requires:       perl(CHI)
 Requires:		perl(Data::Dumper)
 Requires:		perl(Data::Validate::Domain)
 Requires:		perl(Data::Validate::IP)
@@ -52,6 +53,7 @@ Requires:		perl(POSIX)
 Requires:		perl(Params::Validate)
 Requires:		perl(Pod::Usage)
 Requires:		perl(Regexp::Common)
+Requires:		perl(Term::ProgressBar)
 Requires:		perl(URI)
 Requires:		perl(base)
 Requires:		perl(lib)
@@ -77,6 +79,7 @@ Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
+Requires:       perl(CHI)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
 
@@ -105,6 +108,7 @@ Requires:       nagios-plugins-perfsonar
 Requires:       perfsonar-traceroute-viewer
 Requires:       perl(Mo)
 Requires:       perl(YAML)
+Requires:       perl(CHI)
 Requires:       perl(Linux::Inotify2)
 Obsoletes:      perfsonar-meshconfig-guiagent
 Provides:       perfsonar-meshconfig-guiagent
@@ -134,26 +138,26 @@ Requires(post): httpd
 Environment for publishing pSConfig template files in standard way
 
 %pre utils
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 
 %pre pscheduler
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %pre pscheduler-devel
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %pre maddash
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-/usr/sbin/groupadd maddash 2> /dev/null || :
+/usr/sbin/groupadd -r maddash 2> /dev/null || :
 /usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
 
 %pre maddash-devel
-/usr/sbin/groupadd perfsonar 2> /dev/null || :
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
@@ -276,6 +280,7 @@ systemctl restart httpd &>/dev/null || :
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/psconfig
+%attr(0755,perfsonar,perfsonar) %{command_base}/agentctl
 %attr(0755,perfsonar,perfsonar) %{command_base}/agents
 %attr(0755,perfsonar,perfsonar) %{command_base}/remote
 %attr(0755,perfsonar,perfsonar) %{command_base}/translate

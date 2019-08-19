@@ -1,10 +1,12 @@
 Source: perfsonar-psconfig
 Section: misc
 Priority: extra
-Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9.0.0), dh-systemd, perl,
- libparams-validate-perl, libperfsonar-psconfig-perl
-Standards-Version: 3.9.3
+ libparams-validate-perl, libterm-progressbar-perl, libperfsonar-psconfig-perl
+Standards-Version: 3.9.8
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/psconfig.git
 Vcs-Browser: https://github.com/perfsonar/psconfig/tree/debian/jessie
@@ -12,11 +14,11 @@ Vcs-Browser: https://github.com/perfsonar/psconfig/tree/debian/jessie
 Package: perfsonar-psconfig-utils
 Architecture: all
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
- libdata-validate-domain-perl, libdata-validate-ip-perl,
+ libchi-perl, libdata-validate-domain-perl, libdata-validate-ip-perl,
  libjson-validator-perl, liblog-log4perl-perl,
  libmouse-perl, libnet-cidr-perl, liburi-perl,
  libperfsonar-perl, libperfsonar-psconfig-perl,
- liblog-dispatch-filerotate-perl
+ liblog-dispatch-filerotate-perl, libterm-progressbar-perl
 Description: pSConfig Utilities
  Library and common command-line tools used for pSConfig.
 
@@ -26,7 +28,7 @@ Replaces: perfsonar-meshconfig-agent
 Breaks: perfsonar-meshconfig-agent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}),
- libperfsonar-pscheduler-perl, liblinux-inotify2-perl,
+ libperfsonar-pscheduler-perl, libchi-perl, liblinux-inotify2-perl,
  libfile-readbackwards-perl, perfsonar-psconfig-pscheduler-dev
 Description: pSConfig pScheduler Agent
  Downloads a centralized JSON file describing the tests to run,
@@ -45,7 +47,7 @@ Replaces: perfsonar-meshconfig-guiagent
 Breaks: perfsonar-meshconfig-guiagent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
- libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
+ libchi-perl, libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
  libfile-readbackwards-perl, libhash-merge-perl,
  perfsonar-psconfig-maddash-dev
 Description: pSConfig MaDDash Agent

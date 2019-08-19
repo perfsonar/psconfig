@@ -1,4 +1,5 @@
 bin/psconfig usr/lib/perfsonar/bin
+bin/psconfig_commands/agentctl usr/lib/perfsonar/bin/psconfig_commands/
 bin/psconfig_commands/agents usr/lib/perfsonar/bin/psconfig_commands/
 bin/psconfig_commands/remote usr/lib/perfsonar/bin/psconfig_commands/
 bin/psconfig_commands/translate usr/lib/perfsonar/bin/psconfig_commands/

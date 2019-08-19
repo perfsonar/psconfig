@@ -21,7 +21,7 @@
         
         "pscheduler-fail-attempts": {
             "$ref": "#/pSConfig/Cardinal",
-            "description": "The number of attempts to contact the pscheduler-url before giving-up for time specified by check-interval. Default is 5."
+            "description": "The number of attempts to contact the pscheduler-assist-server before giving-up for time specified by check-interval. Default is 5."
         },
         
         "match-addresses": {
@@ -77,7 +77,7 @@
         
         "task-min-ttl": {
             "$ref": "#/pSConfig/Duration",
-            "description": "The minimum expiration of new tasks created bu this agent. Default is 24 hours (PT24H)."
+            "description": "The minimum expiration of new tasks created by this agent. Default is 24 hours (PT24H)."
         },
         
         "task-min-runs": {
@@ -88,6 +88,21 @@
         "task-renewal-fudge-factor": {
             "$ref": "#/pSConfig/Probability",
             "description": "The percentage of time before a task expires that a new task will be created. Default is 25% (specified as .25)"
+        },
+        
+        "disable-cache": {
+            "type": "boolean",
+            "description": "Boolean indicating that if a template cannot be accessed or is invalid, a cached version should NOT be used if exists. The cache prevents inaccessible or invalid templates from causing tasks to be deleted immediately. Items in cache expire, so it will only protect tasks from deletion while cache entry is valid. Default is false."
+        },
+        
+        "cache-directory": {
+            "type": "string",
+            "description": "Path to directory where templates should be cached. Default is /var/lib/perfsonar/psconfig/template_cache."
+        },
+        
+        "cache-expires": {
+            "$ref": "#/pSConfig/Duration",
+            "description": "ISO8601 indicating how long to cache templates. Default is 1 day (P1D)."
         }
 
     },

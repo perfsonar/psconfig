@@ -77,6 +77,13 @@ sub _run_start {
         $logger->debug($self->logf()->format("No maddash-yaml-file specified. Defaulting to $default"));
         $agent_conf->maddash_yaml_file($default);
     }
+    # Set cache directory per agent. Will not work to share since agents may
+    #  have different permissions
+    unless($agent_conf->cache_directory()){
+        my $default = "/var/lib/maddash/template_cache";
+        $logger->debug($self->logf()->format("No cache-dir specified. Defaulting to $default"));
+        $agent_conf->cache_directory($default);
+    }
     unless($agent_conf->check_plugin_directory()){
         my $default = "/usr/lib/perfsonar/psconfig/checks/";
         $logger->debug($self->logf()->format("No check-plugin-directory specified. Defaulting to $default"));
@@ -149,6 +156,7 @@ sub _run_handle_psconfig {
         $self->logf->global_context()->{'task_name'} = $maddash_task_name;
         my $group = $psconfig->group($task->group_ref());
         my $row_equal_col = 0;
+        my $unidirectional = 0;
         
         ##
         # check dimension count
@@ -179,6 +187,9 @@ sub _run_handle_psconfig {
                         last;
                     }
                 }
+            }
+            if($group->can('unidirectional') && $group->unidirectional()){
+                $unidirectional = 1;
             }
         }
         
@@ -351,16 +362,18 @@ sub _run_handle_psconfig {
             
             #build check object
             $grid->{checks} = [];
+            ## Note that this function will do operations on references of $template and $jq_obj, so be careful when using after this call
             my $check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 0, $log_ctx);
             next unless($check_name);
             push @{$grid->{checks}}, $check_name;
             
             #build reverse if not a mesh
-            unless($row_equal_col){
+            unless($row_equal_col || $unidirectional){
                 #flip row and column
                 $template->row($col_str);
                 $template->col($row_str);
                 $template->flip_ma_url(1);
+                ## Note that this function will do operations on references of $template and $jq_obj, so be careful when using after this call
                 my $rev_check_name = $self->_build_check($grid_name, $template, $matching_agent_grid, $tg, 1, $log_ctx);
                 next unless($rev_check_name);
                 push @{$grid->{checks}}, $rev_check_name;
@@ -677,6 +690,8 @@ sub _build_check {
     ##        
     #build maUrl
     my $ma_map = {};
+    my $cmd_map = {};
+    my $graph_map = {};
     unless($tg->start()){
          $logger->error($self->logf()->format("Error initializing task iterator: " . $tg->error(), $log_ctx));
          return;
@@ -688,9 +703,11 @@ sub _build_check {
             $logger->error($self->logf()->format($tg->error(), $log_ctx));
             next;
         }
-        #build map
+        #get row and col
         my $row = $self->_get_root_address($addrs[0]);
         my $col = (@addrs > 1 ? $self->_get_root_address($addrs[1]) : "default");
+        ####
+        #build archive map
         $ma_map->{$row} = {} unless($ma_map->{$row});
         $ma_map->{$row}->{$col} = $self->_select_archive($tg, $matching_agent_grid);
         unless($ma_map->{$row}->{$col}){
@@ -698,70 +715,95 @@ sub _build_check {
             return;
         }
         
+        ####
+        #Set template test spec and vars to the current test
+        $template->jq_obj()->{'test'} = $tg->expanded_test();
+        my $check_vars = $check_plugin->expand_vars($template->jq_obj());
+        if(!$check_vars || $check_plugin->error()){
+            $logger->error($self->logf()->format("Error expanding check plugin vars: ".$check_plugin->error(), $log_ctx));
+            next;
+        }
+        $template->check_vars($check_vars);
+        my $viz_vars = $viz_plugin->expand_vars($template->jq_obj());
+        if(!$viz_vars || $viz_plugin->error()){
+            $logger->error($self->logf()->format("Error expanding vizualization plugin vars: ".$viz_plugin->error(), $log_ctx));
+            next;
+        }
+        $template->viz_vars($viz_vars);
+
+        ####
+        #build command map
+        $cmd_map->{$row} = {} unless($cmd_map->{$row});
+        $check_plugin->expand_vars();
+        ## more efficient to just used data directly, if change name may cause problems
+        #Note: value leak potential here since we are messing with jq_obj each time
+        my $expanded_command_opts = $template->expand($check_plugin->data()->{'command-opts'});
+        if($template->error()){
+            $logger->error($self->logf()->format("Unable to fill-in command-line options: " . $template->error(), $log_ctx));
+            return;
+        }
+        my $expanded_command_args = $template->expand($check_plugin->command_args());
+        if($template->error()){
+            $logger->error($self->logf()->format("Unable to fill-in command-line args: " . $template->error(), $log_ctx));
+            return;
+        }
+        #add command
+        my @command = ($check_plugin->command());
+        #add command opts
+        foreach my $expanded_command_opt(keys %{$expanded_command_opts}){
+            my $cmd_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Checks::CommandOpt('data' => $expanded_command_opts->{$expanded_command_opt});
+            if($cmd_opt_obj->condition() && $cmd_opt_obj->condition() ne 'false'){
+                my $final_command_opt = $expanded_command_opt;
+                $final_command_opt =~ s/__.+$//;
+                push  @command, $final_command_opt;
+                push  @command, $cmd_opt_obj->arg() if($cmd_opt_obj->arg());
+            }elsif($cmd_opt_obj->required()){
+                $logger->error($self->logf()->format("Unable to generate command because unable generate $expanded_command_opt command option", $log_ctx));
+                return;
+            }
+        }
+        #add command args
+        push @command, @{$expanded_command_args} if($expanded_command_args);
+        $cmd_map->{$row}->{$col} = join(' ', @command);
+        
+        ####
+        #build graph map   
+        # more efficient to just used data directly, if change name may cause problems
+        $graph_map->{$row} = {} unless($graph_map->{$row});
+        my $expanded_http_get_opts = $template->expand($viz_plugin->data()->{'http-get-opts'});
+        if($template->error()){
+            $logger->error($self->logf()->format("Unable to fill-in HTTP GET options: " . $template->error(), $log_ctx));
+            return;
+        }
+        #set base URL
+        my $graphUrl = $viz_plugin->defaults()->base_url();
+        if($matching_agent_grid->visualization()->base_url()){
+            $graphUrl = $matching_agent_grid->visualization()->base_url();
+        }
+        #build http get opts
+        my $first_get_opt = 1;
+        foreach my $expanded_http_get_opt(keys %{$expanded_http_get_opts}){
+            my $http_get_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Visualization::HttpGetOpt('data' => $expanded_http_get_opts->{$expanded_http_get_opt});
+            if($http_get_opt_obj->condition() && $http_get_opt_obj->condition() ne 'false'){
+                if($first_get_opt){
+                    $graphUrl .= '?';
+                    $first_get_opt = 0;
+                }else{
+                    $graphUrl .= '&';
+                }
+                $graphUrl .= $expanded_http_get_opt;
+                $graphUrl .= '=' . $http_get_opt_obj->arg() if(defined $http_get_opt_obj->arg());
+            }elsif($http_get_opt_obj->required()){
+                $logger->error($self->logf()->format("Unable to generate graphUrl because unable generate $expanded_http_get_opt GET option", $log_ctx));
+                return;
+            }
+        }
+        $graph_map->{$row}->{$col} = $graphUrl
     }
     $tg->stop();
     $self->_simplify_map($ma_map);
-    
-    ##        
-    #build graphUrl
-    ## more efficient to just used data directly, if change name may cause problems
-    my $expanded_http_get_opts = $template->expand($viz_plugin->data()->{'http-get-opts'});
-    if($template->error()){
-        $logger->error($self->logf()->format("Unable to fill-in HTTP GET options: " . $template->error(), $log_ctx));
-        return;
-    }
-    #set base URL
-    my $graphUrl = $viz_plugin->defaults()->base_url();
-    if($matching_agent_grid->visualization()->base_url()){
-        $graphUrl = $matching_agent_grid->visualization()->base_url();
-    }
-    #build http get opts
-    my $first_get_opt = 1;
-    foreach my $expanded_http_get_opt(keys %{$expanded_http_get_opts}){
-        my $http_get_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Visualization::HttpGetOpt('data' => $expanded_http_get_opts->{$expanded_http_get_opt});
-        if($http_get_opt_obj->condition() && $http_get_opt_obj->condition() ne 'false'){
-            if($first_get_opt){
-                $graphUrl .= '?';
-                $first_get_opt = 0;
-            }else{
-                $graphUrl .= '&';
-            }
-            $graphUrl .= $expanded_http_get_opt;
-            $graphUrl .= '=' . $http_get_opt_obj->arg() if(defined $http_get_opt_obj->arg());
-        }elsif($http_get_opt_obj->required()){
-            $logger->error($self->logf()->format("Unable to generate graphUrl because unable generate $expanded_http_get_opt GET option", $log_ctx));
-            return;
-        }
-    }
-    
-    ##
-    #build command
-    ## more efficient to just used data directly, if change name may cause problems
-    my $expanded_command_opts = $template->expand($check_plugin->data()->{'command-opts'});
-    if($template->error()){
-        $logger->error($self->logf()->format("Unable to fill-in command-line options: " . $template->error(), $log_ctx));
-        return;
-    }
-    my $expanded_command_args = $template->expand($check_plugin->command_args());
-    if($template->error()){
-        $logger->error($self->logf()->format("Unable to fill-in command-line args: " . $template->error(), $log_ctx));
-        return;
-    }
-    #add command
-    my @command = ($check_plugin->command());
-    #add command opts
-    foreach my $expanded_command_opt(keys %{$expanded_command_opts}){
-        my $cmd_opt_obj = new perfSONAR_PS::PSConfig::MaDDash::Checks::CommandOpt('data' => $expanded_command_opts->{$expanded_command_opt});
-        if($cmd_opt_obj->condition() && $cmd_opt_obj->condition() ne 'false'){
-            push  @command, $expanded_command_opt;
-            push  @command, $cmd_opt_obj->arg() if($cmd_opt_obj->arg());
-        }elsif($cmd_opt_obj->required()){
-            $logger->error($self->logf()->format("Unable to generate command because unable generate $expanded_command_opt command option", $log_ctx));
-            return;
-        }
-    }
-    #add command args
-    push @command, @{$expanded_command_args} if($expanded_command_args);
+    $self->_simplify_map($cmd_map);
+    $self->_simplify_map($graph_map);
     
     ##
     # Prepare various options for conversion to MaDDash format
@@ -806,9 +848,9 @@ sub _build_check {
         "retryAttempts" => $retry_attempts,
         "timeout" => $timeout,
         "params" => {
-            "command" => join(' ', @command),
+            "command" => $cmd_map,
             "maUrl" => $ma_map,
-            "graphUrl" =>  $graphUrl
+            "graphUrl" =>  $graph_map
         }
     };
     

@@ -41,7 +41,7 @@ remote add|edit|delete|list [options]
 
 =over 8
 
-=item B<add|delete|list>
+=item B<add|edit|delete|list>
  
 The action to perform
 

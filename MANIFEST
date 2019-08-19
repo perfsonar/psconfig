@@ -1,6 +1,7 @@
 LICENSE
 MANIFEST
 Makefile
+bin/psconfig_commands/agentctl
 bin/psconfig_commands/agents
 bin/psconfig_commands/lookup
 bin/psconfig_commands/maddash-check-plugins

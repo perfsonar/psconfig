@@ -241,6 +241,39 @@ sub task_renewal_fudge_factor {
     return $self->_field_probability('task-renewal-fudge-factor', $val);
 }
 
+=item use_cache()
+
+Gets/sets whether templates should be cached
+
+=cut
+
+sub disable_cache {
+    my ($self, $val) = @_;
+    return $self->_field_bool('disable-cache', $val);
+}
+
+=item cache_directory()
+
+Gets/sets the directory where cached templates live
+
+=cut
+
+sub cache_directory {
+    my ($self, $val) = @_;
+    return $self->_field('cache-directory', $val);
+}
+
+=item cache_expires()
+
+Gets/sets how long to keep templates cached.
+
+=cut
+
+sub cache_expires {
+    my ($self, $val) = @_;
+    return $self->_field_duration('cache-expires', $val);
+}
+
 =item validate()
 
 Validates this object against JSON schema. Returns error messages of a 0 length array if valid. 
@@ -252,9 +285,20 @@ sub validate {
     my $validator = new JSON::Validator();
     ##NOTE: Below works around the strict TLD requirements of JSON::Validator
     local *Data::Validate::Domain::is_domain = \&Data::Validate::Domain::is_hostname;
-    $validator->schema(psconfig_pscheduler_json_schema());
+    $validator->schema($self->schema());
 
     return $validator->validate($self->data());
+}
+
+=item schema()
+
+Returns the JSON schema for this config
+
+=cut
+
+sub schema {
+    my $self = shift;
+    return psconfig_pscheduler_json_schema();
 }
 
 

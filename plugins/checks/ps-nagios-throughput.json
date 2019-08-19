@@ -3,7 +3,7 @@
     "name": "Throughput",
     "description": "Queries an esmond MA for throughput data and alerts on response",
     "requires": {
-        "test-type": ["throughput"],
+        "test-type": ["throughput", "disk-to-disk"],
         "archive-type": ["esmond"]
     },
     "archive-accessor": {
@@ -35,8 +35,10 @@
             "script": [ 
                 "if .test.spec.udp==true then",
                 "   \"udp\"",
-                "else",
+                "elif .test.type==\"throughput\" then",
                 "   \"tcp\"" ,
+                "else",
+                "   \"\"" ,
                 "end"
             ]
         },

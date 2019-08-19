@@ -40,9 +40,9 @@ Vagrant.configure("2") do |config|
         #Install all requirements and perform initial setup
         psconfig.vm.provision "shell", inline: <<-SHELL
             # Create users
-            /usr/sbin/groupadd perfsonar 2> /dev/null || :
+            /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
             /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-            /usr/sbin/groupadd maddash 2> /dev/null || :
+            /usr/sbin/groupadd -r maddash 2> /dev/null || :
             /usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
 
             #setup directories first so don't conflict with rpms
@@ -74,7 +74,7 @@ Vagrant.configure("2") do |config|
             yum install -y epel-release
             yum install -y  http://software.internet2.edu/rpms/el7/x86_64/RPMS.main/perfSONAR-repo-0.8-1.noarch.rpm
             yum clean all
-            yum install -y perfSONAR-repo-staging perfSONAR-repo-nightly
+            yum install -y perfSONAR-repo-staging
             yum clean all
             yum install -y gcc\
                 kernel-devel\
@@ -98,6 +98,7 @@ Vagrant.configure("2") do |config|
                 perl-CGI\
                 perl-CGI-Ajax\
                 perl-CGI-Session\
+                perl-CHI\
                 perl-Class-Accessor\
                 perl-Class-Factory-Util\
                 perl-Class-Load\
@@ -214,6 +215,7 @@ Vagrant.configure("2") do |config|
                 perl-Sub-Name\
                 perl-Sys-Statistics-Linux\
                 perl-Template-Toolkit\
+                perl-Term-ProgressBar\
                 perl-TermReadKey\
                 perl-Test-Harness\
                 perl-Test-Simple\
