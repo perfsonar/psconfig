@@ -1,6 +1,15 @@
+perfsonar-psconfig (4.2.1-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 27 Sep 2019 13:16:17 -0400
+
 perfsonar-psconfig (4.2.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version.
+  * Adding dependency on libchi-perl, libterm-progressbar-perl
+  * Adding Build-Depends: on libterm-progressbar-perl
+  * Building on Stretch.
 
  -- Andy Lake <andy@es.net>  Thu, 15 Aug 2019 01:09:50 +0000
 
