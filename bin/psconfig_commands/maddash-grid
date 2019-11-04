@@ -8,7 +8,7 @@ options are given, all grids will be matched for deleting/listing.
  
 =head1 SYNOPSIS
  
-remote add|edit|delete|list [options]
+maddash-grid add|edit|delete|list [options]
  
  Options:
    -h | --help                              Help message
