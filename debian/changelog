@@ -1,16 +1,14 @@
-<<<<<<< HEAD
 perfsonar-psconfig (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
 
   * New upstream version.
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Aug 2019 13:10:51 +0000
-=======
-perfsonar-psconfig (4.2.1~a1.0-1) perfsonar-4.2-snapshot; urgency=low
+
+perfsonar-psconfig (4.2.1-1) perfsonar-4.2; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Aug 2019 13:10:06 +0000
->>>>>>> 4.2.1
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 27 Sep 2019 13:16:17 -0400
 
 perfsonar-psconfig (4.2.0-1) perfsonar-minor-staging; urgency=low
 
