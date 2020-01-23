@@ -155,6 +155,13 @@ sub _run_handle_psconfig {
         my $maddash_task_name = "$dashboard_name - $task_name";
         $self->logf->global_context()->{'task_name'} = $maddash_task_name;
         my $group = $psconfig->group($task->group_ref());
+        if(!$group){
+            $logger->warn($self->logf()->format("Invalid group name '" . 
+                                $task->group_ref() . 
+                                "'. Check for typos in your pSConfig template file.")
+                         );
+            next;
+        }
         my $row_equal_col = 0;
         my $unidirectional = 0;
         
