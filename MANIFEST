@@ -84,6 +84,8 @@ lib/perfSONAR_PS/PSConfig/Remote.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConfig.pm
 lib/perfSONAR_PS/PSConfig/RequestingAgentConnect.pm
 lib/perfSONAR_PS/PSConfig/TransformConnect.pm
+plugins/checks/ps-nagios-dns.json
+plugins/checks/ps-nagios-http.json
 plugins/checks/ps-nagios-loss.json
 plugins/checks/ps-nagios-owdelay.json
 plugins/checks/ps-nagios-pathmtu.json
@@ -102,6 +104,7 @@ plugins/reports/ps-nagios-retransmits-report.yaml
 plugins/reports/ps-nagios-rtt-report.yaml
 plugins/reports/ps-nagios-throughput-report.yaml
 plugins/reports/ps-nagios-traceroute-report.yaml
+plugins/visualization/blank.json
 plugins/visualization/ps-graphs.json
 plugins/visualization/ps-traceroute-viewer.json
 scripts/psconfig-pscheduler-agent.service

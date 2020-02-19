@@ -12,7 +12,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 4.2.1
+%define perfsonar_auto_version 4.2.3
 %define perfsonar_auto_relnum 1
 
 Name:			perfsonar-psconfig
@@ -257,6 +257,12 @@ mkdir -p %{publish_web_dir}
 chown -R perfsonar:perfsonar %{publish_web_dir}
 chmod 755 %{publish_web_dir}
 
+#httpd selinux settings
+setsebool -P httpd_can_network_connect on
+#enable httpd on fresh install
+if [ "$1" = "1" ]; then
+    systemctl enable httpd
+fi
 #reload httpd
 systemctl restart httpd &>/dev/null || :
 
