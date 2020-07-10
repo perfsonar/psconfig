@@ -6,7 +6,7 @@ The process involves:
 1. Building a JSON file that defines the tests you want run between a set of hosts
 1. Publishing the JSON file to a web server
 1. Running an agent on each endpoint to read the JSON file from the web server and decide which tests to run
-1. Optionally running a script on a host running [MaDDash](http://software.es.net/maddash) to build dashboards of the tests you have defined. 
+1. Optionally running a script on a host running MaDDash to build dashboards of the tests you have defined. 
 
 
 ## Getting the Code
