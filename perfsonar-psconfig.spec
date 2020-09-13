@@ -80,6 +80,7 @@ Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
 Requires:       perl(CHI)
+Requires:       perl(Time::Piece)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
 

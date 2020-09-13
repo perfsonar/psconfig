@@ -22,6 +22,13 @@ pscheduler-stats [options]
  
 Prints a help message and exits
 
+=item B<-f | --format>
+
+Output format to use.  Known format are:
+- text (default)
+- json
+- prometheus
+
 =item B<-d | --logdir DIR>
  
 Directory containing log files to parse
@@ -42,12 +49,15 @@ use Getopt::Long qw(GetOptions);
 use Pod::Usage;
 
 use File::ReadBackwards;
+use Time::Piece;
 
 #parse options
+my $format = 'text';
 my $logdir;
 my $help;
 GetOptions(
     'help|h' => \$help,
+    'format|f=s' => \$format,
     'logdir|d=s' => \$logdir,
 ) or pod2usage({ -verbose => 0, -exitval => 2 });
 
@@ -127,24 +137,56 @@ while( defined ($tasks_log_line = $tasks_log->readline) ){
 }
 
 #Output
-print "Agent Last Run Start Time: $start\n";
-print "Agent Last Run End Time: $end\n";
-print "Agent Last Run Process ID (PID): $pid\n";
-print "Agent Last Run Log GUID: $guid\n";
-print "Total tasks managed by agent: " . $sums->{'total'} . "\n";
-foreach my $src(sort keys %{$sums->{'by_src'}}){
-    my $src_stats = $sums->{'by_src'}->{$src};
-    if($src eq 'remote'){
-        print "From remote definitions: " . $src_stats->{'total'} . "\n";
-    }elsif($src eq 'include'){
-        print "From include files: " . $src_stats->{'total'} . "\n";
-    }else{
-        print "From $src: " . $src_stats->{'total'} . "\n";
+my $st = Time::Piece->strptime($start, "%Y/%m/%d %H:%M:%S");
+my $et = Time::Piece->strptime($end, "%Y/%m/%d %H:%M:%S");
+if($format eq 'json'){
+    print "{\"pscheduler-agent\": {\"start-time\": ".$st->strftime("\"%Y-%m-%dT%H:%M:%S\"").
+        ", \"end-time\": ".$et->strftime("\"%Y-%m-%dT%H:%M:%S\"").
+        "}, \"pscheduler-tasks\": {\"total\": ".$sums->{'total'};
+        foreach my $src(sort keys %{$sums->{'by_src'}}){
+            my $src_stats = $sums->{'by_src'}->{$src};
+            print ", \"".$src."\": {\"total\": ".$src_stats->{'total'};
+            foreach my $url(sort keys %{$src_stats->{'by_url'}}){
+                print ", \"".$url."\": ".$src_stats->{'by_url'}->{$url};
+            }
+            print "}";
+        }
+        print "}}";
+    print "\n";
+}elsif($format eq 'prometheus'){
+    print "# HELP perfsonar_psconfig_pscheduler_agent_start_time Number of seconds since 1970 of psconfig-pscheduler-agent start time\n";
+    print "# TYPE perfsonar_psconfig_pscheduler_agent_start_time gauge\n";
+    print "perfsonar_psconfig_pscheduler_agent_start_time ".$et->epoch."\n";
+    print "# HELP perfsonar_psconfig_pscheduler_agent_end_time Number of seconds since 1970 of psconfig-pscheduler-agent end time\n";
+    print "# TYPE perfsonar_psconfig_pscheduler_agent_end_time gauge\n";
+    print "perfsonar_psconfig_pscheduler_agent_end_time ".$st->epoch."\n";
+    print "# HELP perfsonar_psconfig_pscheduler_tasks Number of tasks configured by pSconfig in pScheduler\n";
+    print "# TYPE perfsonar_psconfig_pscheduler_tasks gauge\n";
+    foreach my $src(sort keys %{$sums->{'by_src'}}){
+        my $src_stats = $sums->{'by_src'}->{$src};
+        foreach my $url(sort keys %{$src_stats->{'by_url'}}){
+            print "perfsonar_psconfig_pscheduler_tasks{src=\"".$src."\",url=\"".$url."\"} ".$src_stats->{'by_url'}->{$url}."\n";
+        }
     }
-    foreach my $url(sort keys %{$src_stats->{'by_url'}}){
-        print "    $url: " . $src_stats->{'by_url'}->{$url} . "\n";
+}else{
+    print "Agent Last Run Start Time: $start\n";
+    print "Agent Last Run End Time: $end\n";
+    print "Agent Last Run Process ID (PID): $pid\n";
+    print "Agent Last Run Log GUID: $guid\n";
+    print "Total tasks managed by agent: " . $sums->{'total'} . "\n";
+    foreach my $src(sort keys %{$sums->{'by_src'}}){
+        my $src_stats = $sums->{'by_src'}->{$src};
+        if($src eq 'remote'){
+            print "From remote definitions: " . $src_stats->{'total'} . "\n";
+        }elsif($src eq 'include'){
+            print "From include files: " . $src_stats->{'total'} . "\n";
+        }else{
+            print "From $src: " . $src_stats->{'total'} . "\n";
+        }
+        foreach my $url(sort keys %{$src_stats->{'by_url'}}){
+            print "    $url: " . $src_stats->{'by_url'}->{$url} . "\n";
+        }
     }
-    
 }
 _success();
 
