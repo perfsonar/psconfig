@@ -7,7 +7,7 @@
       },
       "display-name": "DNS Query Time",
       "visualization": {
-        "type": "blank"
+        "type": "ps-graphs"
       },
       "priority" : {
         "group" : "dns",
@@ -20,7 +20,7 @@
       },
       "display-name": "HTTP Request Time",
       "visualization": {
-        "type": "blank"
+        "type": "ps-graphs"
       },
       "priority" : {
         "group" : "http",

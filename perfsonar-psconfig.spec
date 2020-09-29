@@ -12,8 +12,8 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:			perfsonar-psconfig
 Version:		%{perfsonar_auto_version}
@@ -80,6 +80,7 @@ Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
 Requires:       perl(CHI)
+Requires:       perl(Time::Piece)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
 

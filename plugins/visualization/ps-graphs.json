@@ -1,7 +1,7 @@
 {
     "type": "ps-graphs",
     "requires": {
-        "test-type": ["throughput", "latency", "latencybg", "rtt", "disk-to-disk"],
+        "test-type": ["throughput", "latency", "latencybg", "rtt", "disk-to-disk", "dns", "http"],
         "archive-type": ["esmond"]
     },
     "defaults": {
