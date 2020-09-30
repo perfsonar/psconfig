@@ -574,7 +574,7 @@ sub _get_addresses {
     push @all_addresses, $hostname if ($hostname);
 
     foreach my $address (@all_addresses) {
-        next if ($ret_addresses{$address});
+        next if (!$address || $ret_addresses{$address});
 
         $ret_addresses{$address} = 1;
 

@@ -115,6 +115,10 @@ sub _run_start {
     unless($match_addresses && @{$match_addresses}) {
         $auto_detected_addresses = $self->_get_addresses();
         $match_addresses = $auto_detected_addresses;
+        unless(@{$match_addresses}){
+            $logger->error($self->logf()->format("Unable to detect any match addresses. This may signify a problem with your /etc/hosts or DNS configuration. You can also try setting the match_addresses property directly.", {"match_addresses" => $match_addresses}));
+            return 0;
+        }
         $logger->debug($self->logf()->format("Auto-detected match addresses", {"match_addresses" => $match_addresses}));
     }else{
         $logger->debug($self->logf()->format("Loaded match addresses from config file", {"match_addresses" => $match_addresses}));
