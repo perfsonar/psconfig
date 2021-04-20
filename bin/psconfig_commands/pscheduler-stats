@@ -10,6 +10,7 @@ pscheduler-stats [options]
  
  Options:
    -h | --help          help message
+   -f | --format        output format (text|json|prometheus)
    -d | --logdir DIR    directory containing log files to parse
 
 =head1 ARGUMENTS
