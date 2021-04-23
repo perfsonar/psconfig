@@ -459,6 +459,22 @@ sub _process_psconfig {
             return unless($psconfig);
             $using_cached = 1;
         }
+
+        #validate references
+        @errors = $psconfig->validate_refs();
+        if(@errors){
+            my $cat = "psconfig_ref_validation_error";
+            foreach my $error(@errors){
+               $logger->error($self->logf()->format($error, {
+                    'category' => $cat,
+                    'expanded' => 1,
+                    'transformed' => 0
+                }));
+            }
+            $psconfig = $self->_get_cached_template($psconfig_client->url());
+            return unless($psconfig);
+            $using_cached = 1;
+        }
     }
     
     #if we got this far, cache the template. do this prior to transforms or 
