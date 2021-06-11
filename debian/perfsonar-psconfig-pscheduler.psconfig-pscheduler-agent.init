@@ -7,14 +7,14 @@
 # Should-Stop:       pscheduler-scheduler pscheduler-archiver pscheduler-ticker pscheduler-runner
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: pSConfig PScheduler Agent
+# Short-Description: pSConfig pScheduler Agent
 # Description:       Downloads a centralized JSON file describing the tests a mesh is running,
 #                    and uses it to generate appropriate pScheduler tasks.
 ### END INIT INFO
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="pSConfig PScheduler Agent"
+DESC="pSConfig pScheduler Agent"
 NAME=psconfig-pscheduler-agent
 DAEMON=/usr/lib/perfsonar/bin/psconfig_pscheduler_agent
 PIDFILE=/var/run/$NAME.pid
