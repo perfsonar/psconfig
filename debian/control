@@ -1,10 +1,10 @@
 Source: perfsonar-psconfig
 Section: misc
-Priority: extra
+Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
-Build-Depends: debhelper (>= 9.0.0), debhelper (>= 9.20160709) | dh-systemd, perl,
- libparams-validate-perl, libterm-progressbar-perl, libperfsonar-psconfig-perl
+Build-Depends: debhelper (>= 10), libparams-validate-perl,
+ libterm-progressbar-perl, libperfsonar-psconfig-perl
 Standards-Version: 3.9.8
 Homepage: http://www.perfsonar.net
 Vcs-Git: https://github.com/perfsonar/psconfig.git
@@ -35,7 +35,7 @@ Description: pSConfig pScheduler Agent
 
 Package: perfsonar-psconfig-pscheduler-dev
 Architecture: all
-Depends: ${misc:Depends}, ${perl:Depends},
+Depends: ${misc:Depends},
  libperfsonar-pscheduler-perl
 Description: pSConfig pScheduler Development Libraries
  Development libraries for interacting with the pSConfig pScheduler Agent.
@@ -55,7 +55,7 @@ Description: pSConfig MaDDash Agent
 
 Package: perfsonar-psconfig-maddash-dev
 Architecture: all
-Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+Depends: ${misc:Depends}, perfsonar-common,
  libperfsonar-pscheduler-perl
 Description: pSConfig MaDDash Agent Development Libraries
  Development Libraries for interactiving with the pSConfig MaDDash Agent.
