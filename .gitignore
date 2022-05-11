@@ -7,3 +7,7 @@
 vagrant-data
 # Ignore coverage data
 cover_db
+# Ignore unibuild files 
+unibuild-log
+unibuild-work/
+unibuild-repo/
