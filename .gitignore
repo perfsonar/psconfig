@@ -1,5 +1,7 @@
 #Ignore mac hidden file
 .DS_Store
+#Ignore vs_code
+.vscode
 # Ignore quilt cache directory
 .pc/
 # Ignore vagrant files

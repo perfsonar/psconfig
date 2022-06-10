@@ -1,0 +1,3 @@
+/etc/perfsonar/psconfig/archives.d
+/etc/perfsonar/psconfig/transforms.d
+/var/lib/perfsonar/psconfig

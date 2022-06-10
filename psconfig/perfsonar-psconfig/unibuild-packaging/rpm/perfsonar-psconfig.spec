@@ -87,14 +87,6 @@ Provides:       perfsonar-meshconfig-agent
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
 
-%package pscheduler-devel
-Summary:		pSConfig pScheduler Agent
-Group:			Applications/Communications
-Requires:       libperfsonar-pscheduler-perl
-
-%description pscheduler-devel
-Libraries for interacting with the pSConfig pScheduler Agent
-
 %package maddash
 Summary:		pSConfig MaDDash Agent
 Group:			Applications/Communications
@@ -143,10 +135,6 @@ Environment for publishing pSConfig template files in standard way
 
 
 %pre pscheduler
-/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-
-%pre pscheduler-devel
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
@@ -304,12 +292,6 @@ systemctl restart httpd &>/dev/null || :
 %attr(0755,perfsonar,perfsonar) %{command_base}/pscheduler-*
 %attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
 %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
-
-%files pscheduler-devel
-%defattr(0644,perfsonar,perfsonar,0755)
-%license LICENSE
-%{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/*
-%exclude %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 
 %files maddash
 %defattr(0644,perfsonar,perfsonar,0755)

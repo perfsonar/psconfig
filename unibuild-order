@@ -11,4 +11,6 @@ changecom()dnl
 
 # This has packaging for RPM and Debian and is built on both.
 # Only one package, so build current directory
+
+psconfig-pscheduler-devel
 psconfig
