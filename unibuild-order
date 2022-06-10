@@ -8,9 +8,22 @@ changecom()dnl
 # more information.
 #
 
+# Build dependencies
+submodules/bundles/common
+submodules/minor-packages/perl-CGI-Ajax
+submodules/minor-packages/perl-Data-Validate-Domain
+submodules/minor-packages/perl-Data-Validate-IP
+submodules/minor-packages/perl-Hash-Merge
+submodules/minor-packages/perl-IPC-DirQueue
+submodules/minor-packages/perl-JSON-Validator
+submodules/minor-packages/perl-Net-Traceroute
+submodules/perl-shared/libperfsonar
 
-# This has packaging for RPM and Debian and is built on both.
-# Only one package, so build current directory
+# Build base library
+psconfig-utils
 
+# Build agent devel libraries
 psconfig-pscheduler-devel
+
+# Build primary packages
 psconfig

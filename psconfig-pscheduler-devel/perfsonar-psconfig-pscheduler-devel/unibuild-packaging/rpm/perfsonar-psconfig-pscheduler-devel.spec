@@ -1,4 +1,5 @@
 %define install_base        /usr/lib/perfsonar/
+%define config_base         /etc/perfsonar/psconfig
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.0
@@ -26,6 +27,10 @@ Libraries for interacting with the pSConfig pScheduler Agent
 %setup -q -n %{name}-%{version}
 
 %build
+
+%install
+rm -rf %{buildroot}
+make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
 
 %clean
 rm -rf %{buildroot}
