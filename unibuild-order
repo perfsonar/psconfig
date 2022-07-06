@@ -9,7 +9,20 @@ changecom()dnl
 #
 
 # Build dependencies
-#submodules/bundles/common
+ifelse(PACKAGING,rpm,submodule/pscheduler/pscheduler-rpm)
+ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,submodule/pscheduler/oniguruma)
+submodule/pscheduler/jq
+ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,                           # Ubuntu 20 has a newer version of this.
+       DISTRO/eval(MAJOR > 10),Debian/1,,                           # As does Debian 11.
+       submodule/pscheduler/python-jsonschema)                      # EL8 has this, but an older version
+ifelse(FAMILY/MAJOR,RedHat/7,submodule/pscheduler/python-isodate)   # EL7 needs this; EL8 is up to date
+ifelse(FAMILY/MAJOR,RedHat/7,submodule/pscheduler/python-ntplib)    # EL8 has this, ours is newer
+submodule/pscheduler/python-py-radix
+submodule/pscheduler/python-pyjq
+submodule/pscheduler/python-tzlocal
+submodule/pscheduler/pscheduler-jq-library
+submodule/pscheduler/python-pscheduler
+
 
 # Build primary packages
 psconfig
