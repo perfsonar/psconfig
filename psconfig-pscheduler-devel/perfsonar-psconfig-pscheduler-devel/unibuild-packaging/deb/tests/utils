@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -e
-
-psconfig validate /usr/share/doc/perfsonar/psconfig/example-1-simple.json | grep -C 10 'pSConfig JSON is valid'

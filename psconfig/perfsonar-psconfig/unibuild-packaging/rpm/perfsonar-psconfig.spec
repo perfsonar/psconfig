@@ -23,6 +23,9 @@ License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
 Source0:		perfsonar-psconfig-%{version}.tar.gz
+Requires:       python3
+BuildRequires:  python3
+BuildRequires:  python36-nose
 BuildArch:		noarch
 
 
@@ -32,74 +35,13 @@ A package that pulls in all the Mesh Configuration RPMs.
 %package pscheduler
 Summary:		pSConfig pScheduler Agent
 Group:			Applications/Communications
-Requires:		perfsonar-psconfig-pscheduler-devel = %{version}-%{release}
-Requires(post):	perfsonar-psconfig-pscheduler-devel = %{version}-%{release}
-Requires:		perfsonar-psconfig-utils = %{version}-%{release}
-Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
-Requires:       libperfsonar-pscheduler-perl
-Requires:       perl(Linux::Inotify2)
-Requires:       perl(CHI)
-Requires:       perl(Time::Piece)
-Obsoletes:      perfsonar-meshconfig-agent
-Provides:       perfsonar-meshconfig-agent
+
 
 %description pscheduler
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
 
-%package maddash
-Summary:		pSConfig MaDDash Agent
-Group:			Applications/Communications
-Requires:		perfsonar-psconfig-maddash-devel = %{version}-%{release}
-Requires(post):	perfsonar-psconfig-maddash-devel = %{version}-%{release}
-Requires:		perfsonar-psconfig-utils = %{version}-%{release}
-Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
-Requires:		maddash-server
-Requires:       perfsonar-graphs
-Requires:       nagios-plugins-perfsonar
-Requires:       perfsonar-traceroute-viewer
-Requires:       perl(Mo)
-Requires:       perl(YAML)
-Requires:       perl(CHI)
-Requires:       perl(Linux::Inotify2)
-Obsoletes:      perfsonar-meshconfig-guiagent
-Provides:       perfsonar-meshconfig-guiagent
-
-%description maddash
-The pSConfig MaDDash Agent downloads a centralized JSON file
-describing the tests a mesh is running, and generates a MaDDash configuration.
-
-%package maddash-devel
-Summary:		pSConfig pScheduler Agent
-Group:			Applications/Communications
-Requires:       libperfsonar-pscheduler-perl
-
-%description maddash-devel
-Libraries for interacting with the pSConfig MaDDash Agent
-
-%package publisher
-Summary:		pSConfig pScheduler Publisher
-Group:			Applications/Communications
-Requires:		perfsonar-psconfig-utils = %{version}-%{release}
-Requires:		httpd
-Requires:		mod_ssl
-Requires:		libperfsonar-sls-perl
-Requires(post): httpd
-
-%description publisher
-Environment for publishing pSConfig template files in standard way
-
 %pre pscheduler
-/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-
-%pre maddash
-/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
-/usr/sbin/groupadd -r maddash 2> /dev/null || :
-/usr/sbin/useradd -g maddash -r -s /sbin/nologin -c "MaDDash User" -d /tmp maddash 2> /dev/null || :
-
-%pre maddash-devel
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
@@ -107,142 +49,29 @@ Environment for publishing pSConfig template files in standard way
 %setup -q -n perfsonar-psconfig-%{version}
 
 %build
-
+make
 
 %install
 rm -rf %{buildroot}
-make ROOTPATH=%{buildroot}/%{install_base} CONFIGPATH=%{buildroot}/%{config_base} install
-mkdir -p %{buildroot}/%{psconfig_base}/checks
-mkdir -p %{buildroot}/%{psconfig_base}/reports
-mkdir -p %{buildroot}/%{psconfig_base}/visualization
-mkdir -p %{buildroot}/%{command_base}
-mkdir -p %{buildroot}/%{doc_base}
-mkdir -p %{buildroot}/%{doc_base}/transforms
-mkdir -p %{buildroot}/%{_bindir}
-mkdir -p %{buildroot}/etc/httpd/conf.d/
-
-install -D -m 0644 scripts/%{service_pscheduler_agent}.service %{buildroot}/%{_unitdir}/%{service_pscheduler_agent}.service
-install -D -m 0644 scripts/%{service_maddash_agent}.service %{buildroot}/%{_unitdir}/%{service_maddash_agent}.service
-
-install -D -m 0644  %{buildroot}/%{config_base}/apache-psconfig-publisher.conf %{buildroot}/etc/httpd/conf.d/apache-psconfig-publisher.conf
-rm -f %{buildroot}/%{config_base}/apache-psconfig-publisher.conf
-
-install -D -m 0644 plugins/checks/* %{buildroot}/%{psconfig_base}/checks/
-install -D -m 0644 plugins/reports/* %{buildroot}/%{psconfig_base}/reports/
-install -D -m 0644 plugins/visualization/* %{buildroot}/%{psconfig_base}/visualization/
-
-rm -rf %{buildroot}/%{install_base}/plugins/
-rm -rf %{buildroot}/%{install_base}/scripts/
-
+make install INSTALL_ROOT=%{buildroot} 
 
 %clean
 rm -rf %{buildroot}
 
-
 %post pscheduler
 mkdir -p %{config_base}/pscheduler.d/
-chown perfsonar:perfsonar %{config_base}/pscheduler.d/
-%systemd_post %{service_pscheduler_agent}.service
-if [ "$1" = "1" ]; then
-    #migrate meshconfig
-    psconfig pscheduler-migrate
-    #if new install, then enable
-    systemctl enable %{service_pscheduler_agent}.service
-    systemctl start %{service_pscheduler_agent}.service
-fi
 
+# %preun pscheduler
+# %systemd_preun %{service_pscheduler_agent}.service
 
-%post maddash
-mkdir -p %{config_base}/maddash.d
-chown perfsonar:perfsonar %{config_base}/maddash.d
-mkdir -p %{psconfig_base}/checks
-chown perfsonar:perfsonar %{psconfig_base}/checks
-mkdir -p %{psconfig_base}/reports
-chown perfsonar:perfsonar %{psconfig_base}/reports
-mkdir -p %{psconfig_base}/visualization
-chown perfsonar:perfsonar %{psconfig_base}/visualization
-%systemd_post %{service_maddash_agent}.service
-if [ "$1" = "1" ]; then
-    #migrate meshconfig
-    psconfig maddash-migrate
-    #if new install, then enable
-    systemctl enable %{service_maddash_agent}.service
-    systemctl start %{service_maddash_agent}.service
-fi
+# %postun pscheduler
+# %systemd_postun_with_restart %{service_pscheduler_agent}.service
 
-
-#symlink for convenience
-ln -s /var/log/maddash/psconfig-maddash-agent.log /var/log/perfsonar/psconfig-maddash-agent.log &>/dev/null || :
-
-%post publisher
-# create publish directory
-mkdir -p %{publish_web_dir}
-chown -R perfsonar:perfsonar %{publish_web_dir}
-chmod 755 %{publish_web_dir}
-
-#httpd selinux settings
-setsebool -P httpd_can_network_connect on
-#enable httpd on fresh install
-if [ "$1" = "1" ]; then
-    systemctl enable httpd
-fi
-#reload httpd
-systemctl restart httpd &>/dev/null || :
-
-%preun pscheduler
-%systemd_preun %{service_pscheduler_agent}.service
-
-
-%postun pscheduler
-%systemd_postun_with_restart %{service_pscheduler_agent}.service
-
-
-%preun maddash
-%systemd_preun %{service_maddash_agent}.service
-
-
-%postun maddash
-%systemd_postun_with_restart %{service_maddash_agent}.service
-
-%files pscheduler
+%files pscheduler -f INSTALLED_FILES
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
-%config(noreplace) %{config_base}/pscheduler-agent.json
-%config(noreplace) %{config_base}/pscheduler-agent-logger.conf
-%attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_pscheduler_agent}
-%attr(0755,perfsonar,perfsonar) %{command_base}/pscheduler-*
-%attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
-%{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
-
-%files maddash
-%defattr(0644,perfsonar,perfsonar,0755)
-%license LICENSE
-%config(noreplace) %{config_base}/maddash-agent.json
-%config(noreplace) %{config_base}/maddash-agent-logger.conf
-%attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/%{bin_maddash_agent}
-%attr(0755,perfsonar,perfsonar) %{command_base}/maddash-*
-%attr(0644,root,root) %{_unitdir}/%{service_maddash_agent}.service
-%{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/Agent.pm
-%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/MaDDash.pm
-%{psconfig_base}/checks/*
-%{psconfig_base}/reports/*
-%{psconfig_base}/visualization/*
-
-%files maddash-devel
-%defattr(0644,perfsonar,perfsonar,0755)
-%license LICENSE
-%{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/*
-%exclude %{install_base}/lib/perfSONAR_PS/PSConfig/MaDDash/Agent.pm
-
-%files publisher
-%defattr(0644,perfsonar,perfsonar,0755)
-%license LICENSE
-%config(noreplace) %{config_base}/lookup.json
-/etc/httpd/conf.d/apache-psconfig-publisher.conf
-%attr(0755,perfsonar,perfsonar) %{command_base}/publish
-%attr(0755,perfsonar,perfsonar) %{command_base}/published
-%attr(0755,perfsonar,perfsonar) %{command_base}/lookup
-%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/Lookup/*
+#%config(noreplace) %{config_base}/pscheduler-agent.json
+#%attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
 
 %changelog
 * Wed Feb 14 2018 andy@es.net 4.1-0.0.a1

@@ -9,21 +9,7 @@ changecom()dnl
 #
 
 # Build dependencies
-submodules/bundles/common
-submodules/minor-packages/perl-CGI-Ajax
-submodules/minor-packages/perl-Data-Validate-Domain
-submodules/minor-packages/perl-Data-Validate-IP
-submodules/minor-packages/perl-Hash-Merge
-submodules/minor-packages/perl-IPC-DirQueue
-submodules/minor-packages/perl-JSON-Validator
-submodules/minor-packages/perl-Net-Traceroute
-submodules/perl-shared/libperfsonar
-
-# Build base library
-psconfig-utils
-
-# Build agent devel libraries
-psconfig-pscheduler-devel
+#submodules/bundles/common
 
 # Build primary packages
 psconfig

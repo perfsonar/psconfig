@@ -1,6 +1,0 @@
-etc/pscheduler-agent.json etc/perfsonar/psconfig
-etc/pscheduler-agent-logger.conf etc/perfsonar/psconfig
-bin/psconfig_pscheduler_agent usr/lib/perfsonar/bin
-bin/psconfig_commands/pscheduler-* usr/lib/perfsonar/bin/psconfig_commands/
-lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/PScheduler/
-scripts/psconfig-pscheduler-agent.service lib/systemd/system
