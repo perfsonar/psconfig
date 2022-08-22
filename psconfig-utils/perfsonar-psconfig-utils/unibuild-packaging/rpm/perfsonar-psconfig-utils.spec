@@ -25,7 +25,7 @@ URL:			http://www.perfsonar.net
 Source0:		%{name}-%{version}.tar.gz
 BuildArch:		noarch
 Requires:		perl
-Requires:       perl(CHI)
+Requires:       perl-CHI
 Requires:		perl(Data::Dumper)
 Requires:		perl(Data::Validate::Domain)
 Requires:		perl(Data::Validate::IP)

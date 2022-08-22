@@ -38,7 +38,7 @@ Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
-Requires:       perl(CHI)
+Requires:       perl-CHI
 Requires:       perl(Time::Piece)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
@@ -58,9 +58,9 @@ Requires:		maddash-server
 Requires:       perfsonar-graphs
 Requires:       nagios-plugins-perfsonar
 Requires:       perfsonar-traceroute-viewer
-Requires:       perl(Mo)
+Requires:       perl-Mo
 Requires:       perl(YAML)
-Requires:       perl(CHI)
+Requires:       perl-CHI
 Requires:       perl(Linux::Inotify2)
 Obsoletes:      perfsonar-meshconfig-guiagent
 Provides:       perfsonar-meshconfig-guiagent
