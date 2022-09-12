@@ -56,5 +56,8 @@ psconfig-utils
 # Build agent devel libraries
 psconfig-pscheduler-devel
 
+# Build maddaash-server for maddash agent
+submodules/maddash/maddash-server
+
 # Build primary packages
 psconfig

@@ -26,3 +26,7 @@
 	path = submodules/pscheduler
 	url = https://github.com/perfsonar/pscheduler
 	branch = 5.0.0
+[submodule "submodules/maddash"]
+	path = submodules/maddash
+	url = https://github.com/perfsonar/maddash
+	branch = unibuild
