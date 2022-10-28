@@ -1,19 +1,27 @@
 version: '3.8'
 services:
-  alma8:
-    image: ghcr.io/perfsonar/unibuild/alma8:latest
+  el8:
+    image: ghcr.io/perfsonar/unibuild/el8:latest
     volumes:
       -  .:/app
-  alma9:
-    image: ghcr.io/perfsonar/unibuild/alma9:latest
+  el9:
+    image: ghcr.io/perfsonar/unibuild/el9:latest
     volumes:
       -  .:/app
-  centos7:
-    image: ghcr.io/perfsonar/unibuild/centos7:latest
+  el7:
+    image: ghcr.io/perfsonar/unibuild/el7:latest
     network_mode: "host"
     volumes:
       - .:/app
-  debian10:
-    image: ghcr.io/perfsonar/unibuild/debian10:latest
+  d10:
+    image: ghcr.io/perfsonar/unibuild/d10:latest
+    volumes:
+      -  .:/app
+  u18:
+    image: ghcr.io/perfsonar/unibuild/u18:latest
+    volumes:
+      -  .:/app
+  u20:
+    image: ghcr.io/perfsonar/unibuild/u20:latest
     volumes:
       -  .:/app
