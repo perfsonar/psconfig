@@ -22,12 +22,53 @@ Summary:		perfSONAR pSConfig Agents
 License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
-Source0:		perfsonar-psconfig-%{version}.tar.gz
+Source0:		perfsonar-psconfig-%{version}.%{perfsonar_auto_relnum}.tar.gz
+BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 
 
 %description
 A package that pulls in all the Mesh Configuration RPMs.
+
+
+%package utils
+Summary:		pSConfig Utilities
+Group:			Applications/Communications
+Requires:		perl
+Requires:       perl(CHI)
+Requires:		perl(Data::Dumper)
+Requires:		perl(Data::Validate::Domain)
+Requires:		perl(Data::Validate::IP)
+Requires:		perl(English)
+Requires:		perl(Exporter)
+Requires:		perl(File::Basename)
+Requires:		perl(FindBin)
+Requires:		perl(Getopt::Long)
+Requires:		perl(JSON)
+Requires:		perl(JSON::Validator)
+Requires:		perl(Log::Log4perl)
+Requires:		perl(Module::Load)
+Requires:		perl(Mouse)
+Requires:		perl(POSIX)
+Requires:		perl(Params::Validate)
+Requires:		perl(Pod::Usage)
+Requires:		perl(Regexp::Common)
+Requires:		perl(Term::ProgressBar)
+Requires:		perl(URI)
+Requires:		perl(base)
+Requires:		perl(lib)
+Requires:		perl(vars)
+Requires:		perl(warnings)
+Requires:		coreutils
+Requires:		shadow-utils
+Requires:       libperfsonar-psconfig-perl
+%{?systemd_requires: %systemd_requires}
+BuildRequires: systemd
+
+
+%description utils
+This package is the set of library and common command-line tools used for pSConfig
+
 
 %package pscheduler
 Summary:		pSConfig pScheduler Agent
@@ -38,7 +79,7 @@ Requires:		perfsonar-psconfig-utils = %{version}-%{release}
 Requires(post):	perfsonar-psconfig-utils = %{version}-%{release}
 Requires:       libperfsonar-pscheduler-perl
 Requires:       perl(Linux::Inotify2)
-Requires:       perl-CHI
+Requires:       perl(CHI)
 Requires:       perl(Time::Piece)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
@@ -46,6 +87,14 @@ Provides:       perfsonar-meshconfig-agent
 %description pscheduler
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
+
+%package pscheduler-devel
+Summary:		pSConfig pScheduler Agent
+Group:			Applications/Communications
+Requires:       libperfsonar-pscheduler-perl
+
+%description pscheduler-devel
+Libraries for interacting with the pSConfig pScheduler Agent
 
 %package maddash
 Summary:		pSConfig MaDDash Agent
@@ -58,9 +107,9 @@ Requires:		maddash-server
 Requires:       perfsonar-graphs
 Requires:       nagios-plugins-perfsonar
 Requires:       perfsonar-traceroute-viewer
-Requires:       perl-Mo
+Requires:       perl(Mo)
 Requires:       perl(YAML)
-Requires:       perl-CHI
+Requires:       perl(CHI)
 Requires:       perl(Linux::Inotify2)
 Obsoletes:      perfsonar-meshconfig-guiagent
 Provides:       perfsonar-meshconfig-guiagent
@@ -89,7 +138,16 @@ Requires(post): httpd
 %description publisher
 Environment for publishing pSConfig template files in standard way
 
+%pre utils
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
+/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
+
+
 %pre pscheduler
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
+/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
+
+%pre pscheduler-devel
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
@@ -104,7 +162,8 @@ Environment for publishing pSConfig template files in standard way
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfsonar-psconfig-%{version}
+%setup -q -n perfsonar-psconfig-%{version}.%{perfsonar_auto_relnum}
+
 
 %build
 
@@ -131,12 +190,30 @@ install -D -m 0644 plugins/checks/* %{buildroot}/%{psconfig_base}/checks/
 install -D -m 0644 plugins/reports/* %{buildroot}/%{psconfig_base}/reports/
 install -D -m 0644 plugins/visualization/* %{buildroot}/%{psconfig_base}/visualization/
 
+ln -fs %{psconfig_bin_base}/psconfig %{buildroot}/%{_bindir}/psconfig
+
+install -D -m 0644 doc/*.json %{buildroot}/%{doc_base}/
+install -D -m 0644 doc/transforms/*.json %{buildroot}/%{doc_base}/transforms/
+
 rm -rf %{buildroot}/%{install_base}/plugins/
 rm -rf %{buildroot}/%{install_base}/scripts/
+rm -rf %{buildroot}/%{install_base}/doc
 
 
 %clean
 rm -rf %{buildroot}
+
+
+%post utils
+mkdir -p /var/lib/perfsonar/psconfig
+chown perfsonar:perfsonar /var/lib/perfsonar/psconfig
+
+mkdir -p /var/log/perfsonar
+chown perfsonar:perfsonar /var/log/perfsonar
+mkdir -p %{config_base}/transforms.d
+chown perfsonar:perfsonar %{config_base}/transforms.d
+mkdir -p %{config_base}/archives.d
+chown perfsonar:perfsonar %{config_base}/archives.d
 
 
 %post pscheduler
@@ -204,6 +281,22 @@ systemctl restart httpd &>/dev/null || :
 %postun maddash
 %systemd_postun_with_restart %{service_maddash_agent}.service
 
+
+%files utils
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%attr(0755,perfsonar,perfsonar) %{psconfig_bin_base}/psconfig
+%attr(0755,perfsonar,perfsonar) %{command_base}/agentctl
+%attr(0755,perfsonar,perfsonar) %{command_base}/agents
+%attr(0755,perfsonar,perfsonar) %{command_base}/remote
+%attr(0755,perfsonar,perfsonar) %{command_base}/translate
+%attr(0755,perfsonar,perfsonar) %{command_base}/validate
+%{install_base}/lib/perfSONAR_PS/PSConfig/*.pm
+%{install_base}/lib/perfSONAR_PS/PSConfig/CLI/Constants.pm
+%{doc_base}/*
+%{_bindir}/psconfig
+
+
 %files pscheduler
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
@@ -213,6 +306,12 @@ systemctl restart httpd &>/dev/null || :
 %attr(0755,perfsonar,perfsonar) %{command_base}/pscheduler-*
 %attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
 %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
+
+%files pscheduler-devel
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/*
+%exclude %{install_base}/lib/perfSONAR_PS/PSConfig/PScheduler/Agent.pm
 
 %files maddash
 %defattr(0644,perfsonar,perfsonar,0755)

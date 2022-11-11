@@ -1,7 +1,0 @@
-LICENSE
-MANIFEST
-Makefile
-lib/perfSONAR_PS/PSConfig/PScheduler/Config.pm
-lib/perfSONAR_PS/PSConfig/PScheduler/ConfigConnect.pm
-lib/perfSONAR_PS/PSConfig/PScheduler/Schema.pm
-lib/perfSONAR_PS/PSConfig/PScheduler/Translator.pm
