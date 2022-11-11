@@ -8,11 +8,5 @@ changecom()dnl
 # more information.
 #
 
-# Build base library
-psconfig-utils
-
-# Build agent devel libraries
-psconfig-pscheduler-devel
-
 # Build primary packages
 psconfig

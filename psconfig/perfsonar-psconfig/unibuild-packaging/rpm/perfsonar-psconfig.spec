@@ -22,8 +22,8 @@ Summary:		perfSONAR pSConfig Agents
 License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
-Source0:		perfsonar-psconfig-%{version}.%{perfsonar_auto_relnum}.tar.gz
-BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Source0:		perfsonar-psconfig-%{version}.tar.gz
+BuildRoot:		%{_tmppath}/%{name}-%{version}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 
 
@@ -162,7 +162,7 @@ Environment for publishing pSConfig template files in standard way
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfsonar-psconfig-%{version}.%{perfsonar_auto_relnum}
+%setup -q -n perfsonar-psconfig-%{version}
 
 
 %build

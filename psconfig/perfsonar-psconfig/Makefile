@@ -2,7 +2,7 @@ PACKAGE=perfsonar-psconfig
 ROOTPATH=/usr/lib/perfsonar
 CONFIGPATH=/etc/perfsonar/psconfig
 PERFSONAR_AUTO_VERSION=5.0.0
-PERFSONAR_AUTO_RELNUM=0.a1.0
+PERFSONAR_AUTO_RELNUM=0.b2.1
 VERSION=${PERFSONAR_AUTO_VERSION}
 RELEASE=${PERFSONAR_AUTO_RELNUM}
 
@@ -10,10 +10,10 @@ default:
 	@echo No need to build the package. Just run \"make install\"
 
 dist:
-	mkdir /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
-	tar ch -T MANIFEST | tar x -C /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
-	tar czf $(PACKAGE)-$(VERSION).$(RELEASE).tar.gz -C /tmp $(PACKAGE)-$(VERSION).$(RELEASE)
-	rm -rf /tmp/$(PACKAGE)-$(VERSION).$(RELEASE)
+	mkdir /tmp/$(PACKAGE)-$(VERSION)
+	tar ch -T MANIFEST | tar x -C /tmp/$(PACKAGE)-$(VERSION)
+	tar czf $(PACKAGE)-$(VERSION).tar.gz -C /tmp $(PACKAGE)-$(VERSION)
+	rm -rf /tmp/$(PACKAGE)-$(VERSION)
 
 
 install:
