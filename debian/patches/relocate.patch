@@ -1,0 +1,184 @@
+--- psconfig.orig/plugins/checks/ps-nagios-dns.json	2023-01-26 13:41:35.409925743 +0000
++++ psconfig/plugins/checks/ps-nagios-dns.json	2023-01-26 13:46:10.561834241 +0000
+@@ -59,7 +59,7 @@
+             ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_esmond",
++    "command": "/usr/lib/nagios/plugins/check_esmond",
+     "command-opts": {
+         "--url": {
+             "required": true,
+--- psconfig.orig/plugins/checks/ps-nagios-http.json	2023-01-26 13:41:35.410203889 +0000
++++ psconfig/plugins/checks/ps-nagios-http.json	2023-01-26 13:46:17.804075584 +0000
+@@ -55,7 +55,7 @@
+             ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_esmond",
++    "command": "/usr/lib/nagios/plugins/check_esmond",
+     "command-opts": {
+         "--url": {
+             "required": true,
+--- psconfig.orig/plugins/checks/ps-nagios-loss.json	2023-01-26 13:41:35.412266952 +0000
++++ psconfig/plugins/checks/ps-nagios-loss.json	2023-01-26 13:46:22.784377266 +0000
+@@ -39,7 +39,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_loss.pl",
++    "command": "/usr/lib/nagios/plugins/check_loss.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -94,4 +94,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-owdelay.json	2023-01-26 13:41:35.413587027 +0000
++++ psconfig/plugins/checks/ps-nagios-owdelay.json	2023-01-26 13:46:27.212249296 +0000
+@@ -40,7 +40,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_owdelay.pl",
++    "command": "/usr/lib/nagios/plugins/check_owdelay.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -99,4 +99,4 @@
+             "arg": "{% check.params.quantile %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-pathmtu.json	2023-01-26 13:41:35.414894875 +0000
++++ psconfig/plugins/checks/ps-nagios-pathmtu.json	2023-01-26 13:46:30.423698321 +0000
+@@ -39,7 +39,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_path_mtu.pl",
++    "command": "/usr/lib/nagios/plugins/check_path_mtu.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -94,4 +94,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-ping-loss.json	2023-01-26 13:41:35.415892169 +0000
++++ psconfig/plugins/checks/ps-nagios-ping-loss.json	2023-01-26 13:46:34.698030674 +0000
+@@ -39,7 +39,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_ping_loss.pl",
++    "command": "/usr/lib/nagios/plugins/check_ping_loss.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -94,4 +94,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-pscheduler-raw.json	2023-01-26 13:41:35.416901304 +0000
++++ psconfig/plugins/checks/ps-nagios-pscheduler-raw.json	2023-01-26 13:46:37.894212004 +0000
+@@ -38,7 +38,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_pscheduler_raw.pl",
++    "command": "/usr/lib/nagios/plugins/check_pscheduler_raw.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -93,4 +93,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-retransmits.json	2023-01-26 13:41:35.417812882 +0000
++++ psconfig/plugins/checks/ps-nagios-retransmits.json	2023-01-26 13:46:41.136063196 +0000
+@@ -39,7 +39,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_retransmits.pl",
++    "command": "/usr/lib/nagios/plugins/check_retransmits.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -94,4 +94,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-rtt.json	2023-01-26 13:41:35.418689062 +0000
++++ psconfig/plugins/checks/ps-nagios-rtt.json	2023-01-26 13:46:44.176262246 +0000
+@@ -40,7 +40,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_rtt.pl",
++    "command": "/usr/lib/nagios/plugins/check_rtt.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -99,4 +99,4 @@
+             "arg": "{% check.params.quantile %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-throughput.json	2023-01-26 13:41:35.418873456 +0000
++++ psconfig/plugins/checks/ps-nagios-throughput.json	2023-01-26 13:46:46.828044205 +0000
+@@ -52,7 +52,7 @@
+             "script": [ ".test.spec.bandwidth" ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_throughput.pl",
++    "command": "/usr/lib/nagios/plugins/check_throughput.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -111,4 +111,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- psconfig.orig/plugins/checks/ps-nagios-traceroute.json	2023-01-26 13:41:35.419847485 +0000
++++ psconfig/plugins/checks/ps-nagios-traceroute.json	2023-01-26 13:46:49.590163768 +0000
+@@ -38,7 +38,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_traceroute.pl",
++    "command": "/usr/lib/nagios/plugins/check_traceroute.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -89,4 +89,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
