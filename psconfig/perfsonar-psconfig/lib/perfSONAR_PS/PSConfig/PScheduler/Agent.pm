@@ -166,14 +166,12 @@ sub _run_handle_psconfig {
     my($self, $psconfig, $agent_conf, $remote) = @_;
     
     #Init variables
-    my $configure_archives = 0; #make sure defined
-    if(!$remote){
-        #configure archives if not from a remote source
-        $configure_archives = 1;
-    }elsif($remote && $remote->configure_archives()){
-        #configure archives if from a remote source and said it is ok
-        $configure_archives = 1;
+    my $configure_archives = 1; #make sure defined and default to true
+    if($remote){
+        #configure archives if from a remote source and not an include, then use remote setting
+        $configure_archives = $remote->configure_archives();
     }
+    $logger->debug($self->logf()->format("configure_archives is $configure_archives"));
     
     #walk through tasks
     foreach my $task_name(@{$psconfig->task_names()}){

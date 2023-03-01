@@ -24,7 +24,7 @@ Gets/sets whether archives should be used from this remote file. Must be 0 or 1.
 
 sub configure_archives {
     my ($self, $val) = @_;
-    return $self->_field_bool('configure-archives', $val);
+    return $self->_field_bool_default_true('configure-archives', $val);
 }
 
 =item bind_address()

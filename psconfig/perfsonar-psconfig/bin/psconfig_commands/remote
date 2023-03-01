@@ -13,7 +13,8 @@ remote add|delete|list [options] URL
    --agent AGENT                Name of agent to use (e.g. pscheduler, maddash). Default is to look at all installed agents.
    -f|--file FILE               The file to edit. Must specify --agent if using this option. Default is installed agent defaults.
    --transform JSON|@FILE       JSON transform object or a path to a file starting with @ that alters downloaded json
-   --configure-archives         Indicates archives defined in remote URL should be used
+   --configure-archives         Indicates archives defined in remote URL should be used (this is default)
+   --no-configure-archives      Indicates archives defined in remote URL should NOT be used
    --bind-address ADDRESS       Local address to bind to when downloading JSON
    --quiet                      Suppress output to stdout and stderr
    --ssl-ca-file FILE           A certificate authority (CA) file used to verify server SSL certificate when using https.
@@ -60,7 +61,11 @@ JSON transform object or a path to a file starting with @ that alters downloaded
 
 =item B<--configure-archives>
  
-Indicates archives defined in remote URL should be used
+Indicates archives defined in remote URL should be used (this is the default)
+
+=item B<--no-configure-archives>
+ 
+Indicates archives defined in remote URL should NOT be used
 
 =item B<--bind-address>
  
@@ -103,6 +108,7 @@ my $agent_opt;
 my $file_opt;
 my $transform_opt;
 my $config_archives;
+my $no_config_archives;
 my $bind_address;
 my $quiet_opt;
 my $ssl_file;
@@ -112,6 +118,7 @@ GetOptions(
     'transform=s' => \$transform_opt,
     'agent=s' => \$agent_opt,
     'configure-archives' => \$config_archives,
+    'no-configure-archives' => \$no_config_archives,
     'bind-address=s' => \$bind_address,
     'quiet' => \$quiet_opt,
     'ssl-ca-file=s' => \$ssl_file,
@@ -200,7 +207,13 @@ foreach my $cli_agent(@{perfSONAR_PS::PSConfig::CLI::Constants::CLI_AGENTS()}){
     my $remote = new perfSONAR_PS::PSConfig::Remote();
     $remote->url($url) if($url);
     my $url_only_checksum = $remote->checksum();
-    $remote->configure_archives(1) if($config_archives);
+    # If specify both configure-archives and no-configure-archives, then latter takes precedent
+    # If don't specify either then don't set anything and let the agent figure out default behavior
+    if($no_config_archives){
+        $remote->configure_archives(0);
+    }elsif($config_archives){
+        $remote->configure_archives(1);
+    }
     $remote->bind_address($bind_address) if($bind_address);
     $remote->ssl_ca_file($ssl_file) if($ssl_file);
     if($transform_opt){
