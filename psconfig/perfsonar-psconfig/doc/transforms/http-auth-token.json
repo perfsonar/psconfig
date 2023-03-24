@@ -1,7 +1,7 @@
 {
     "script": [
         "if .archives.\"example-archive-central\" then",
-        "    .archives.\"example-archive-central\".data.\"_auth-token\" |= \"5123cfa1d6bb66c327f1133bc00949b46437e02a\"",
+        "    .archives.\"example-archive-central\".data.\"_headers\".\"Authorization\" |= \"Basic MY_AUTH_TOKEN_HERE\"",
         "else",
         "    .",
         "end"
