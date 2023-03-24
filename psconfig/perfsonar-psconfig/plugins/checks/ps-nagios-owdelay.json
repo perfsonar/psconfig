@@ -4,10 +4,16 @@
     "description": "Queries an esmond MA for one-way delay data and alerts on response",
     "requires": {
         "test-type": ["latency", "latencybg"],
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "archive-accessor": {
-        "script": [ ".url" ]
+        "script": [ 
+            ". | if (._meta.esmond_url != null) then ",
+            "   ._meta.esmond_url ",
+            "else ",
+            "   .url ",
+            "end"
+        ]
     },
     "status-labels": {
         "ok": "One-way Delay is <= {% check.warning %}ms",

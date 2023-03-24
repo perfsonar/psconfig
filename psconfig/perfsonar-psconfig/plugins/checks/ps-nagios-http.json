@@ -4,10 +4,16 @@
     "description": "Queries an esmond MA for HTTP tests and alarms on time reported by test by default (can look at other parameters using the jq option)",
     "requires": {
         "test-type": ["http"],
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "archive-accessor": {
-        "script": [ ".url" ]
+        "script": [ 
+            ". | if (._meta.esmond_url != null) then ",
+            "   ._meta.esmond_url ",
+            "else ",
+            "   .url ",
+            "end"
+        ]
     },
     "status-labels": {
         "ok": "Value {% check.params.label-ok-symbol %} {% check.warning %}{% check.params.units %}",

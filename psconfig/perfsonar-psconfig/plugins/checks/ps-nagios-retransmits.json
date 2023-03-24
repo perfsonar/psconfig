@@ -4,10 +4,16 @@
     "description": "Queries an esmond MA for TCP retransmit data and alerts on response",
     "requires": {
         "test-type": ["throughput"],
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "archive-accessor": {
-        "script": [ ".url" ]
+        "script": [ 
+            ". | if (._meta.esmond_url != null) then ",
+            "   ._meta.esmond_url ",
+            "else ",
+            "   .url ",
+            "end"
+        ]
     },
     "status-labels": {
         "ok": "TCP retransmits <= {% check.warning %} packets",

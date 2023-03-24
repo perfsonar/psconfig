@@ -4,10 +4,16 @@
     "description": "Queries an esmond MA for Path MTU and alerts on response",
     "requires": {
         "test-type": ["trace"],
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "archive-accessor": {
-        "script": [ ".url" ]
+        "script": [ 
+            ". | if (._meta.esmond_url != null) then ",
+            "   ._meta.esmond_url ",
+            "else ",
+            "   .url ",
+            "end"
+        ]
     },
     "status-labels": {
         "ok": "Path MTU >= {% check.warning %} bytes",

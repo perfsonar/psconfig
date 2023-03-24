@@ -2,7 +2,7 @@
     "type": "ps-graphs",
     "requires": {
         "test-type": ["throughput", "latency", "latencybg", "rtt", "disk-to-disk", "dns", "http"],
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "defaults": {
         "base-url": "/perfsonar-graphs/graphWidget.cgi",

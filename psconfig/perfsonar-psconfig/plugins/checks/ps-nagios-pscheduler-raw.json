@@ -3,10 +3,16 @@
     "name": "Measurement Count",
     "description": "Queries an esmond MA for pscheduler-raw event type and alert on number of measurements found",
     "requires": {
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "archive-accessor": {
-        "script": [ ".url" ]
+        "script": [ 
+            ". | if (._meta.esmond_url != null) then ",
+            "   ._meta.esmond_url ",
+            "else ",
+            "   .url ",
+            "end"
+        ]
     },
     "status-labels": {
         "ok": "Measurements >= {% check.warning %}",

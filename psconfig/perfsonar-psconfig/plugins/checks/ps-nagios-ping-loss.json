@@ -4,10 +4,16 @@
     "description": "Queries an esmond MA for bidirectional loss data and alerts on response",
     "requires": {
         "test-type": ["rtt"],
-        "archive-type": ["esmond"]
+        "archive-type": ["esmond", "http"]
     },
     "archive-accessor": {
-        "script": [ ".url" ]
+        "script": [ 
+            ". | if (._meta.esmond_url != null) then ",
+            "   ._meta.esmond_url ",
+            "else ",
+            "   .url ",
+            "end"
+        ]
     },
     "status-labels": {
         "ok": "Loss rate is <= {% check.warning %}%",
