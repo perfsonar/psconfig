@@ -1,10 +1,18 @@
 {
     "archives": {
         "iu-central-archive": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://perfsonar-testbed-ma.grnoc.iu.edu/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://perfsonar-testbed-ma.grnoc.iu.edu/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://perfsonar-testbed-ma.grnoc.iu.edu/esmond/perfsonar/archive/"
+                }
             }
         }
     },

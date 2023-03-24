@@ -1,10 +1,18 @@
 {
     "archives": {
         "example-archive-central": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://archive.perfsonar.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://archive.perfsonar.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://archive.perfsonar.net/esmond/perfsonar/archive/"
+                }
             }
         }
     },

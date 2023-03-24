@@ -1,66 +1,138 @@
 {
     "archives": {
         "archive-lsvn": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://lsvn-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://lsvn-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://lsvn-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-ga": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://ga-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://ga-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://ga-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-bost": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://bost-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://bost-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://bost-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-amst": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://amst-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://amst-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://amst-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-newy": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://newy-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://newy-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://newy-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-lond": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://lond-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://lond-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://lond-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-aofa": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://aofa-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://aofa-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://aofa-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-wash": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://wash-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://wash-pt1.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://wash-pt1.es.net/esmond/perfsonar/archive/"
+                }
             }
         },
         "archive-cern-513": {
-            "archiver": "esmond",
+            "archiver": "http",
             "data": {
-                "url": "https://cern-513-pt1.es.net/esmond/perfsonar/archive/",
-                "measurement-agent": "{% scheduled_by_address %}"
+                "schema": 2,
+                "_url": "https://cern-513.es.net/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://cern-513.es.net/esmond/perfsonar/archive/"
+                }
             }
         }
     },

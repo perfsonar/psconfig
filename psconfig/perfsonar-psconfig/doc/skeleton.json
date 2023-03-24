@@ -4,11 +4,19 @@
     },
     
     "archives": {
-        "example_esmond_archive": {
-            "archiver": "esmond",
+        "example_http_archive": {
+            "archiver": "http",
             "data": {
-                "measurement-agent": "{% scheduled_by_address %}",
-                "url": "https://FILL_IN_ESMOND_HOSTNAME_OR_IP/esmond/perfsonar/archive/"
+                "schema": 2,
+                "_url": "https://FILL_IN_ARCHIVE_HOSTNAME_OR_IP/logstash",
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                },
+                "_meta": {
+                    "esmond_url": "http://FILL_IN_ARCHIVE_HOSTNAME_OR_IP/esmond/perfsonar/archive/"
+                }
             }
         }
     },
@@ -82,7 +90,7 @@
             "group": "example_group_mesh",
             "test": "example_test_throughput",
             "schedule": "example_schedule_PT4H",
-            "archives": [ "example_esmond_archive" ],
+            "archives": [ "example_http_archive" ],
             "_meta": {
                 "display-name": "Example Throughput Tests"
             }
@@ -90,7 +98,7 @@
         "example_task_latencybg": {
             "group": "example_group_mesh",
             "test": "example_test_latencybg",
-            "archives": [ "example_esmond_archive" ],
+            "archives": [ "example_http_archive" ],
             "_meta": {
                 "display-name": "Example Loss Tests"
             }
@@ -99,7 +107,7 @@
             "group": "example_group_mesh",
             "test": "example_test_trace",
             "schedule": "example_schedule_PT10M",
-            "archives": [ "example_esmond_archive" ],
+            "archives": [ "example_http_archive" ],
             "_meta": {
                 "display-name": "Example Traceroute Tests"
             }
