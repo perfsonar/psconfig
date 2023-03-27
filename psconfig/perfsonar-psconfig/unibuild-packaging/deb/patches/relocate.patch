@@ -1,0 +1,184 @@
+--- a/plugins/checks/ps-nagios-dns.json	2023-03-27 13:34:55.847700539 +0000
++++ b/plugins/checks/ps-nagios-dns.json	2023-03-27 13:35:56.662955252 +0000
+@@ -65,7 +65,7 @@
+             ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_esmond",
++    "command": "/usr/lib/nagios/plugins/check_esmond",
+     "command-opts": {
+         "--url": {
+             "required": true,
+--- a/plugins/checks/ps-nagios-http.json	2023-03-27 13:34:55.847969370 +0000
++++ b/plugins/checks/ps-nagios-http.json	2023-03-27 13:35:56.663830402 +0000
+@@ -61,7 +61,7 @@
+             ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_esmond",
++    "command": "/usr/lib/nagios/plugins/check_esmond",
+     "command-opts": {
+         "--url": {
+             "required": true,
+--- a/plugins/checks/ps-nagios-loss.json	2023-03-27 13:34:55.848206832 +0000
++++ b/plugins/checks/ps-nagios-loss.json	2023-03-27 13:35:56.665058955 +0000
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_loss.pl",
++    "command": "/usr/lib/nagios/plugins/check_loss.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-owdelay.json	2023-03-27 13:34:55.848423108 +0000
++++ b/plugins/checks/ps-nagios-owdelay.json	2023-03-27 13:35:56.665677420 +0000
+@@ -46,7 +46,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_owdelay.pl",
++    "command": "/usr/lib/nagios/plugins/check_owdelay.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -105,4 +105,4 @@
+             "arg": "{% check.params.quantile %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-pathmtu.json	2023-03-27 13:34:55.848645996 +0000
++++ b/plugins/checks/ps-nagios-pathmtu.json	2023-03-27 13:35:56.666197327 +0000
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_path_mtu.pl",
++    "command": "/usr/lib/nagios/plugins/check_path_mtu.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-ping-loss.json	2023-03-27 13:34:55.848870672 +0000
++++ b/plugins/checks/ps-nagios-ping-loss.json	2023-03-27 13:35:56.666780194 +0000
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_ping_loss.pl",
++    "command": "/usr/lib/nagios/plugins/check_ping_loss.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-pscheduler-raw.json	2023-03-27 13:34:55.849085999 +0000
++++ b/plugins/checks/ps-nagios-pscheduler-raw.json	2023-03-27 13:35:56.667304228 +0000
+@@ -44,7 +44,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_pscheduler_raw.pl",
++    "command": "/usr/lib/nagios/plugins/check_pscheduler_raw.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -99,4 +99,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-retransmits.json	2023-03-27 13:34:55.849301612 +0000
++++ b/plugins/checks/ps-nagios-retransmits.json	2023-03-27 13:35:56.667813398 +0000
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_retransmits.pl",
++    "command": "/usr/lib/nagios/plugins/check_retransmits.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-rtt.json	2023-03-27 13:34:55.849520513 +0000
++++ b/plugins/checks/ps-nagios-rtt.json	2023-03-27 13:35:56.668379643 +0000
+@@ -46,7 +46,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_rtt.pl",
++    "command": "/usr/lib/nagios/plugins/check_rtt.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -105,4 +105,4 @@
+             "arg": "{% check.params.quantile %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-throughput.json	2023-03-27 13:34:55.849752547 +0000
++++ b/plugins/checks/ps-nagios-throughput.json	2023-03-27 13:35:56.668884544 +0000
+@@ -58,7 +58,7 @@
+             "script": [ ".test.spec.bandwidth" ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_throughput.pl",
++    "command": "/usr/lib/nagios/plugins/check_throughput.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -117,4 +117,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-traceroute.json	2023-03-27 13:34:55.850042925 +0000
++++ b/plugins/checks/ps-nagios-traceroute.json	2023-03-27 13:35:56.669382345 +0000
+@@ -44,7 +44,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_traceroute.pl",
++    "command": "/usr/lib/nagios/plugins/check_traceroute.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -95,4 +95,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
