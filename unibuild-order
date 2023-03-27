@@ -9,4 +9,4 @@ changecom()dnl
 #
 
 # Build primary packages
-psconfig
+psconfig --no-install

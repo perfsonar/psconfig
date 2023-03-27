@@ -13,4 +13,5 @@ cover_db
 unibuild-log
 unibuild-work/
 unibuild-repo/
+multiarch_build/
 INSTALLED_FILES
