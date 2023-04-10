@@ -182,3 +182,187 @@
 -}
 \ No newline at end of file
 +}
+--- a/plugins/checks/ps-nagios-dns.json	2023-04-10 09:22:12.334394148 -0400
++++ b/plugins/checks/ps-nagios-dns.json	2023-04-10 09:22:12.776193313 -0400
+@@ -65,7 +65,7 @@
+             ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_esmond",
++    "command": "/usr/lib/nagios/plugins/check_esmond",
+     "command-opts": {
+         "--url": {
+             "required": true,
+--- a/plugins/checks/ps-nagios-http.json	2023-04-10 09:22:12.334453398 -0400
++++ b/plugins/checks/ps-nagios-http.json	2023-04-10 09:22:12.776540644 -0400
+@@ -61,7 +61,7 @@
+             ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_esmond",
++    "command": "/usr/lib/nagios/plugins/check_esmond",
+     "command-opts": {
+         "--url": {
+             "required": true,
+--- a/plugins/checks/ps-nagios-loss.json	2023-04-10 09:22:12.334510564 -0400
++++ b/plugins/checks/ps-nagios-loss.json	2023-04-10 09:22:12.776753101 -0400
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_loss.pl",
++    "command": "/usr/lib/nagios/plugins/check_loss.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-owdelay.json	2023-04-10 09:22:12.334561397 -0400
++++ b/plugins/checks/ps-nagios-owdelay.json	2023-04-10 09:22:12.776920599 -0400
+@@ -46,7 +46,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_owdelay.pl",
++    "command": "/usr/lib/nagios/plugins/check_owdelay.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -105,4 +105,4 @@
+             "arg": "{% check.params.quantile %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-pathmtu.json	2023-04-10 09:22:12.334610146 -0400
++++ b/plugins/checks/ps-nagios-pathmtu.json	2023-04-10 09:22:12.777081973 -0400
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_path_mtu.pl",
++    "command": "/usr/lib/nagios/plugins/check_path_mtu.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-ping-loss.json	2023-04-10 09:22:12.334662480 -0400
++++ b/plugins/checks/ps-nagios-ping-loss.json	2023-04-10 09:22:12.777253805 -0400
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_ping_loss.pl",
++    "command": "/usr/lib/nagios/plugins/check_ping_loss.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-pscheduler-raw.json	2023-04-10 09:22:12.334717271 -0400
++++ b/plugins/checks/ps-nagios-pscheduler-raw.json	2023-04-10 09:22:12.777421346 -0400
+@@ -44,7 +44,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_pscheduler_raw.pl",
++    "command": "/usr/lib/nagios/plugins/check_pscheduler_raw.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -99,4 +99,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-retransmits.json	2023-04-10 09:22:12.334765812 -0400
++++ b/plugins/checks/ps-nagios-retransmits.json	2023-04-10 09:22:12.777584178 -0400
+@@ -45,7 +45,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_retransmits.pl",
++    "command": "/usr/lib/nagios/plugins/check_retransmits.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -100,4 +100,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-rtt.json	2023-04-10 09:22:12.334812645 -0400
++++ b/plugins/checks/ps-nagios-rtt.json	2023-04-10 09:22:12.777747552 -0400
+@@ -46,7 +46,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_rtt.pl",
++    "command": "/usr/lib/nagios/plugins/check_rtt.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -105,4 +105,4 @@
+             "arg": "{% check.params.quantile %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-throughput.json	2023-04-10 09:22:12.334864978 -0400
++++ b/plugins/checks/ps-nagios-throughput.json	2023-04-10 09:22:12.777919925 -0400
+@@ -58,7 +58,7 @@
+             "script": [ ".test.spec.bandwidth" ]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_throughput.pl",
++    "command": "/usr/lib/nagios/plugins/check_throughput.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -117,4 +117,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
+--- a/plugins/checks/ps-nagios-traceroute.json	2023-04-10 09:22:12.334917811 -0400
++++ b/plugins/checks/ps-nagios-traceroute.json	2023-04-10 09:22:12.778088008 -0400
+@@ -44,7 +44,7 @@
+             "script": [".test.spec.\"ip-version\"==6"]
+         }
+     },
+-    "command": "/usr/lib64/nagios/plugins/check_traceroute.pl",
++    "command": "/usr/lib/nagios/plugins/check_traceroute.pl",
+     "command-opts": {
+         "-u": {
+             "required": true,
+@@ -95,4 +95,4 @@
+             "arg": "{% check.timeout.seconds %}"
+         }
+     }
+-}
+\ No newline at end of file
++}
