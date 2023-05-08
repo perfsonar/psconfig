@@ -10,7 +10,7 @@ jobs:
     name: Add issue to perfSONAR project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/add-to-project@RELEASE_VERSION
+      - uses: actions/add-to-project@${{ vars.ACTION_ADD_TO_PROJECT_VERSION }}
         with:
           project-url: ${{ vars.PROJECT_PS_URL }}
           github-token: ${{ secrets.PAT_PROJECT_PS_AUTO_ADD }}
