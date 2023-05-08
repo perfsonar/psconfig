@@ -1,0 +1,16 @@
+name: Adds all new issues to project board
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  add-to-project:
+    name: Add issue to perfSONAR project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@RELEASE_VERSION
+        with:
+          project-url: ${{ vars.PROJECT_PS_URL }}
+          github-token: ${{ secrets.PAT_PROJECT_PS_AUTO_ADD }}
