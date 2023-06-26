@@ -11,7 +11,7 @@
             ". | if (._meta.esmond_url != null) then ",
             "   ._meta.esmond_url ",
             "else ",
-            "   .url ",
+            "   .data.url ",
             "end"
         ]
     },
