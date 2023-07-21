@@ -2,10 +2,11 @@ from .base_filter import BaseFilter
 
 class Tag(BaseFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.data['type'] = 'tag'
         self.type = 'tag'
-
+        
     def tag(self, val=None):
         '''Gets/sets tag'''
 

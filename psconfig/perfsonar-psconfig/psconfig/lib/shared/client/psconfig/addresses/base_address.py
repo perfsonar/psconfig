@@ -5,13 +5,12 @@ class BaseAddress(BaseMetaNode):
     # test iteration and should not generally be used directly by clients
 
     def __init__(self, **kwargs):
+        BaseMetaNode.__init__(self, **kwargs)
         self._parent_disabled = None
         self._parent_no_agent = None
         self._parent_host_ref = None
         self._parent_address = None
         self._parent_name = None
-        BaseMetaNode.__init__(self, **kwargs)
-
     
     def address(self, val=None):
         '''Gets/sets address'''
@@ -37,7 +36,7 @@ class BaseAddress(BaseMetaNode):
         '''Gets/sets contexts as a list'''
         return self._field_refs('contexts', val)
     
-    def add_context_ref(self, val=None):
+    def add_context_ref(self, val):
         '''Adds a context to the list'''
         self._add_field_ref('contexts', val)
     

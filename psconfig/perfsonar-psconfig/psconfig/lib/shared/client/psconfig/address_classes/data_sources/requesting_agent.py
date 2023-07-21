@@ -2,11 +2,11 @@ from .base_data_source import BaseDataSource
 
 class RequestingAgent(BaseDataSource):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'requesting-agent'
         self.data['type'] = 'requesting-agent'
-
-    
+        
     def fetch(self, psconfig):
         '''Accepts a config object and return HashRef of Address objects from requesting agent'''
 

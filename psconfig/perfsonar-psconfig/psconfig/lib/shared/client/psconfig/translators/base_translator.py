@@ -6,8 +6,10 @@ from ..base_node import BaseNode
 
 class BaseTranslator(BaseNode):
 
-    def __init__(self):
-        error = ''
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.error = ''
+        
     
     def name(self):
         ##

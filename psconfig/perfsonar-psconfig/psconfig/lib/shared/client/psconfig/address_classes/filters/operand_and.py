@@ -4,10 +4,11 @@ BaseOperandFilter = base_operand_filter.BaseOperandFilter
 
 class OperandAnd(BaseOperandFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'and'
         self.data['type'] = 'and'
-
+        
     def matches(self, address, psconfig):
         '''Return False and True if all filters evaluate to true'''
 

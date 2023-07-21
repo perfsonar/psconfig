@@ -4,7 +4,7 @@ Utilities for running JQ.
 
 import pyjq
 
-def jq(jq, json_obj, formatting_params, timeout):
+def jq(jq, json_obj, formatting_params=None, timeout=None):
 
     #initialize formatting params
     try:

@@ -5,6 +5,9 @@ from ..base_node import BaseNode
 
 class ExcludesAddressPair(BaseNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def local_address(self, val=None):
         '''Get/sets local-address'''
         return self._field_class_factory('local-address',\

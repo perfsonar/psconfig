@@ -5,7 +5,8 @@ from .base_filter import BaseFilter
 
 class NetMask(BaseFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'netmask'
         self.data['type'] = 'netmask'
     

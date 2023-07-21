@@ -1,9 +1,10 @@
 from .base_address_selector import BaseAddressSelector
 
 class FieldClass(BaseAddressSelector):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'class' #override this
-
+        
     def field_class(self, val=None):
         '''Gets/sets class'''
         return self._field_name('class', val)

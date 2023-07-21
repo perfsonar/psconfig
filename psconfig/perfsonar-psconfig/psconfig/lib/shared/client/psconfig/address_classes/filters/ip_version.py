@@ -4,10 +4,11 @@ from .base_filter import BaseFilter
 
 class IPVersion(BaseFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'ip-version'
         self.data['type'] = 'ip-version'
-
+        
     def ip_version(self, val=None):
         '''Gets/sets ip-version'''
         return self._field_ipversion('ip-version', val)

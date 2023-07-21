@@ -1,13 +1,14 @@
-from ..shared.client.psconfig.addresses.address import Address
-from ..shared.client.psconfig.schema import Schema
-from ..shared.client.psconfig.base_node import BaseNode
+from shared.client.psconfig.addresses.address import Address
+from shared.client.psconfig.schema import Schema
+from shared.client.psconfig.base_node import BaseNode
 from jsonschema import validate as jsonvalidate
 
 class RequestingAgentConfig(BaseNode):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.error = ''
-    
+        
     def address(self, field, val=None):
         return self._field_class(field, Address, val)
     

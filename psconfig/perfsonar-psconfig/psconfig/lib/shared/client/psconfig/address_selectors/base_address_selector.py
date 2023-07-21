@@ -2,9 +2,10 @@ from ..base_node import BaseNode
 
 class BaseAddressSelector(BaseNode):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = None #override this
-
+        
     def disabled(self, val=None):
         '''Gets/sets disabled'''
         return self._field_bool('disabled', val)

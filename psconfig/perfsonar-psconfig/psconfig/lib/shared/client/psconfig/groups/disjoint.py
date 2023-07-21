@@ -4,14 +4,15 @@ from .base_p2p_group import BaseP2PGroup
 
 class Disjoint(BaseP2PGroup):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.data['type'] = 'disjoint'
         self.type = self.data.get('type')
-
         self._merged_addresses = []
         self._a_address_map = {}
         self._b_address_map = {}
         self._checked_pairs = {}
+        
 
     def unidirectional(self, val=None):
         '''Gets/sets unidirectional'''
@@ -57,7 +58,7 @@ class Disjoint(BaseP2PGroup):
             a_addresses and b_addresses and returnes the total size as needed by the next() algorithm 
             genealized for n dimensions. Tests are then excluded using the is_excluded_selectors below.'''
         
-        if not (dimension and dimension < self.dimension_count()):
+        if not (dimension < self.dimension_count()):
             return
         
         size = len(self._merged_addresses)
@@ -67,17 +68,17 @@ class Disjoint(BaseP2PGroup):
     def dimension_step(self, dimension, index):
         '''Similar to dimension size, not very useful outside of next() context. See  
             dimension_size() comment.'''
-        if not dimension and dimension < self.dimension_count():
+        if not (dimension < self.dimension_count()):
             return
         
-        if index:
+        if index is not None:
             return self._merged_addresses[index]
         else:
             return self._merged_addresses
 
     def dimension(self, dimension):
         '''Return a_addresses for 0 and b_addresses for 1. None otherwise'''
-        if not (dimension and dimension < self.dimension_count()):
+        if not (dimension < self.dimension_count()):
             return
         
         if dimension == 0:
@@ -134,4 +135,4 @@ class Disjoint(BaseP2PGroup):
         
         self._checked_pairs["{}->{}".format(checksum0, checksum1)] = True
 
-        return super().is_excluded_addresses(addr_sels)
+        return super().is_excluded_selectors(addr_sels)

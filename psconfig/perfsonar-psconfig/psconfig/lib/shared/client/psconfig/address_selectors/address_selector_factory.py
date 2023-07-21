@@ -4,6 +4,9 @@ from ..base_node import BaseNode
 
 class AddressSelectorFactory(BaseNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def build(self, data=None):
         '''Creates an address selector based on the 'type' field of the given dictionary'''
         if data:

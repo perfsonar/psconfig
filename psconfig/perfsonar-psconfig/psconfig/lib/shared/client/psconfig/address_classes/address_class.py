@@ -5,6 +5,10 @@ from .data_sources.base_data_source import BaseDataSource
 from ..base_meta_node import BaseMetaNode
 
 class AddressClass(BaseMetaNode):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def data_source(self, val=None):
         '''Gets/sets data-source'''
         return self._field_class_factory('data-source',

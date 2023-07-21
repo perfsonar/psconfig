@@ -2,7 +2,8 @@ from .base_address_selector import BaseAddressSelector
 
 class NameLabel(BaseAddressSelector):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'namelabel' #override this
 
     def name(self, val=None):

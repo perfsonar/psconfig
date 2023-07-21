@@ -3,6 +3,9 @@ from .base_meta_node import BaseMetaNode
 
 class SubTask(BaseMetaNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def test_ref(self, val=None):
         '''Gets/sets test as list'''
         return self._field_name('test', val)
@@ -23,7 +26,7 @@ class SubTask(BaseMetaNode):
         '''Gets/sets tools as list'''
         return self._field('tools', val)
     
-    def add_tool(self, val=None):
+    def add_tool(self, val):
         '''Add tool'''
         self._add_list_item('tools', val)
     

@@ -2,6 +2,9 @@ from .base_meta_node import BaseMetaNode
 
 class Test(BaseMetaNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def type(self, val=None):
         return self._field('type', val)
     

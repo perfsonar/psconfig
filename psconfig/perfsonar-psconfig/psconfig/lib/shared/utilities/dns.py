@@ -47,6 +47,7 @@ def resolve_address_multi(addresses, timeout=60):
     '''Performs a dns lookup of all the addresses specified. timeout defaults to 60.'''
     res = dns.resolver.Resolver()
     res.timeout = timeout
+    res.lifetime = timeout
 
     results = {}
     
@@ -79,6 +80,7 @@ def reverse_dns_multi(addresses, timeout=60):
     '''Performs a reverse dns lookup of all the addresses specified. timeout defaults to 60.'''
     res = dns.resolver.Resolver()
     res.timeout = timeout
+    res.lifetime = timeout
     results = {}
     for address in addresses:
         #v4 lookup

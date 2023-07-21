@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Union
 
 class ApiFilters(object):
 
-    def __init__(self):
-        self.task_filters = {}
-        self.timeout = 60
+    def __init__(self, **kwargs):
+        self.task_filters = kwargs.get('task_filters', {})
+        self.timeout = kwargs.get('timeout', 60)
         self.ca_certificate_file = None
         self.ca_certificate_path = None
         self.verify_hostname = None 
@@ -289,7 +289,7 @@ class ApiFilters(object):
         if val is not None:
             self._init_list_filter(self.task_filters, 'archives')
             self.task_filters['archives'].append({
-                'name':val['name'],
+                'name':val['name'], #######check usage
                 'data':val['data']
                 })
     

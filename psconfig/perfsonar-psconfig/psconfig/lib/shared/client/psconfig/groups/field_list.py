@@ -3,9 +3,11 @@ from ..address_selectors.address_selector_factory import AddressSelectorFactory
 from .base_group import BaseGroup
 
 class FieldList(BaseGroup):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.data['type'] = 'list'
         self.type = 'list'
+        
 
     def dimension_count(self):
         '''returns True since there is only one dimension in a list'''
@@ -31,7 +33,7 @@ class FieldList(BaseGroup):
             length of the addresses list. Provided dimension must always be 0 since there is only
             1 dimension.'''
         
-        if not (dimension and dimension < self.dimension_count()):
+        if not (dimension < self.dimension_count()):
             return
         
         size = len(self.data['addresses'])
@@ -41,10 +43,10 @@ class FieldList(BaseGroup):
         '''This is primarily used by next() and won't have much utility outide that. Given a dimension
             and optional index, return item. If no index given returns addresses, otherwise returns 
             item at index index in addresses.'''
-        if not (dimension and dimension < self.dimension_count()):
+        if not (dimension < self.dimension_count()):
             return
         
-        if index:
+        if index is not None:
             return self.address(index)
         else:
             return self.addresses()
@@ -52,7 +54,7 @@ class FieldList(BaseGroup):
     def dimension(self, dimension):
         '''Return addresses unless dimension count >0, then return undefined'''
 
-        if not(dimension and dimension < self.dimension_count()):
+        if not(dimension < self.dimension_count()):
             return
         
         return self.addresses()

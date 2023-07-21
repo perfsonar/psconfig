@@ -25,9 +25,9 @@ class CacheHandler():
         with open(self.file_path, 'w') as file:
             json.dump(self.data, file)
     
-    def get(self, key):
-        if self.get(key):
-            return self.get(key).get('value')
+    def getter(self, key):
+        if self.data.get(key):
+            return self.data.get(key).get('value')
         else:
             return
     

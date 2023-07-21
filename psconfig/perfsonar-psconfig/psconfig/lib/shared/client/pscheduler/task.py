@@ -13,12 +13,12 @@ import copy
 class Task(BaseNode):
     
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.bind_map = kwargs.get('bind_map', {}) #host interface
         self.lead_bind_map = kwargs.get('lead_bind_map', {})
         self.lead_address_map = kwargs.get('lead_address_map', {}) #host
-        self.error = None
-        super().__init__(**kwargs)
-
+        self.error = ''
+        
     def _post_url(self):
         tasks_url = self.url
         tasks_url = tasks_url.strip()
@@ -575,7 +575,8 @@ class Task(BaseNode):
                 if self.lead_bind_map.get(lead) is not None:
                     participants_lead_bind = self.lead_bind_map[lead]
                 elif self.lead_bind_map.get('_default') is not None:
-                    if not (ip_address(lead).is_loopback or lead.startswith('localhost')):
+                    #Only do this if url points to local pscheduler - may cause problems if default assist server in .conf is remote
+                    if (ip_address(lead).is_loopback or lead.startswith('localhost')):
                         participants_lead_bind = self.lead_bind_map['_default']
                 
             elif self.lead_bind():
@@ -592,7 +593,7 @@ class Task(BaseNode):
         lead_url = lead_url + "tests/" + self.test_type() + "/participants"
 
         #fetch lead
-        if not self.data['test']['spec']['schema']: 
+        if not self.data['test']['spec'].get('schema'): 
             self.data['test']['spec']['schema'] = 1
         get_params = {'spec':self.test_spec()}
         if participants_lead_bind:
@@ -634,15 +635,15 @@ class Task(BaseNode):
             lead = self.lead_address_map[lead]
         
         #set bind address if we have a bind map populated
-        if lead and self.bind_map.get(lead):
+        if lead and self.bind_map and self.bind_map.get(lead):
             self.bind_address = self.bind_map[lead]
-        elif self.bind_map.get('_default'):
+        elif self.bind_map and self.bind_map.get('_default'):
             self.bind_address = self.self.bind_map['_default']
 
         #set lead bind address if we have map set - only set it if we are local (first participant None) or explicitly call out the address
-        if lead and self.lead_bind_map.get(lead):
+        if lead and self.lead_bind_map and self.lead_bind_map.get(lead):
             self.lead_bind = self.lead_bind_map[lead]
-        elif self.lead_bind_map.get('_default'):
+        elif self.lead_bind_map and self.lead_bind_map.get('_default'):
             self.lead_bind = self.lead_bind_map['_default']
         
         return lead
@@ -679,38 +680,31 @@ class Task(BaseNode):
             return True
         return False
 
-    def checksum(self, include_private_fields=False):
+    def checksum(self):
         #calculates checksum for comparing tasks, ignoring stuff like UUID and lead url
         #make sure these fields are consistent
-        if not self.schema():
-            self.schema(1)
-        if not self.data['test']['spec']['schema']:
-            self.data['test']['spec']['schema'] = 1
-        
-        if not self.data['archives']:
-            self.data['archives'] = []
-        
-        if not self.data['schedule']:
-            self.data['schedule'] = {}
-        
+        self.data['archives'] = self.data.get('archives', [])
+        self.data['schedule'] = self.data.get('schedule', {})
+
         data_copy = copy.deepcopy(self.data)
+        data_copy['schema'] = '' #clear out this since if other params same then should be equal
+        data_copy['test']['spec']['schema'] = '' #clear out this since if other params same then should be equal
         data_copy['tool'] = '' #clear out tool since set by server
         data_copy['href'] = '' #clear out href
         data_copy['schedule']['start'] = '' #clear out temporal values
         data_copy['schedule']['until'] = '' #clear out temporal values
         data_copy['detail'] = {} #clear out detail
 
-        #clear out private fields that won't get displayed by remote tasks
-        if not include_private_fields:
-            for archive in data_copy['archives']:
-                for datum in archive['data'].keys():
-                    if datum.startswith('_'):
-                        archive['data'][datum] = ''
-            
-            for tparam in data_copy['test']['spec']:
-                if tparam.startswith('_'):
-                    data_copy['test']['spec'][tparam] = ''
+        #clear our private fields that won't get displayed by remote tasks
+        for archive in data_copy['archives']:
+            for datum in archive['data'].keys():
+                if datum.startswith('_'):
+                    archive['data'][datum] = ''
         
+        for tparam in data_copy['test']['spec']:
+            if tparam.startswith('_'):
+                data_copy['test']['spec'][tparam] = ''
+
         #canonical should keep it consistent by sorting keys
         data_copy_canonical = json.dumps(data_copy, sort_keys=True, separators=(',',':')).encode('utf-8')
         return b64encode(md5(data_copy_canonical).digest()).decode().rstrip('=')

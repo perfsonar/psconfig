@@ -8,6 +8,9 @@ from .translators.mesh_config.config import Config
 
 class ApiConnect(BaseConnect):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def config_obj(self):
         '''
         client.psconfig.Config object

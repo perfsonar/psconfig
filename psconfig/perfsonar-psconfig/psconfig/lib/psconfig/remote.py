@@ -1,7 +1,10 @@
-from ..shared.client.psconfig.jq_transform import JQTransform
-from ..shared.client.psconfig.base_node import BaseNode
+from shared.client.psconfig.jq_transform import JQTransform
+from shared.client.psconfig.base_node import BaseNode
 
 class Remote(BaseNode):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def url(self, val=None):
         ''' Gets/ sets the URL of the json file to download'''

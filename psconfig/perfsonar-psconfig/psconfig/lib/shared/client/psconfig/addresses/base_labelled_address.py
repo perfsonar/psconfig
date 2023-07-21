@@ -2,6 +2,9 @@ from .address_label import AddressLabel
 from .base_address import BaseAddress
 
 class BaseLabelledAddress(BaseAddress):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     
     def labels(self, val=None):
         '''Gets/sets labels as dictionary of AddressLabel objects'''

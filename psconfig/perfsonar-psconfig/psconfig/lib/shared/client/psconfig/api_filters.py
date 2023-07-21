@@ -1,5 +1,3 @@
-
-
 class ApiFilters(object):
     def __init__(self, **kwargs):
         self.timeout = kwargs.get('timeout', 60)

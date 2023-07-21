@@ -1,6 +1,10 @@
 from .base_node import BaseNode
 
 class ArchiveJqTransform(BaseNode):
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def script(self, val=None):
         '''Getter/ setter for jq script. Can be string or list of strings where each item in list
         is a line of the JQ script

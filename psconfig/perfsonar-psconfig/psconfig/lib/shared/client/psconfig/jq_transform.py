@@ -4,7 +4,8 @@ from .base_node import BaseNode
 
 class JQTransform(BaseNode):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.error = ''
     
     def script(self, val=None):

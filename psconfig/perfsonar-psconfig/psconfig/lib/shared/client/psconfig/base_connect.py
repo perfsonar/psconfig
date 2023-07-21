@@ -93,7 +93,7 @@ class BaseConnect(object):
         if not psconfig:
             self.error = "No config object found {}".format(filename)
             return
-        
+
         return psconfig
     
     def _config_from_http(self):
@@ -128,7 +128,7 @@ class BaseConnect(object):
         #check if translation needed
         translator_error = ''
         psconfig = None
-        json_error = ''
+        json_error = ""
         json_obj = None
 
         try:
@@ -174,10 +174,12 @@ class BaseConnect(object):
         
         #retrieved based on url type
         if u.scheme=='' or u.scheme=='file':
-            return self._config_from_file()
+            psconfig = self._config_from_file()
+            return psconfig
         #check for both http and https (for possible errors)
         elif u.scheme=='http' or u.scheme=='https':
-            return self._config_from_http()
+            psconfig = self._config_from_http()
+            return psconfig
         else:
             self.error = 'Unrecognized url type ( {} ). Must start with http://, file:// or be a file path'.format(self.url)
             return
@@ -197,15 +199,15 @@ class BaseConnect(object):
         if not filename:
             self.error = 'No save_filename set'
             return
-
-        if formatting_params.get('canonical'):
-            psconfig_canonical = json.dumps(psconfig, sort_keys=True, separators=(',',':'))
-        if formatting_params.get('utf8'):
-            psconfig_canonical = psconfig_canonical.encode('utf-8')
         
+        psconfig_canonical = psconfig.to_json()
+        with open(filename, 'w') as file:
+            file.write(psconfig_canonical)
+
         try:
+            psconfig_canonical = psconfig.to_json()
             with open(filename, 'w') as file:
-                file.write(psconfig_canonical)
+                    file.write(psconfig_canonical)
         except Exception as e:
             self.error = e
         

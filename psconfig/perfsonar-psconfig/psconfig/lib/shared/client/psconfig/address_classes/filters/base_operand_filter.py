@@ -3,6 +3,9 @@
 from .base_filter import BaseFilter
 
 class BaseOperandFilter(BaseFilter):
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def filters(self, val=None):
         '''Gets/sets filters as list'''

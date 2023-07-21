@@ -82,12 +82,12 @@ class TaskManager(object):
 
         #build list of existing tasks
         """    $self->logf()->global_context({"action" => "list"}); """
-        bind_map = kwargs['bind_map']
+        bind_map = kwargs.get('bind_map')
 
         ##
         # Note: I don't think we need lead_address_map here anymore, but may be wrong. Keep code for now
         # but may want to remove this to ease confusion in future.
-        lead_address_map = kwargs['lead_address_map']
+        lead_address_map = kwargs.get('lead_address_map')
 
         visited_leads = {}
         for psc_url in self.leads:
@@ -100,9 +100,9 @@ class TaskManager(object):
             psc_filters.detail_enabled(True)
             psc_filters.reference_param(self.reference_label, {'created-by': self.created_by})
             psc_client = ApiConnect(url=psc_url, filters=psc_filters,
-                                    bind_map=bind_map, lead_address_map=lead_address_map) #Need to define
+                                    bind_map=bind_map, lead_address_map=lead_address_map)
             
-            #get hostname to see if this is a server we already visited using a different address   ####one host multiple addresses? -- will it be the same as lead_address_map?
+            #get hostname to see if this is a server we already visited using a different address
             psc_hostname = psc_client.get_hostname()
             if psc_client.error:
                 '''$self->log_error("Error getting hostname from $psc_url: " . $psc_client->error(), $log_ctx);'''
@@ -138,6 +138,7 @@ class TaskManager(object):
                 del psc_client.filters.taskfilters['detail'] 
                 existing_tasks = psc_client.get_tasks() 
                 if psc_client.error:
+                    #there was an error getting the entire list
                     '''$self->log_error("Error getting task list from $psc_url: " . $psc_client->error(), $log_ctx);'''
                     psc_lead['error_time'] = int(time.time())
                     self.errors.append("Problem getting existing tests from pScheduler lead {}: {}".format(psc_url, psc_client.error))
@@ -219,6 +220,7 @@ class TaskManager(object):
                 new_until += self.new_task_min_ttl
             
             new_task.schedule_until(self._ts_to_iso(new_until))
+            print(new_task.data)
             self.new_tasks.append(new_task)
     
 
@@ -313,40 +315,52 @@ class TaskManager(object):
         #perfomance hit
         if new_task.needs_bind_addresses():
             new_task.refresh_lead() 
+
+        #calculate the checksum once
+        new_task_checksum = new_task.checksum()
+
+        #if we already have this task in the queue to be created, such as when it
+        #is specified in multiple meshes, then we don't want to add it again
+        if self.duplicate_new_task_map.get(new_task_checksum):
+            return False, None
         
         #if private ma params change, then need new task
         #also update new_archives here so we don't have to re-calculate all the checksums
+        #Note: Don't worry about removed archives since task checksum has that covered
         ma_changed = False  
         for archive in new_task.archives():
             opaque_new_checksum = archive.checksum()
-            old_checksum = self.existing_archives.get(opaque_new_checksum)
+            #Key combines task and archive checksum since multiple tasks may have archive sthat only differ between opaque parts
+            #Likewise, within a task we may have archives that only differ by private fields
+            archive_key = new_task_checksum + '__' + opaque_new_checksum
+            old_checksum = self.existing_archives.get(archive_key)
             new_checksum = archive.checksum(include_private=True)
-            self.new_archives[opaque_new_checksum] = new_checksum
-            if (not old_checksum) or (old_checksum != new_checksum):
+            if not self.new_archives.get(archive_key):
+                self.new_archives[archive_key] = {}
+            self.new_archives[archive_key][new_checksum] = True
+            if not (old_checksum and old_checksum.get(new_checksum)):
+                '''$self->log_info("MA changed for $archive_key -> $new_checksum");'''
                 ma_changed = True
         
         #if no matching checksum, then does not exist
-        if ma_changed or not existing.get(new_task.checksum()):
+        if ma_changed or not existing.get(new_task_checksum):
             return True, None
         
         #if matching checksum, and tool is not defined on new task then we match
         need_new_task = True
         new_start_time = None  
         if not new_task.requested_tools():
-            cmap = existing.get(new_task.checksum())   
+            cmap = existing.get(new_task_checksum)   
             for tool in cmap:
                 need_new_task, new_start_time = self._evaluate_task(cmap[tool], need_new_task, new_start_time)
-                if need_new_task: 
-                    break
         else:
             #we have a matching checksum and we have an explicit tool, find one that matches
-            cmap = existing.get(new_task.checksum())
+            cmap = existing.get(new_task_checksum)
+            #search requested tools in order since that is preference order
             for req_tool in new_task.requested_tools():
                 if cmap.get(req_tool):
                     need_new_task, new_start_time = self._evaluate_task(cmap[req_tool], need_new_task, new_start_time)
-                if need_new_task: 
-                    break
-                
+        
         return need_new_task, new_start_time
     
 
@@ -372,7 +386,7 @@ class TaskManager(object):
                     and (old_task_start_ts + 15*60) < int(time.time()) #started at least 15 min ago
                     and (
                         (old_task['task'].detail_runs_started() is not None and  (old_task['task'].detail_runs_started()== 0)) #have at no runs started (v1.1 and later)
-                        or (old_task['task'].detail_runs() is not None and (old_task['task'].detail_runs() <= 2)) #have less than two runs (not 1 because count bugged) (pre-v1.1)
+                        or (old_task['task'].detail_runs_started() is not None and (old_task['task'].detail_runs() <= 2)) #have less than two runs (not 1 because count bugged) (pre-v1.1)
                         )):
 
                         #if background-multi, one or less runs and start time is 15 minutes (arbitrary)
@@ -439,6 +453,7 @@ class TaskManager(object):
         }
 
         try:
+            print(content)
             with open(self.tracker_file, 'w') as outfile:
                 json.dump(content, outfile, indent=2) 
         except Exception as e:
@@ -447,10 +462,13 @@ class TaskManager(object):
     def _cleanup_leads(self):
 
         #clean out leads that we don't need anymore
+        del_lead_urls = []
         for lead_url in self.leads:
             if not self.leads_to_keep.get(lead_url):
-                del self.leads[lead_url]
-
+                del_lead_urls.append(lead_url)
+        
+        for lead_url in del_lead_urls:
+            del self.leads[lead_url]
 
     def log_task(self, task):
 

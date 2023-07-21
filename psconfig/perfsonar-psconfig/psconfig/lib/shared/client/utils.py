@@ -94,11 +94,11 @@ class Utils(object):
             
             return resp
     
-def build_err_msg(response):
+def build_err_msg(http_response):
     errmsg = ''
-    errmsg += '{}.'.format(response.reason)
-    errmsg += ' Status Code: {}'.format(response.status_code)
-    errmsg += response.text.strip()
+    errmsg += '{}.'.format(http_response.reason)
+    errmsg += ' Status Code: {}'.format(http_response.status_code)
+    errmsg += http_response.text.strip()
 
     return errmsg
 

@@ -2,7 +2,7 @@
 Client for interacting with pscheduler
 '''
 
-#from urllib import response
+from urllib.parse import urlencode
 #import uuid
 from .api_filters import ApiFilters
 #import re
@@ -10,6 +10,8 @@ from .test import Test
 from .task import Task
 from .tool import Tool
 from ..utils import Utils, build_err_msg, extract_url_uuid
+import json
+from ..utils import Utils
 
 class ApiConnect(object):
 
@@ -19,7 +21,7 @@ class ApiConnect(object):
         self.bind_map = kwargs.get('bind_map', {})
         self.lead_address_map = kwargs.get('lead_address_map', {})
         self.filters = kwargs.get('filters', ApiFilters())
-        self.error = None
+        self.error = ''
 
     def get_tasks(self):
         tasks_url = self.url
@@ -61,13 +63,14 @@ class ApiConnect(object):
         tasks = []
         for task_response_json in response_json:
             task_url = ''
+            has_detail = False
             if 'detail' in task_response_json:
                 if 'href' in task_response_json['detail']:
                     task_url = task_response_json['detail']['href']
                     has_detail = True
             elif 'href' in task_response_json:
                 task_url = task_response_json['href']
-            elif not task_url: 
+            else:
                 continue
         
             task_uuid = extract_url_uuid(url=task_url) #Utils
@@ -76,6 +79,7 @@ class ApiConnect(object):
                 continue
             
             if has_detail:
+                #we got the detail, so create the object
                 task = Task(
                     data=task_response_json,
                     url=self.url,  
@@ -85,6 +89,7 @@ class ApiConnect(object):
                     lead_address_map=self.lead_address_map
                 )
             else:
+                #no detail, so we have to retrieve it
                 task = self.get_task(task_uuid)
             
             if not task:
@@ -123,7 +128,7 @@ class ApiConnect(object):
         
         task_response_json = task_response.json() 
         if not task_response_json:
-            self.error = "No task returned from {}".format(task_url)
+            self.error = "No task object returned from {}".format(task_url)
             return
         
         return Task(
@@ -389,3 +394,56 @@ class ApiConnect(object):
         
         return response_json
 
+    def get_number_of_participants(self, input_data=None):
+
+        if not input_data:
+            self.error = 'get_number_of_participants: wrong test spec'
+            return -1
+        
+        #build url
+        test_url = self.url
+        test_url = test_url.strip()
+
+        if not test_url.endswith('/'):
+            test_url += '/'
+        
+        input_data_json = json.loads(input_data)
+        test_type = input_data_json['type']
+        test_spec = urlencode(input_data_json['spec'])
+        
+        test_spec_url = test_url + test_type + "/participants?spec=" + test_spec
+
+        response = Utils().send_http_request(
+            connection_type = 'GET',
+            url = test_spec_url,
+            get_params = {},
+            timeout = self.filters.timeout,
+            ca_certificate_file = self.filters.ca_certificate_file,
+            ca_certificate_path = self.filters.ca_certificate_path,
+            verify_hostname = self.filters.verify_hostname,  ################add verify_hostnames?
+            local_address = self.bind_address,
+            bind_map = self.bind_map,
+            address_map = self.lead_address_map
+        )
+
+        if not response.ok:
+            self.error = 'Invalid response'
+            return -1
+        
+        participants_json = response.json()
+        if not participants_json:
+            self.error = 'No participants returned.'
+            return -1
+        
+        if type(participants_json) is dict:
+            participants_json_array = participants_json['participants']
+        
+        if type(participants_json_array) is not list:
+            message1 = "Expected participants JSON array is not an ARRAY {}".format(participants_json_array)
+            self.error = message1
+            return -1
+        
+        participants_number = len(participants_json_array)
+
+        return participants_number
+    

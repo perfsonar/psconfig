@@ -2,7 +2,8 @@ from .base_filter import BaseFilter
 
 class OperandNot(BaseFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'not'
         self.data['type'] = 'not'
     

@@ -16,9 +16,10 @@ from .test import Test
 class Config(BaseMetaNode):
     
     def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.requesting_agent_addresses = kwargs.get('requesting_agent_addresses', {})
         self.error = ''
-
+        
     def addresses(self, val=None):
         '''Gets/sets addresses as dictionary'''
         return self._field_class_map('addresses', Address, val)
@@ -204,3 +205,113 @@ class Config(BaseMetaNode):
         except Exception as e:
             return [e]
 
+    def _ref_check_addr_select(self, addr_sel, group_name, psconfig, errors):
+        try:
+            addr_name = addr_sel.name()
+            addr_obj = psconfig.address(addr_name)
+            if not addr_obj:
+                errors.append("Group {} references an address object {} that does not exist.".format(group_name, addr_name))
+                return
+            addr_label_name = addr_sel.label()
+            if addr_label_name and not addr_obj.label(addr_label_name):
+                errors.append("Group {} references a label {} for address object {} that does not exist.".format(group_name, addr_label_name, addr_name))
+        except Exception:
+            try:
+                class_name = addr_sel.field_class()
+                if not psconfig.address_class():
+                    errors.append("Group {} references a class object {} that does not exist.".format(group_name, class_name))
+                    return
+            except Exception:
+                pass
+
+    def validate_refs(self):
+        ref_errors = []
+
+        #check addresses
+        for addr_name in self.address_names():
+            address = self.address(addr_name)
+            host_ref = address.host_ref()
+            context_refs = address.context_refs()
+            #check host ref
+            if host_ref and not self.host(host_ref):
+                ref_errors.append("Address {} references a host object {} that does not exist.".format(addr_name, host_ref))
+            
+            #check context refs
+            if context_refs:
+                for context_ref in context_refs:
+                    if not self.context(context_ref):
+                        ref_errors.append("Address {} references a context object {} that does not exist.".format(addr_name, context_ref))
+            
+            #check remote addresses
+            for remote_name in address.remote_address_names():
+                #check remote context refs
+                remote  = address.remote_address(remote_name)
+                if remote.context_refs():
+                    for context_ref in remote.context_refs():
+                        if not self.context(context_ref):
+                            ref_errors.append("Address {} has a remote definition for {} using a context object {} that does not exist.".format(addr_name, remote_name, context_ref))
+                
+                #check remote labels
+                for label_name in remote.label_names():
+                    label = address.label(label_name)
+                    if label and label.context_refs():
+                        for context_ref in label.context_refs():
+                            if not self.context(context_ref):
+                                ref_errors.append("Address {} has a label {} using a context object {} that does not exist.".format(addr_name, label_name, context_ref))
+            
+            #check labels
+            for label_name in address.label_names():
+                label = address.label(label_name)
+                #check label context refs
+                if label and label.context_refs():
+                    for context_ref in label.context_refs:
+                        if not self.context(context_ref):
+                            ref_errors.append("Address {} has a label {} using a context object {} that does not exist.".format(addr_name, label_name, context_ref))
+                        
+        
+        #check groups
+        for group_name in self.group_names():
+            group = self.group(group_name)
+            if group.type == 'disjoint':
+                for a_addr_sel in group.a_addresses():
+                    self._ref_check_addr_select(a_addr_sel, group_name, self, ref_errors)
+                for b_addr_sel in group.b_addresses():
+                    self._ref_check_addr_select(b_addr_sel, group_name, self, ref_errors)
+            else:
+                try:
+                    for addr_sel in group.addresses():
+                        self._ref_check_addr_select(addr_sel, group_name, self, ref_errors)
+                except Exception:
+                    pass
+        
+        #check hosts
+        for host_name in self.host_names():
+            host = self.host(host_name)
+            if host.archive_refs():
+                for archive_ref in host.archive_refs():
+                    if archive_ref and not self.archive(archive_ref):
+                        ref_errors.append("Host {} references an archive {} that does not exist.".format(host_name, archive_ref))
+        
+        #check tasks
+        for task_name in self.task_names():
+            task = self.task(task_name)
+            group_ref = task.group_ref()
+            test_ref = task.test_ref()
+            schedule_ref = task.schedule_ref()
+
+            #check group ref
+            if group_ref and not self.group(group_ref):
+                ref_errors.append("Task {} references a group {} that does not exist.".format(task_name, group_ref))
+            #check test ref
+            if test_ref and not self.test(test_ref):
+                ref_errors.append("Task {} references a test {} that does not exist.".format(task_name, test_ref))
+            #check schedule ref
+            if schedule_ref and not self.schedule(schedule_ref):
+                ref_errors.append("Task {} references a schedule {} that does not exist.".format(task_name, schedule_ref))
+            #check archive refs
+            if task.archive_refs():
+                for archive_ref in task.archive_refs():
+                    if archive_ref and not self.archive(archive_ref):
+                        ref_errors.append("Task {} references an archive {} that does not exist.".format(task_name, archive_ref))
+        
+        return ref_errors

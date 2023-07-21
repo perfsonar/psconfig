@@ -2,6 +2,9 @@ from .base_meta_node import BaseMetaNode
 
 class Schedule(BaseMetaNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def start(self, val=None):
         '''Gets/sets start'''
         return self._field_timestampabsrel('start', val)

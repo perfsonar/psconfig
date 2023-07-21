@@ -25,6 +25,25 @@ class BaseNode(object):
         #keep consistent by sorting keys
         data_copy_canonical = json.dumps(data_copy, sort_keys=True, separators=(',',':')).encode('utf-8')
         return b64encode(md5(data_copy_canonical).digest()).decode().rstrip('=')
+    
+    def to_json(self, formatting_params=None):
+        '''Converts object to JSON string. Accepts option dictionary with JSON formatting options.'''
+        if not formatting_params:
+            formatting_params = {}
+        
+        formatting_params['utf8'] = formatting_params.get('utf8', True)
+        formatting_params['canonical'] = formatting_params.get('canonical', False)
+        
+        if formatting_params.get('canonical'):
+            psconfig_canonical = json.dumps(self.data, sort_keys=True, separators=(',',':'))
+        else:
+            psconfig_canonical = json.dumps(self.data)
+        
+        # defaults to utf8
+        #if formatting_params.get('utf8'):
+        #    psconfig_canonical = psconfig_canonical.encode('utf-8')
+        
+        return psconfig_canonical
 
     def remove(self, field):
         '''
@@ -141,7 +160,7 @@ class BaseNode(object):
         
         tmp_objs = []
 
-        for data in self.data.get(field):
+        for data in self.data.get(field, []):
             tmp_objs.append(field_class(data=data))
         
         return tmp_objs
@@ -150,7 +169,7 @@ class BaseNode(object):
 
         if not (field and self.data.get(field) and \
             isinstance(self.data.get(field), list) and \
-                index and len(self.data[field]) > index):
+                (index is not None) and len(self.data[field]) > index):
                 return
         
         if val:
@@ -194,13 +213,13 @@ class BaseNode(object):
                 self.data[field][param] = val.data
             else:
                 return
-        
+            
         if not self._has_field(self.data, field):
             return
         
         if not self._has_field(self.data[field], param):
             return
-
+        
         o = field_class(data=self.data[field][param])
         o.map_name = param
         return o
@@ -241,7 +260,7 @@ class BaseNode(object):
     def _field_class_factory_list_item(self, field, index, base_class, factory_class, val=None):
         if not (field and self.data.get(field) and \
             isinstance(self.data.get(field), list) and 
-            index and 
+            (index is not None) and 
             len(self.data.get(field))  > index):
             return
 
@@ -310,11 +329,13 @@ class BaseNode(object):
         
         else:
             return
+        
+    
 
     def _field_refs(self, field, val=None):
         if val:
             if not isinstance(val, list):
-                self.validation_error = 'field must be a list'
+                self.validation_error = '{} must be a list'.format(field)
                 return
             
             for v in val:
@@ -396,6 +417,13 @@ class BaseNode(object):
             return True #returns None as well
         else:
             return False
+    
+    def _field_bool_default_true(self, field, val=None):
+        #if not setting the value and the existing field value is None, default to true
+        if (not val) and (not self.data.get(field)):
+            return True
+        #otherwise, do the normal boolean operation
+        return self._field_bool(field, val)
 
     def _field_ipversion(self, field, val=None):
         if val:
@@ -445,7 +473,7 @@ class BaseNode(object):
     def _field_host_list_item(self, field, index, val=None):
         if not (field and self.data.get(field) and \
             isinstance(self.data.get(field), list) and 
-            index and len(self.data.get(field))> index):
+            (index is not None) and len(self.data.get(field))> index):
             return
         
         if val:
@@ -456,7 +484,6 @@ class BaseNode(object):
         
         return self.data[field][index]
 
-    
     def _add_field_host(self, field, val=None):
         if not val:
             return
@@ -479,7 +506,6 @@ class BaseNode(object):
                 return
         return self.data.get(field)
     
-
     def _field_int(self, field, val=None):
         if val:
             self.data[field] = int(val)
@@ -661,7 +687,7 @@ class BaseNode(object):
         #ipv4 = re.compile(r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?$') ### does not validate the limits?
         #ipv6 = re.compile(r'^\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\](:[0-9]+)?$')
         if val:
-            host, port = urllib.parse._splitport(val)
+            host, port = urllib.parse.splitport(val)
             if port:
                 try:
                     port = int(port)

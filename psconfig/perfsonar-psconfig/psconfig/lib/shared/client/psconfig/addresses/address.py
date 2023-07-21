@@ -2,6 +2,9 @@ from .base_labelled_address import BaseLabelledAddress
 from .remote_address import RemoteAddress
 
 class Address(BaseLabelledAddress):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     
     def host_ref(self, val=None):
         '''Gets/sets the host'''
@@ -12,7 +15,7 @@ class Address(BaseLabelledAddress):
         '''Gets/sets the tags as a list'''
         return self._field('tags', val)
 
-    def add_tag(self, val=None):
+    def add_tag(self, val):
         '''Adds a tag to the list'''
         return self._add_list_item('tags', val)
     

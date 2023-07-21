@@ -2,6 +2,9 @@ from .base_meta_node import BaseMetaNode
 
 class Task(BaseMetaNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def scheduled_by(self, val=None):
         '''Gets/sets scheduled-by'''
         return self._field_intzero('scheduled-by', val)
@@ -22,7 +25,7 @@ class Task(BaseMetaNode):
         '''Gets/sets archive_refs as a list'''
         return self._field_refs('archives', val)
     
-    def add_archive_ref(self, val=None):
+    def add_archive_ref(self, val):
         '''Adds archive to list'''
         self._add_field_ref('archives', val)
     
@@ -30,7 +33,7 @@ class Task(BaseMetaNode):
         '''Gets/sets tools as a list'''
         return self._field('tools', val)
     
-    def add_tool(self, val=None):
+    def add_tool(self, val):
         '''Add tool to the list'''
         self._add_list_item('tools', val)
     
@@ -38,7 +41,7 @@ class Task(BaseMetaNode):
         '''Gets/sets subtasks as a list'''
         return self._field_refs('subtasks', val)
     
-    def add_subtask_ref(self, val=None):
+    def add_subtask_ref(self, val):
         '''Adds subtask to list'''
         self._add_field_ref('subtasks', val)
     

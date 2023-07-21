@@ -5,6 +5,9 @@ from .base_meta_node import BaseMetaNode
 
 class Archive(BaseMetaNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def archiver(self, val=None):
         '''Gets/sets archiver'''
 

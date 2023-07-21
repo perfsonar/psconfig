@@ -2,10 +2,10 @@ from .base_filter import BaseFilter
 
 class AddressClass(BaseFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'address-class'
         self.data['type'] = 'address-class'
-
     
     def field_class(self, val=None):
         '''Returns class'''

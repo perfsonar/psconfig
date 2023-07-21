@@ -15,6 +15,9 @@ from ...base_node import BaseNode
 
 class FilterFactory(BaseNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def build(self, data):
         '''creates a filter based on the 'type' field of the given dictionary'''
 

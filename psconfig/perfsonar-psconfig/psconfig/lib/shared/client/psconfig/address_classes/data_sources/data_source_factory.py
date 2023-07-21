@@ -5,6 +5,9 @@ from ...base_node import BaseNode
 
 class DataSourceFactory(BaseNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def build(self, data):
         '''Creates a data source based on the 'type' field of the given HshRef'''
 

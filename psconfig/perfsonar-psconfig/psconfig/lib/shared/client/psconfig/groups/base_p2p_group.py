@@ -4,7 +4,8 @@ from .base_group import BaseGroup
 
 class BaseP2PGroup(BaseGroup):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._exclude_checksum_map =  None
     
     def dimension_count(self):
@@ -68,7 +69,7 @@ class BaseP2PGroup(BaseGroup):
         '''Given two addresses and two hosts, returns True if should be excluded and False otherwise'''
 
         #validate
-        if not (a_addr and b_addr):
+        if not (a_addr and b_addr): 
             return True
         
         #default exclude_self is host
@@ -127,7 +128,7 @@ class BaseP2PGroup(BaseGroup):
 
                 #pass host directly since AddressLabel won't have host_ref
                 if not (self.is_excluded_addresses(a_addr, b_addr, a_host, b_host)):
-                    address_pairs.append(a_addr, b_addr)
+                    address_pairs += [a_addr, b_addr]
         
         return address_pairs
     

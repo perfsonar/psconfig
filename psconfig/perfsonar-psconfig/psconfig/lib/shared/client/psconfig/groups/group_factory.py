@@ -6,15 +6,18 @@ from ..base_node import BaseNode
 
 class GroupFactory(BaseNode):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def build(self, data):
         '''Creates a group based on the 'type' field of the given dictionary'''
 
         if (data and data.get('type')):
-            if (isinstance(data['type'], Disjoint)):
+            if (data['type'] == 'disjoint'):
                 return Disjoint(data=data)
-            elif (isinstance(data['type'], Mesh)):
+            elif (data['type'] == 'mesh'):
                 return Mesh(data=data)
-            elif (isinstance(data['type'], FieldList)):
+            elif (data['type'] == 'list'):
                 return FieldList(data=data)
 
         return None

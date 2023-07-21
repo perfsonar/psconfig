@@ -3,7 +3,8 @@ from .base_filter import BaseFilter
 
 class Host(BaseFilter):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = 'host'
         self.data['type'] = 'host'
     

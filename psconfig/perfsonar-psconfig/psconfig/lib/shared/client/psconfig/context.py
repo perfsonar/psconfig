@@ -1,6 +1,9 @@
 from .base_meta_node import BaseMetaNode
 
 class Context(BaseMetaNode):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     
     def context(self, val=None):
         '''Sets/gets context type'''

@@ -2,13 +2,14 @@ from ..base_meta_node import BaseMetaNode
 
 class BaseGroup(BaseMetaNode):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.type = None #override this!
         self.started = False
         self.iter = 0
         self._address_queue = []
         self._psconfig = None
-
+        
     
     def default_address_label(self, val=None):
         '''Gets/sets default-address-label'''
@@ -66,7 +67,7 @@ class BaseGroup(BaseMetaNode):
         #override this if you have local state set to start
         return
     
-    def grab_next(self):
+    def next(self):
         '''Grabs the next address combination, or returns empty list if none. Must call start first.'''
         #Gets the next group of address selectors
 
@@ -97,7 +98,10 @@ class BaseGroup(BaseMetaNode):
                         index = int(self.iter/ (working_size + 0.0))
 
                     addr_sel = self.dimension_step(i-1, index)
-                    addr_sels = [addr_sel] + addr_sels
+                    if isinstance(addr_sel, list):
+                        addr_sels = addr_sel + addr_sels #if index is None, addr_sel the entire list.
+                    else:
+                        addr_sels = [addr_sel] + addr_sels
 
                     i -= 1
                 
@@ -194,7 +198,7 @@ class BaseGroup(BaseMetaNode):
             if 'host_ref' in dir(parent):
                 #only Address has host_ref, so set that as parent
                 addr._parent_address = parent.address()
-                addr._parent_name = parent.map_name()
+                addr._parent_name = parent.map_name
                 if parent.host_ref():
                     addr._parent_host_ref = parent.host_ref()
             elif parent._parent_host_ref:

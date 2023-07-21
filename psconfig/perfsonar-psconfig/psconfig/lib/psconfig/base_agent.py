@@ -5,18 +5,22 @@ then does something with it
 
 import os
 from urllib.parse import urlsplit
-from ..shared.utilities.iso8601 import duration_to_seconds
-from ipaddress import ip_address, IPv6Address
-from .requesting_agent_connect import RequestingAgentConnect
-from .archive_connect import ArchiveConnect
-from .transform_connect import TransformConnect
-from ..shared.client.psconfig.api_connect import ApiConnect
-from ..shared.client.psconfig.config import Config
-from ..shared.client.psconfig.api_filters import ApiFilters
-from ..shared.client.psconfig.archive import Archive
-from ..shared.utilities.cache_handler import CacheHandler
+from shared.utilities.iso8601 import duration_to_seconds
+from ipaddress import ip_address, IPv6Address, IPv4Address, IPv6Network
+from psconfig.requesting_agent_connect import RequestingAgentConnect
+from psconfig.archive_connect import ArchiveConnect
+from psconfig.transform_connect import TransformConnect
+from shared.client.psconfig.api_connect import ApiConnect
+from shared.client.psconfig.config import Config
+from shared.client.psconfig.api_filters import ApiFilters
+from shared.client.psconfig.archive import Archive
+from shared.utilities.cache_handler import CacheHandler
+from shared.utilities.host import Host
+from shared.utilities.dns import reverse_dns, resolve_address
 import glob
 import re
+
+
 #from ..shared.client.psconfig.parsers
 
 
@@ -24,12 +28,12 @@ class BaseAgent(object):
 
     def _agent_name(self):
         '''override this'''
-        return ###### remove this return
+        #return ###### remove this return
         raise Exception('''override this''')
 
     def _config_client(self):
         '''override this'''
-        return ###### remove this return
+        #return ###### remove this return
         raise Exception('''override this''')
 
     def _init(self):
@@ -43,20 +47,28 @@ class BaseAgent(object):
     
     def _run_end(self, agent_conf):
         return
+    
+    def __init__(self, **kwargs):
+        self.config_file = None
+        self.include_directory = None
+        self.archive_directory = None
+        self.transform_directory = None
+        self.requesting_agent_file = None
+        self.pscheduler_url = None
+        self.check_interval_seconds = kwargs.get('check_interval_seconds', 3600)
+        self.check_config_interval_seconds = kwargs.get('check_config_interval_seconds', 60)
+        self.default_archives = kwargs.get('default_archives', [])
+        self.cache_expires_seconds = kwargs.get('cache_expires_seconds', 86400)
+        self.template_cache = kwargs.get('template_cache', None)
+        self.default_transforms = kwargs.get('default_transforms', [])
+        self.requesting_agent_addresses = kwargs.get('requesting_agent_addresses', None)
+        self.debug = kwargs.get('debug', False)
+        self.error = ''
 
-    def __init__(self, config_file):
+    def init(self, config_file):
         
         #set the config file
         self.config_file = config_file
-        self.check_interval_seconds = 3600
-        self.check_config_interval_seconds = 60
-        self.requesting_agent_addresses = {}
-        self.default_archives = []
-        self.cache_expires_seconds = 86400
-        self.template_cache = None
-        self.default_transforms = []
-        self.debug = False
-        self.error = ''
 
         #set some defaults
         CONFIG_DIR = os.path.dirname(config_file)
@@ -80,23 +92,23 @@ class BaseAgent(object):
 
         ##
         # Grab properties and set defaults
-        if agent_conf.include_directory: 
-            self.include_directory = agent_conf.include_directory 
+        if agent_conf.include_directory(): 
+            self.include_directory = agent_conf.include_directory() 
         else:
             '''$logger->debug($self->logf()->format("No include directory specified. Defaulting to $DEFAULT_INCLUDE_DIR", $log_ctx));'''
             self.include_directory = DEFAULT_INCLUDE_DIR
-        if agent_conf.archive_directory: 
-            self.archive_directory = agent_conf.archive_directory
+        if agent_conf.archive_directory(): 
+            self.archive_directory = agent_conf.archive_directory()
         else:
             '''$logger->debug($self->logf()->format("No archives directory specified. Defaulting to $DEFAULT_ARCHIVES_DIR", $log_ctx));'''
             self.archive_directory = DEFAULT_ARCHIVES_DIR
-        if agent_conf.transform_directory:
-            self.transform_directory = agent_conf.transform_directory 
+        if agent_conf.transform_directory():
+            self.transform_directory = agent_conf.transform_directory() 
         else:
             '''$logger->debug($self->logf()->format("No transform directory specified. Defaulting to $DEFAULT_TRANSFORM_DIR", $log_ctx));'''
             self.transform_directory = DEFAULT_TRANSFORM_DIR
-        if agent_conf.requesting_agent_file: 
-            self.requesting_agent_file = agent_conf.requesting_agent_file 
+        if agent_conf.requesting_agent_file(): 
+            self.requesting_agent_file = agent_conf.requesting_agent_file() 
         else:
             self.requesting_agent_file = DEFAULT_RA_FILE
         
@@ -107,7 +119,6 @@ class BaseAgent(object):
         return True
 
     def run(self):
-
         ##
         # Load configuration
         '''$self->logf()->global_context({'agent_conf_file' => $self->config_file()});'''
@@ -120,21 +131,21 @@ class BaseAgent(object):
         
         ##
         # Set assist server - Host/Post to URL
-        if not agent_conf.pscheduler_assist_server: 
+        if not agent_conf.pscheduler_assist_server(): 
             default = 'localhost'
             '''$logger->debug($self->logf()->format( "No pscheduler-assist-server specified. Defaulting to $default" ));'''
-            agent_conf.pscheduler_assist_server = default  
+            agent_conf.pscheduler_assist_server(default)
 
-        self.pscheduler_url = self._build_pscheduler_url(agent_conf.pscheduler_assist_server) 
+        self.pscheduler_url = self._build_pscheduler_url(agent_conf.pscheduler_assist_server()) 
         '''$logger->debug($self->logf()->format("pscheduler_url is " . $self->pscheduler_url()));'''
 
         ##
         # Set intervals which have instance values used by daemon
-        if agent_conf.check_interval:  
+        if agent_conf.check_interval():  
             check_interval = None
 
             try:
-                check_interval = duration_to_seconds(agent_conf.check_interval) 
+                check_interval = duration_to_seconds(agent_conf.check_interval()) 
             except Exception as e:
                 '''$logger->error($self->logf()->format("Error parsing check-interval. Defaulting to " . $self->check_interval_seconds() . " seconds: $@"));'''
                 pass
@@ -145,11 +156,11 @@ class BaseAgent(object):
             
             '''$logger->debug($self->logf()->format("check_interval is " . $self->check_interval_seconds() . " seconds"));'''
         
-        if agent_conf.check_config_interval: 
+        if agent_conf.check_config_interval(): 
             check_config_interval = None
 
             try:
-                check_config_interval = duration_to_seconds(agent_conf.check_config_interval) 
+                check_config_interval = duration_to_seconds(agent_conf.check_config_interval()) 
             except Exception as e:
                 '''$logger->error($self->logf()->format("Error parsing check-config-interval. Defaulting to " . $self->check_config_interval_seconds() . " seconds: $@"));'''
                 pass
@@ -176,7 +187,7 @@ class BaseAgent(object):
         ##
         # Reset logging context, done with config file
         '''$self->logf()->global_context({'pscheduler_assist_url' => $self->pscheduler_url()});'''
-
+        
         ##
         # Init the run. If returns false, exit
         if not self._run_start(agent_conf):
@@ -185,10 +196,10 @@ class BaseAgent(object):
         ##
         # Handle cache settings
         '''$logger->debug($self->logf()->format("disable-cache is " . $agent_conf->disable_cache()));'''
-        if agent_conf.cache_expires: 
+        if agent_conf.cache_expires(): 
             cache_expires_seconds = None
             try:
-                cache_expires_seconds = duration_to_seconds(agent_conf.cache_expires) 
+                cache_expires_seconds = duration_to_seconds(agent_conf.cache_expires()) 
             except Exception as e:
                 '''$logger->error($self->logf()->format("Error parsing cache-expires. Defaulting to " . $self->cache_expires_seconds() . " seconds: $@"));'''
             if not cache_expires_seconds:
@@ -198,11 +209,11 @@ class BaseAgent(object):
         '''$logger->debug($self->logf()->format("cache-expires is " . $self->cache_expires_seconds() . " seconds"));'''
 
         # Build cache client
-        if (agent_conf.disable_cache) or (agent_conf.cache_directory): 
+        if (agent_conf.disable_cache()) or (agent_conf.cache_directory()): 
             self.template_cache = None
         else:
             cache_filename = 'cache.json'
-            template_cache = CacheHandler(file_path=str(agent_conf.cache_directory) + cache_filename,\
+            template_cache = CacheHandler(file_path=str(agent_conf.cache_directory()) + cache_filename,\
                 expires_in=self.cache_expires_seconds) 
             
             try:
@@ -213,7 +224,6 @@ class BaseAgent(object):
         
         ##
         # Process default archives directory
-        #todo: make sure we handle this die correctly
         '''$self->logf()->global_context({}); #reset logging context'''
         default_archives = []
         archive_files = glob.glob(str(self.archive_directory) + '/*.json')
@@ -281,12 +291,12 @@ class BaseAgent(object):
         psconfig_checksum_tracker = {}
         for remote in agent_conf.remotes(): 
             #create api filters
-            filters = ApiFilters(ca_certificate_file=remote.ssl_ca_file) 
+            filters = ApiFilters(ca_certificate_file=remote.ssl_ca_file()) 
             #create client
             psconfig_client = ApiConnect(
-                url=remote.url, 
+                url=remote.url(), 
                 filters=filters,
-                bind_address=remote.bind_address 
+                bind_address=remote.bind_address() 
             )
 
             #process tasks
@@ -316,7 +326,7 @@ class BaseAgent(object):
             )
             #process tasks
             '''$self->logf()->global_context({"config_src" => 'include', 'config_file' => $abs_file});'''
-            processed_psconfig = self._process_psconfig(psconfig_client)
+            processed_psconfig = self._process_psconfig(psconfig_client, transform=None) ########################no transform supplied. does that mean no local transforms for default includes?
             processed_psconfig_checksum = processed_psconfig.checksum()
             if psconfig_checksum_tracker.get(processed_psconfig_checksum): 
                 '''$logger->warn($self->logf()->format("Checksum matches another psconfig already read, so skipping", $log_ctx));'''
@@ -388,9 +398,11 @@ class BaseAgent(object):
                 if not psconfig:
                     return
                 using_cached = True
+
+        
         
         #validate references
-        errors = psconfig.validate_refs() 
+        errors = psconfig.validate_refs()
         if errors:
             cat = "psconfig_ref_validation_error"
             for error in errors:
@@ -404,12 +416,14 @@ class BaseAgent(object):
                 return
             using_cached = True
         
+        
+        
         #if we got this far, cache the template. do this prior to transforms or
         #we might get strange results. Do not do this if we are using a cached version  
         # or else the cached item will never expire
         if self.template_cache and (not using_cached):
             try:
-                self.template_cache.set(psconfig_client.url, psconfig.json) 
+                self.template_cache.set(psconfig_client.url, psconfig.to_json()) 
             except Exception as e:
                 '''$logger->debug("Error caching " . $psconfig_client->url() . "This is non-fatal.");'''
         
@@ -433,7 +447,7 @@ class BaseAgent(object):
         
         #check cache
         try:
-            psconfig_json = self.template_cache.get(key).get('value')
+            psconfig_json = self.template_cache.getter(key)
         except Exception as e:
             '''$logger->debug("Unable to load cached template for $key: " . $@);'''
         
@@ -454,12 +468,6 @@ class BaseAgent(object):
                 '''$logger->info("Using cached JSON template for $key");'''
         
         return psconfig
-    
-
-    #def _get_addresses(self):
-
-
-
 
     def _apply_transform(self, transform, psconfig, transform_src):
 
@@ -472,7 +480,7 @@ class BaseAgent(object):
 
         #try to apply transformation
         new_data = transform.apply(psconfig.data)
-        if (not new_data and transform.error):
+        if ((not new_data) and transform.error):
             #error applying script
             '''$logger->error($self->logf()->format("Error applying transform: " . $transform->error(), $log_ctx));'''
             return
@@ -486,7 +494,7 @@ class BaseAgent(object):
             return
         
         #validate json after applying
-        psconfig.json = new_data
+        psconfig.data = new_data
         errors = psconfig.validate()
         if errors:
             #validation errors
@@ -504,12 +512,23 @@ class BaseAgent(object):
         '''$logger->debug($self->logf()->format("Transform completed", $log_ctx));'''
 
 
-    def _build_pscheduler_url(self, hostport):
-        host = urlsplit('//' + hostport)
-        if type(ip_address(host.hostname)) is IPv6Address:
-            address = "[{}]".format(host.hostname)
-            uri = 'https://{}/pscheduler'.format(address + ':' + str(host.port))
-        else:
+    def _build_pscheduler_url(self, hostport): ###########check if this implementation is sufficient
+        if hostport.startswith('['):
+            host, port = hostport.split(']')
+            host = host[1:]
+            port = port[1:]
+        else: 
+            host = hostport
+            port = None
+        try:
+            if type(ip_address(host)) is IPv6Address:
+                address = "[{}]".format(host)
+            elif type(ip_address(host)) is IPv4Address:
+                address = host
+            if port:
+                address = address + ':' + port
+            uri = 'https://{}/pscheduler'.format(address)
+        except Exception as e:
             uri = 'https://{}/pscheduler'.format(hostport)
         return uri
 
@@ -551,7 +570,38 @@ class BaseAgent(object):
         return requesting_agent.data 
 
     def _get_addresses(self):
-        pass
+        
+        hostname = os.popen("hostname -f 2> /dev/null").read()
+        hostname = hostname.strip()
+
+        ips = Host().get_ips()
+
+        ret_addresses = {}
+        all_addresses = []
+
+        for ip in ips:
+            ip_type_addr = ip_address(ip)
+            if not ((isinstance(ip_type_addr, IPv4Address) and ip_type_addr.is_loopback) or (isinstance(ip_type_addr, IPv6Address) and ip_type_addr in IPv6Network('"::1/128"'))):
+                all_addresses.append(ip)
+        
+        if hostname:
+            all_addresses.append(hostname)
+        
+        for address in all_addresses:
+            if (not address) or ret_addresses.get(address):
+                continue
+            ret_addresses[address] = True
+
+            if isinstance(address, IPv4Address) or isinstance(address, IPv6Address):
+                hostnames = reverse_dns(address)
+                all_addresses += hostnames
+            else: #######not checking if address is hostname since dns resolution exceptions are handled
+                addresses = resolve_address(address)
+                all_addresses += addresses
+        
+        ret_addresses = list(ret_addresses.keys())
+
+        return ret_addresses
 
     def _load_config(self, config_file):
 
@@ -570,7 +620,7 @@ class BaseAgent(object):
         if agent_conf_errors:
             err = "{} is not valid. The following errors were encountered: ".format(config_file)
             for error in agent_conf_errors:
-                err += "    JSON Path: " + error.path + '\n' 
+                err += "    JSON Path: " + error.json_path + '\n' 
                 err += "    Error: " + error.message + '\n\n'   
             raise Exception(err)
         
