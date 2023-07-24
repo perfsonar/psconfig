@@ -9,4 +9,5 @@ changecom()dnl
 #
 
 # Build primary packages
+libmo-perl
 psconfig --no-install

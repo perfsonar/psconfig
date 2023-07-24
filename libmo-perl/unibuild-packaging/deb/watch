@@ -1,0 +1,2 @@
+version=3
+https://metacpan.org/dist/Mo .*/Mo-v?(\d[\d.-]+)\.(?:tar(?:\.gz|\.bz2)?|tgz|zip)$

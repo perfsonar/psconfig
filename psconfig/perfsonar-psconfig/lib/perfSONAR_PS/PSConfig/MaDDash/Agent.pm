@@ -919,7 +919,7 @@ sub _select_archive {
         }
         
         #use archive-accessor to return
-        $archive_accessor = $check_plugin->archive_accessor()->apply($a->{'data'});
+        $archive_accessor = $check_plugin->archive_accessor()->apply($a);
         chomp $archive_accessor; #remove trailing space
         $archive_accessor =~ s/^\s+//; #remove leading space
         last if($archive_accessor);

@@ -46,7 +46,7 @@ Replaces: perfsonar-meshconfig-guiagent
 Breaks: perfsonar-meshconfig-guiagent
 Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}), maddash-server,
- libchi-perl, libmouse-perl, libyaml-perl, liblinux-inotify2-perl,
+ libchi-perl, libmo-perl, libyaml-perl, liblinux-inotify2-perl,
  libfile-readbackwards-perl, libhash-merge-perl,
  perfsonar-psconfig-maddash-dev
 Description: pSConfig MaDDash Agent
