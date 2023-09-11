@@ -11,6 +11,7 @@ from ...utilities.iso8601 import duration_to_seconds
 from .api_filters import ApiFilters
 from .api_connect import ApiConnect
 import datetime
+from dateutil.parser import isoparse
 
 class TaskManager(object):
     def __init__(self, **kwargs):
@@ -220,7 +221,6 @@ class TaskManager(object):
                 new_until += self.new_task_min_ttl
             
             new_task.schedule_until(self._ts_to_iso(new_until))
-            print(new_task.data)
             self.new_tasks.append(new_task)
     
 
@@ -429,6 +429,7 @@ class TaskManager(object):
                 self.errors.append(err)
                 continue
             
+
             self.leads_to_keep[new_task.url] = True
             '''$self->log_task($new_task);'''
 
@@ -453,7 +454,6 @@ class TaskManager(object):
         }
 
         try:
-            print(content)
             with open(self.tracker_file, 'w') as outfile:
                 json.dump(content, outfile, indent=2) 
         except Exception as e:
@@ -545,7 +545,7 @@ class TaskManager(object):
             return
 
         #ensure no microseconds for strptime to work
-        dt = datetime.datetime.strptime(iso_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
+        dt = isoparse(iso_str)
         return dt.timestamp()
         
 

@@ -39,11 +39,15 @@ class CacheHandler():
     
     def purge(self):
         current_timestamp = datetime.datetime.utcnow()
+        del_keys = []
         for key in self.data:
             #expiry can be None as well
             expiry = self.data[key]['expires_in']
             if expiry and current_timestamp > expiry:
-                del self.data[key]
+                del_keys.append(key)
+        
+        for key in del_keys:
+            del self.data[key]
         
         #overwrite the file with remaining data
         with open(self.file_path, 'w') as file:

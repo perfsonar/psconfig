@@ -135,7 +135,7 @@ class TaskGenerator(object):
         scheduled_by_addr = None
 
         addrs = self.group.next()
-        
+
         #while addrs := self.group.next(): ############needs python >= 3.8
         while addrs:
             #validate scheduled by

@@ -67,9 +67,9 @@ class BaseP2PGroup(BaseGroup):
     
     def is_excluded_addresses(self, a_addr, b_addr, a_host, b_host):
         '''Given two addresses and two hosts, returns True if should be excluded and False otherwise'''
-
+        
         #validate
-        if not (a_addr and b_addr): 
+        if not (a_addr and b_addr):
             return True
         
         #default exclude_self is host
@@ -103,11 +103,11 @@ class BaseP2PGroup(BaseGroup):
     def select_addresses(self, addr_nlas):
         '''Given two name/label/address dictionaries, returns the a tuple of Address objects. If excluded
             return and empty list'''
-        
+
         #validate
         if not (addr_nlas and isinstance(addr_nlas, list) and len(addr_nlas) == 2):
             return
-        
+
         address_pairs = []
 
         for a_addr_nla in addr_nlas[0]:
@@ -125,7 +125,7 @@ class BaseP2PGroup(BaseGroup):
 
                 a_host = a_addr_nla['address'].host_ref()
                 b_host = b_addr_nla['address'].host_ref()
-
+                
                 #pass host directly since AddressLabel won't have host_ref
                 if not (self.is_excluded_addresses(a_addr, b_addr, a_host, b_host)):
                     address_pairs += [a_addr, b_addr]

@@ -34,6 +34,7 @@ class BaseNode(object):
         return delete_url
     
     def _post(self, data):
+
         response = Utils().send_http_request(
             connection_type='POST',
             url=self._post_url(),

@@ -126,9 +126,10 @@ class BaseAgent(object):
         try:
             agent_conf = self._load_config(self.config_file)
         except Exception as e:
+            
             '''$logger->error($self->logf()->format("Error reading " . $self->config_file() . ", not going to run any updates. Caused by: $@"));'''
             return
-        
+
         ##
         # Set assist server - Host/Post to URL
         if not agent_conf.pscheduler_assist_server(): 
@@ -141,7 +142,7 @@ class BaseAgent(object):
 
         ##
         # Set intervals which have instance values used by daemon
-        if agent_conf.check_interval():  
+        if agent_conf.check_interval():
             check_interval = None
 
             try:
@@ -199,7 +200,7 @@ class BaseAgent(object):
         if agent_conf.cache_expires(): 
             cache_expires_seconds = None
             try:
-                cache_expires_seconds = duration_to_seconds(agent_conf.cache_expires()) 
+                cache_expires_seconds = duration_to_seconds(agent_conf.cache_expires())
             except Exception as e:
                 '''$logger->error($self->logf()->format("Error parsing cache-expires. Defaulting to " . $self->cache_expires_seconds() . " seconds: $@"));'''
             if not cache_expires_seconds:
@@ -350,12 +351,13 @@ class BaseAgent(object):
 
         if psconfig_client.error:
             '''$logger->error($self->logf()->format("Error loading psconfig: " . $psconfig_client->error()));'''
+            
             psconfig = self._get_cached_template(psconfig_client.url)
             if not psconfig:
                 return
             using_cached = True
         
-        '''$logger->debug($self->logf()->format('Loaded pSConfig JSON', {'json' => $psconfig->json()}));'''
+        '''$logger->debug($self->logf()->format('Loaded pSConfig JSON', {'json' => $psconfig->json()}));'''    
 
         #validate
         errors = psconfig.validate()
@@ -372,7 +374,7 @@ class BaseAgent(object):
             if not psconfig:
                 return
             using_cached = True
-        
+
         #expand
         if psconfig.includes():
             psconfig_client.expand_config(psconfig)
@@ -399,8 +401,6 @@ class BaseAgent(object):
                     return
                 using_cached = True
 
-        
-        
         #validate references
         errors = psconfig.validate_refs()
         if errors:
@@ -411,12 +411,11 @@ class BaseAgent(object):
                 'expanded' => 1,
                 'transformed' => 0
                 }));'''
+
             psconfig = self._get_cached_template(psconfig_client.url)  
             if not psconfig:
                 return
             using_cached = True
-        
-        
         
         #if we got this far, cache the template. do this prior to transforms or
         #we might get strange results. Do not do this if we are using a cached version  
@@ -426,7 +425,7 @@ class BaseAgent(object):
                 self.template_cache.set(psconfig_client.url, psconfig.to_json()) 
             except Exception as e:
                 '''$logger->debug("Error caching " . $psconfig_client->url() . "This is non-fatal.");'''
-        
+
         #apply default transforms
         for default_transform in self.default_transforms:
             self._apply_transform(default_transform, psconfig, 'include')
@@ -435,7 +434,7 @@ class BaseAgent(object):
         self._apply_transform(transform, psconfig, 'remote_spec')
 
         #set requesting agent
-        psconfig.requesting_agent_addresses = self.requesting_agent_addresses 
+        psconfig.requesting_agent_addresses = self.requesting_agent_addresses
 
         return psconfig
     
@@ -581,7 +580,7 @@ class BaseAgent(object):
 
         for ip in ips:
             ip_type_addr = ip_address(ip)
-            if not ((isinstance(ip_type_addr, IPv4Address) and ip_type_addr.is_loopback) or (isinstance(ip_type_addr, IPv6Address) and ip_type_addr in IPv6Network('"::1/128"'))):
+            if not ((isinstance(ip_type_addr, IPv4Address) and ip_type_addr.is_loopback) or (isinstance(ip_type_addr, IPv6Address) and ip_type_addr in IPv6Network("::1/128"))): ####simplify
                 all_addresses.append(ip)
         
         if hostname:

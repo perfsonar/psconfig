@@ -514,7 +514,7 @@ class BaseNode(object):
     def _field_intzero(self, field, val=None):
         if val:
             if int(val) >= 0:
-                self.data[field] = int(field)
+                self.data[field] = int(val)
             else:
                 self.validation_error = '{} cannot be set to {}. Must be an integer greater than or equal to 0'.format(field, val)
                 return

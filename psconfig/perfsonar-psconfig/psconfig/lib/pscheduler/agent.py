@@ -154,7 +154,7 @@ class Agent(BaseAgent):
             task = psconfig.task(task_name)
             if (not task) or task.disabled():
                 continue
-
+            
             '''$self->logf->global_context()->{'task_name'} = $task_name;'''
             tg = TaskGenerator(
                 psconfig=psconfig,

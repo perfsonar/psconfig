@@ -1,4 +1,5 @@
 from ..base_meta_node import BaseMetaNode
+import sys
 
 class BaseGroup(BaseMetaNode):
 
@@ -119,6 +120,7 @@ class BaseGroup(BaseMetaNode):
                 self._address_queue.append(addr_combos)
         
         addresses = self._address_queue.pop(0)
+
         return addresses
         
     def stop(self):
@@ -166,7 +168,9 @@ class BaseGroup(BaseMetaNode):
                 #return remote address with disabled and no-agent settings merged in 
                 #only fall back to this if no label specified
                 return self.merge_parents(remote_addr_entry, [local_addr])
-            else:
+            elif local_label and (not remote_addr_entry.address()):
+                #Don't catch all cases. 
+                #return ony if label is provided and no entry found and only labels (no address) are defined for remote entry 
                 return
         
         #check for label next
@@ -185,7 +189,7 @@ class BaseGroup(BaseMetaNode):
         '''Merges inherited values into addresses from parent addresses if any'''
 
         #make sure we have required params
-        if not (addr, parents):
+        if (not addr) or (not parents):
             return
         
         #iterate through parents

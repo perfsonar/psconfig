@@ -619,6 +619,7 @@ class Task(BaseNode):
         except Exception as e:
             self.error = "Error parsing lead object returned from {}: {}".format(lead_url, e)
             return
+
         
         if not lead_response_json.get('participants'):
             self.error = "Error parsing lead object returned from {}: No participant list returned".format(lead_url)
@@ -661,8 +662,11 @@ class Task(BaseNode):
             return
         
         #bracket ipv6
-        if type(ip_address(address)) is IPv6Address:
-            address = "[{}]".format(address)
+        try:
+            if type(ip_address(address)) is IPv6Address:
+                address = "[{}]".format(address)
+        except Exception as e:
+            pass #############hostname is not ip so pass?
         
         return "{}://{}{}{}".format(scheme, address, port, path)
     

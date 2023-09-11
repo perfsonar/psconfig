@@ -5,10 +5,12 @@ import urllib3
 from ipaddress import ip_address
 import re
 
+
 class Utils(object):
     def __init__(self):
         #default interface without bind address (if same object needs to be used with multiple local bind addresses)
         self.urllib_create_connection = urllib3.util.connection.create_connection ######## check if this is global and causes issues with threading
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def send_http_request(self, **kwargs):
         url = kwargs.get('url')
@@ -82,7 +84,7 @@ class Utils(object):
             req = Request(kwargs.get('connection_type'),\
                 url,
                 params=params,
-                data=kwargs.get('data'),
+                json=kwargs.get('data'),
                 headers=kwargs.get('headers'),
                 )
             prepped = req.prepare()

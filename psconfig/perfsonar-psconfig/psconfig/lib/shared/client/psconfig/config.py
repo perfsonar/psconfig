@@ -287,7 +287,7 @@ class Config(BaseMetaNode):
         #check hosts
         for host_name in self.host_names():
             host = self.host(host_name)
-            if host.archive_refs():
+            if host and host.archive_refs():
                 for archive_ref in host.archive_refs():
                     if archive_ref and not self.archive(archive_ref):
                         ref_errors.append("Host {} references an archive {} that does not exist.".format(host_name, archive_ref))
