@@ -9,7 +9,7 @@ class BaseNode(object):
         self.url = kwargs.get('url')
         self.bind_address = kwargs.get('bind_address')
         self.uuid = kwargs.get('uuid')
-        self.filters = kwargs.get('uuid', ApiFilters())
+        self.filters = kwargs.get('filters', ApiFilters())
         self.error = None
 
     
