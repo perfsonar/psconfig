@@ -6,8 +6,8 @@ from ....utilities.jq import jq
 class BaseTemplate():
 
     def __init__(self, **kwargs) -> None:
-        self.jq_obj = {}
-        self.replace_quotes = True
+        self.jq_obj = kwargs.get('jq_obj', {})
+        self.replace_quotes = kwargs.get('replace_quotes',True)
         self.error = ''
 
     def expand(self, obj = None):
@@ -36,7 +36,8 @@ class BaseTemplate():
             if template_var_map.get(template_var):
                 continue
             expanded_val = self._expand_var(template_var)
-            if not expanded_val:
+            if expanded_val is None:
+                self.error = "Unable to expand variable {}: {}".format(template_var, self.error)
                 return
             template_var_map[template_var] = expanded_val
 
@@ -44,13 +45,14 @@ class BaseTemplate():
         for template_var in template_var_map:
             #replace with expanded values  ###############verify function
             if quote:
-                obj_str = re.sub(r''+re.escape(quote)+r'{%\s+'+re.escape(template_var)+r'\s+%\}'+re.escape(quote), template_var_map[template_var], obj_str)
+                template_var_str = "{}".format(template_var_map[template_var]) #make sure value is string
+                obj_str = re.sub(r''+re.escape(quote)+r'{%\s+'+re.escape(template_var)+r'\s+%\}'+re.escape(quote), template_var_str, obj_str)
                 #remove start/end quotes for next substitution
-                template_var_map[template_var] = re.sub(r'^'+re.escape(quote), "", template_var_map[template_var])
-                template_var_map[template_var] = re.sub(re.escape(quote)+r'$', "", template_var_map[template_var])
+                template_var_map[template_var] = re.sub(r'^'+re.escape(quote), "", template_var_str)
+                template_var_map[template_var] = re.sub(re.escape(quote)+r'$', "", template_var_str)
 
             #replace embedded variables
-            obj_str = re.sub(r'{%\s+' + re.escape(template_var) +  r'\s+%\}', template_var_map[template_var], obj_str)
+            obj_str = re.sub(r'{%\s+' + re.escape(template_var) +  r'\s+%\}', template_var_str, obj_str)
 
         # post processing
         ##bracket IPv6 URLs
@@ -71,13 +73,15 @@ class BaseTemplate():
         raise Exception("Override _expand_var")
     
     def _parse_jq(self, jq_str):
+        jq_result = ""
         try:
-            jq_result = jq(jq_str, self.jq_obj)  #######should it be pyjq.one in jq lib?
-            result = json.loads(jq_result)
+            jq_str = jq_str.replace("\\\"", "\"")
+            jq_result = jq(jq_str, self.jq_obj)
         except Exception as e:
             self.error = 'Error handling jq template variable: {}'.format(e)
             return
-        return result
+        # Force result to a string. If no match, just return empty string.
+        return '"' + (jq_result if jq_result is not None else '') + '"'
     
     def _bracket_ipv6_url(self, json_str):
         IPv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))"

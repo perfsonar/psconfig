@@ -46,7 +46,7 @@ class BaseP2PGroup(BaseGroup):
         excludes = self.excludes()
         if len(excludes) > 0:
             #init _exclude_checksum_map if needed
-            if not self._exclude_checksum_map():
+            if not self._exclude_checksum_map:
                 tmp_map = {}
                 for excl_pair in excludes:
                     local_checksum = excl_pair.local_address().checksum()

@@ -11,7 +11,7 @@ class Template(BaseTemplate):
         super().__init__(**kwargs)
         self.groups = kwargs.get('groups', [])
         self.scheduled_by_address = kwargs.get('scheduled_by_address')
-        self.flip = False
+        self.flip = kwargs.get('flip', False)
 
     def _expand_var(self, template_var):
         addr_match = re.match('^address\[(\d+)\]$', template_var)
@@ -59,15 +59,18 @@ class Template(BaseTemplate):
         address = self.groups[index].pscheduler_address()
         #fallback to address
         if not address:
-            address = self.groups[index].address
+            address = self.groups[index].address()
         if not address:
             self.error = 'Template variable group[{}] does not have a pscheduler-address nor address'.format(index)
             return
         
-        #bracket ipv6 addresses
-        if type(ip_address(address)) is IPv6Address:
-            address = '[' + address + ']'
-        
+        #bracket ipv6 addresses - if hostname and not an ip then continue
+        try:
+            if type(ip_address(address)) is IPv6Address:
+                address = '[' + address + ']'
+        except ValueError:
+            pass
+
         return '"' + address + '"'
     
     def _parse_lead_bind_address(self, index):
@@ -98,8 +101,8 @@ class Template(BaseTemplate):
         
         return '"' + self.scheduled_by_address.address() + '"'
     
-    def _parse_flip(self, index):
-        return self.flip  ############check usage returns boolean
+    def _parse_flip(self):
+        return "true" if self.flip else "false"
     
     def _parse_localhost(self):
         #if flipped, use scheduled_by_address
