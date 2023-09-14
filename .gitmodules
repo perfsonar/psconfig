@@ -1,3 +1,0 @@
-[submodule "submodules/pscheduler"]
-	path = submodule/pscheduler
-	url = https://github.com/perfsonar/pscheduler
