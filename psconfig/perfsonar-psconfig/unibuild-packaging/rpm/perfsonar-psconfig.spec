@@ -12,7 +12,7 @@
 %define service_maddash_agent       psconfig-maddash-agent
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 5.0.0
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:			perfsonar-psconfig
@@ -24,24 +24,20 @@ Group:			Development/Libraries
 URL:			http://www.perfsonar.net
 Source0:		perfsonar-psconfig-%{version}.tar.gz
 Requires:       python3
+Requires:       python-requests
+Requires:       python-jsonschema >= 3.0
+Requires:       python-pyjq >= 2.2.0
+Requires:       python-isodate
+Requires:       python-dns
 BuildRequires:  python3
-BuildRequires:  python36-nose
+BuildRequires:  python3-setuptools
 BuildArch:		noarch
 
 
 %description
-A package that pulls in all the Mesh Configuration RPMs.
+A package that pulls in all the pSConfig python RPMS.
 
-%package pscheduler
-Summary:		pSConfig pScheduler Agent
-Group:			Applications/Communications
-
-
-%description pscheduler
-The pSConfig pScheduler Agent downloads a centralized JSON file
-describing the tests to run, and uses it to generate appropriate pScheduler tasks.
-
-%pre pscheduler
+%pre
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
@@ -53,26 +49,18 @@ make
 
 %install
 rm -rf %{buildroot}
-make install INSTALL_ROOT=%{buildroot} 
+make install INSTALL_ROOT=%{buildroot}
 
 %clean
 rm -rf %{buildroot}
 
-%post pscheduler
+%post
 mkdir -p %{config_base}/pscheduler.d/
 
-# %preun pscheduler
-# %systemd_preun %{service_pscheduler_agent}.service
-
-# %postun pscheduler
-# %systemd_postun_with_restart %{service_pscheduler_agent}.service
-
-%files pscheduler -f INSTALLED_FILES
-%defattr(0644,perfsonar,perfsonar,0755)
+%files -f INSTALLED_FILES
+%defattr(-,root,root)
 %license LICENSE
-#%config(noreplace) %{config_base}/pscheduler-agent.json
-#%attr(0644,root,root) %{_unitdir}/%{service_pscheduler_agent}.service
 
 %changelog
-* Wed Feb 14 2018 andy@es.net 4.1-0.0.a1
+* Thu Sep 14 2023 andy@es.net 5.1.0-0.0.a1
 - Initial spec file created

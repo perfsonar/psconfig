@@ -1,4 +1,4 @@
-import shared.client.psconfig.groups.exclude_self_scope as exclude_self_scope
+from . import exclude_self_scope
 from .excludes_address_pair import ExcludesAddressPair
 from .base_group import BaseGroup
 
