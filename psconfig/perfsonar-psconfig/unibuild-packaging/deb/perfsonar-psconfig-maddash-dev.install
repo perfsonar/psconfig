@@ -1,7 +1,0 @@
-lib/perfSONAR_PS/PSConfig/MaDDash/Agent usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/
-lib/perfSONAR_PS/PSConfig/MaDDash/Checks usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/
-lib/perfSONAR_PS/PSConfig/MaDDash/DefaultReports.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/
-lib/perfSONAR_PS/PSConfig/MaDDash/TaskSelector.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/
-lib/perfSONAR_PS/PSConfig/MaDDash/Template.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/
-lib/perfSONAR_PS/PSConfig/MaDDash/Translator.pm usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/
-lib/perfSONAR_PS/PSConfig/MaDDash/Visualization usr/lib/perfsonar/lib/perfSONAR_PS/PSConfig/MaDDash/

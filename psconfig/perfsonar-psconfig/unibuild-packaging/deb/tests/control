@@ -1,14 +1,2 @@
-Depends: perfsonar-psconfig-utils
-Tests: utils
-
-Depends: perfsonar-psconfig-pscheduler
-Tests: pscheduler
-Restrictions: needs-root
-
-Depends: perfsonar-psconfig-maddash
-Tests: maddash
-Restrictions: needs-root
-
-Depends: perfsonar-psconfig-publisher, curl, ssl-cert
-Tests: publisher
-Restrictions: needs-root
+Depends: python-perfsonar-psconfig
+Tests: import
