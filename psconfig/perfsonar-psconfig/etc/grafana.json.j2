@@ -1,0 +1,117 @@
+{
+  "title": "{{ display_task_group }}",
+  "uid": "{{ grafana_uuid }}",
+  "time": {
+    "to": "now",
+    "from": "now-24h"
+  },
+  "version": 1,
+  "schemaVersion": 38,
+  "panels": [
+{% for task in tasks %}  
+    {
+      "id": {{ loop.index }},
+      "title": "{{ task.display_task_name }}{% if task.reverse %} (Reverse){% endif %}",
+      "transparent": true,
+      "type": "esnet-matrix-panel",
+      "pluginVersion": "9.2.2",
+      "datasource": {{ settings.datasource|tojson }},
+      "gridPos": {
+        "h": {{ [24,3 + task.rows|length * 2]|min }},
+        "w": {{ [24,3 + task.cols|length * 2]|min }},
+        "x": 0,
+        "y": 0
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": {{ settings.test_type_map[task.test.type].thresholds|tojson }}
+          },
+          "unit": "{{ settings.test_type_map[task.test.type].unit }}"
+        },
+        "overrides": []
+      },
+      "options": {
+        "addUrl": true,
+        "cellPadding": 5,
+        "cellSize": 15,
+        "defaultColor": "transparent",
+        "inputList": true,
+        "nullColor": "#E6E6E6",
+        "staticColumns": "{{ task.cols|join(',') }}",
+        "staticRows": "{{ task.rows|join(',') }}",
+        "txtLength": 50,
+        "txtSize": 10,
+        "url": "{{ settings.url }}",
+        "valueField": "{{ settings.test_type_map[task.test.type].value_field }}",
+        "valueText": "{{ settings.test_type_map[task.test.type].value_text }}",
+{% if task.reverse %}       
+        "sourceField": "{{ settings.test_type_map[task.test.type].col_field }}",
+        "targetField": "{{ settings.test_type_map[task.test.type].row_field }}",
+        "sourceText": "To",
+        "targetText": "From",
+        "urlVar1": "{{ settings.urlVar2 }}",
+        "urlVar2": "{{ settings.urlVar1 }}"        
+{% else %}
+        "sourceField": "{{ settings.test_type_map[task.test.type].row_field }}",
+        "targetField": "{{ settings.test_type_map[task.test.type].col_field }}",
+        "sourceText": "From",
+        "targetText": "To",
+        "urlVar1": "{{ settings.urlVar1 }}",
+        "urlVar2": "{{ settings.urlVar2 }}"
+{% endif %}   
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "{{ settings.test_type_map[task.test.type].row_field }}",
+              "id": "2",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "{{ settings.test_type_map[task.test.type].col_field }}",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            }
+          ],
+          "datasource": {{ settings.datasource|tojson }},
+          "metrics": [
+            {
+{% if 'stat_meta' in settings.test_type_map[task.test.type] %}
+              "meta": {{ settings.test_type_map[task.test.type].stat_meta|tojson }},
+{% endif %}
+              "id": "1",
+              "field": "{{ settings.test_type_map[task.test.type].stat_field }}",
+              "type": "{{ settings.test_type_map[task.test.type].stat_type }}"
+            }
+          ],
+          "query": "reference.display-task-name.keyword: \"{{ task.display_task_name }}\"",
+{% if settings.datasource.type == "grafana-opensearch-datasource" %}"queryType": "lucene",{% endif %}
+          "refId": "A",
+          "timeField": "pscheduler.start_time"
+        }
+      ]
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+  ]
+}
