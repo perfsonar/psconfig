@@ -66,6 +66,7 @@ Requires:		shadow-utils
 Requires:       libperfsonar-psconfig-perl
 %{?systemd_requires: %systemd_requires}
 BuildRequires: systemd
+BuildRequires:  perl-generators
 
 
 %description utils
@@ -85,6 +86,7 @@ Requires:       perl(CHI)
 Requires:       perl(Time::Piece)
 Obsoletes:      perfsonar-meshconfig-agent
 Provides:       perfsonar-meshconfig-agent
+BuildRequires:  perl-generators
 
 %description pscheduler
 The pSConfig pScheduler Agent downloads a centralized JSON file
@@ -120,6 +122,7 @@ BuildRequires: selinux-policy-devel
 Requires: policycoreutils, libselinux-utils
 Requires(post): selinux-policy-targeted, policycoreutils
 Requires(postun): policycoreutils
+BuildRequires:  perl-generators
 
 %description maddash
 The pSConfig MaDDash Agent downloads a centralized JSON file
