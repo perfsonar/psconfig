@@ -113,6 +113,11 @@ Requires:       perl(CHI)
 Requires:       perl(Linux::Inotify2)
 Obsoletes:      perfsonar-meshconfig-guiagent
 Provides:       perfsonar-meshconfig-guiagent
+# SELinux support
+BuildRequires: selinux-policy-devel
+Requires: policycoreutils, libselinux-utils
+Requires(post): selinux-policy-targeted, policycoreutils
+Requires(postun): policycoreutils
 
 %description maddash
 The pSConfig MaDDash Agent downloads a centralized JSON file
@@ -166,7 +171,7 @@ Environment for publishing pSConfig template files in standard way
 
 
 %build
-
+make -f /usr/share/selinux/devel/Makefile -C selinux psconfig-maddash.pp
 
 %install
 rm -rf %{buildroot}
@@ -194,6 +199,10 @@ ln -fs %{psconfig_bin_base}/psconfig %{buildroot}/%{_bindir}/psconfig
 
 install -D -m 0644 doc/*.json %{buildroot}/%{doc_base}/
 install -D -m 0644 doc/transforms/*.json %{buildroot}/%{doc_base}/transforms/
+
+mkdir -p %{buildroot}/usr/share/selinux/packages/
+mv selinux/*.pp %{buildroot}/usr/share/selinux/packages/
+rm -rf %{buildroot}/usr/lib/perfsonar/selinux
 
 rm -rf %{buildroot}/%{install_base}/plugins/
 rm -rf %{buildroot}/%{install_base}/scripts/
@@ -230,6 +239,11 @@ fi
 
 
 %post maddash
+#Enable selinux
+semodule -n -i /usr/share/selinux/packages/psconfig-maddash.pp
+if /usr/sbin/selinuxenabled; then
+    /usr/sbin/load_policy
+fi
 mkdir -p %{config_base}/maddash.d
 chown perfsonar:perfsonar %{config_base}/maddash.d
 mkdir -p %{psconfig_base}/checks
@@ -280,7 +294,12 @@ systemctl restart httpd &>/dev/null || :
 
 %postun maddash
 %systemd_postun_with_restart %{service_maddash_agent}.service
-
+if [ $1 -eq 0 ]; then
+    semodule -n -r psconfig-maddash
+    if /usr/sbin/selinuxenabled; then
+       /usr/sbin/load_policy
+    fi
+fi
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
@@ -326,6 +345,7 @@ systemctl restart httpd &>/dev/null || :
 %{psconfig_base}/checks/*
 %{psconfig_base}/reports/*
 %{psconfig_base}/visualization/*
+%attr(0644,root,root) %{_datadir}/selinux/packages/psconfig-maddash.pp
 
 %files maddash-devel
 %defattr(0644,perfsonar,perfsonar,0755)
