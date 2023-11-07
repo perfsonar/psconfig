@@ -1,4 +1,4 @@
-from pscheduler.agent import Agent
+from psconfig.pscheduler.agent import Agent
 from psconfig.remote import Remote
 
 agent = Agent()

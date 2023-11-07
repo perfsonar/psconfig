@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
-'''psconfig_pscheduler_agent - Cooridnates various test definitions and manages them in
-pScheduler'''
+'''
+psconfig_pscheduler_agent - Cooridnates various test definitions and manages them in
+pScheduler
 
-'''This daemon does the following:
+This daemon does the following:
     * Reads test definitions from an include directory
     * Reads remote test definitions and combines with local settings
-    * Manages creation, deletion and maintenance all test definitions in pScheduler'''
+    * Manages creation, deletion and maintenance all test definitions in pScheduler
+'''
 
 import pathlib
 
@@ -15,10 +17,11 @@ parentdir = pathlib.Path(__file__).resolve().parents[1]
 
 from psconfig.pscheduler.agent import Agent
 from psconfig.utilities.logging_utils import LoggingUtils
-import inotify.adapters
+import pyinotify
 import argparse
 import time
 import logging
+import logging.config
 
 ##########
 # set the process name
@@ -29,41 +32,14 @@ import logging
 # Instantiate the parser
 parser = argparse.ArgumentParser(description='psconfig_pscheduler_agent')
 parser.add_argument('--config', dest='CONFIG_FILE', action='store', required=True, help='configuration file')
-parser.add_argument('--pidfile', dest='PIDFILE', action='store', default='/var/run/psconfig-pscheduler-agent.pid', help='pidfile')
 parser.add_argument('--output', dest='LOGOUTPUT', action='store', help='Log output file')
 parser.add_argument('--logger', dest='LOGGER_CONF', action='store', help='Logger Config', required=False)
-parser.add_argument('--verbose', dest='DEBUGFLAG', action='store_false', help='DEBUGFLAG')
-parser.add_argument('--user', dest='RUNAS_USER', action='store', help='RUNAS_USER')
-parser.add_argument('--group', dest='RUNAS_GROUP', action='store', help='RUNAS_GROUP')
+parser.add_argument('--disable-inotify', dest='DISABLE_INOTIFY', action='store_true', help='disable inotify for file change detection.')
+parser.add_argument('--verbose', dest='DEBUGFLAG', action='store_true', help='Add additional debug output')
 ############
 #parser.add_argument('--help', dest='HELP', action='store', help='HELP')
 
 args = parser.parse_args()
-
-'''($status, $res) = lockPIDFile( $PIDFILE );
-if($status != 0){
-    print STDERR "Error: $res\n";
-    exit( -1 );
-}
-
-my $fileHandle = $res;
-'''
-
-'''
-##########
-# Check if the daemon should run as a specific user/group and then switch to
-# that user/group.
-if($RUNAS_USER && $RUNAS_GROUP){
-    if(setids(USER => $RUNAS_USER, GROUP => $RUNAS_GROUP) != 0){
-        print STDERR "Error: Could not drop privileges\n";
-        exit( -1 );
-    }
-}elsif($RUNAS_USER || $RUNAS_GROUP){
-    # they need to specify both the user and group
-    print STDERR "Error: You need to specify both the user and group if you specify either\n";
-    exit( -1 );
-}
-'''
 
 ##########
 # Now that we've dropped privileges, create the logger. If we do it in reverse
@@ -81,47 +57,16 @@ if not args.LOGGER_CONF:
         logoutput = args.LOGOUTPUT
     
     logging.basicConfig(level=output_level, format=logf.logging_format, filename=logoutput)
-    logger = logging.getLogger('perfSONAR_PS')
+    logger = logging.getLogger('pSConfig')
 
 else:
-    logging.config.fileConfig("{}/etc/pscheduler-agent-logger.conf".format(parentdir))
-    logger = logging.getLogger("perfSONAR_PS")
-
-'''
-##########
-# Before daemonizing, set die and warn handlers so that any Perl errors or
-# warnings make it into the logs.
-my $insig = 0;
-$SIG{__WARN__} = sub {
-    $logger->warn($logf->format("Warned: ".join( '', @_ )));
-    return;
-};
-
-$SIG{__DIE__} = sub {                       ## still dies upon return
-    die @_ if $^S;                      ## see perldoc -f die perlfunc
-    die @_ if $insig;                   ## protect against reentrance.
-    $insig = 1;
-    $logger->error($logf->format("Died: ".join( '', @_ )));
-    $insig = 0;
-    return;
-};
-
-if(!$DEBUGFLAG){
-    ($status, $res) = daemonize();
-    if($status != 0){
-        $logger->error($logf->format("Couldn't daemonize: " . $res ));
-        exit(-1);
-    }
-}
-
-unlockPIDFile($fileHandle);
-'''
+    logging.config.fileConfig(args.LOGGER_CONF)
+    logger = logging.getLogger("pSConfig")
 
 ##########
 # Create agent
 agent = Agent()
 agent.debug = args.DEBUGFLAG
-print(args.CONFIG_FILE)
 if not agent.init(args.CONFIG_FILE):
     raise Exception('Error initializing agent: {}'.format(agent.error))
 
@@ -131,26 +76,30 @@ if not agent.init(args.CONFIG_FILE):
 # NOTE: These do not work in /vagrant directory on vagrant VM or the /etc/perfsonar/psconfig symlink
 #   If you need to test, set config to something outside of /vagrant shared directory.
 
-i = inotify.adapters.Inotify()
-watchMask = inotify.constants.IN_MODIFY
-i.add_watch(args.CONFIG_FILE, watchMask) ############verify if file is registered
-watchMask2 = inotify.constants.IN_CREATE | inotify.constants.IN_DELETE | inotify.constants.IN_MODIFY | inotify.constants.IN_MOVE
-try:
-    i.add_watch(agent.include_directory, watchMask2)
-    logger.info(logf.format('Watching include_directory {}.'.format(agent.include_directory)))
-except Exception as e:
-    logger.info(logf.format('Watching include_directory failed with error {}.'.format(agent.include_directory)))
-try:
-    i.add_watch(agent.archive_directory, watchMask2)
-    logger.info(logf.format('Watching archive_directory {}.'.format(agent.archive_directory)))
-except Exception as e:
-    logger.info(logf.format('Watching archive_directory failed with error {}.'.format(agent.archive_directory)))
-try:
-    i.add_watch(agent.transform_directory, watchMask2)
-    logger.info(logf.format('Watching transform_directory {}.'.format(agent.transform_directory)))
-except Exception as e:
-    logger.info(logf.format('Watching transform_directory failed with error {}.'.format(agent.transform_directory)))
+notifier = None
+if not args.DISABLE_INOTIFY:
+    watcher = pyinotify.WatchManager()
+    watchMask = pyinotify.IN_MODIFY
+    watcher.add_watch(args.CONFIG_FILE, watchMask) ############verify if file is registered
+    watchMask2 = pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY | pyinotify.IN_MOVE
+    try:
+        watcher.add_watch(agent.include_directory, watchMask2)
+        logger.debug(logf.format('Watching include_directory {}.'.format(agent.include_directory)))
+    except Exception as e:
+        logger.debug(logf.format('Watching include_directory failed with error {}.'.format(agent.include_directory)))
+    try:
+        watcher.add_watch(agent.archive_directory, watchMask2)
+        logger.debug(logf.format('Watching archive_directory {}.'.format(agent.archive_directory)))
+    except Exception as e:
+        logger.debug(logf.format('Watching archive_directory failed with error {}.'.format(agent.archive_directory)))
+    try:
+        watcher.add_watch(agent.transform_directory, watchMask2)
+        logger.debug(logf.format('Watching transform_directory {}.'.format(agent.transform_directory)))
+    except Exception as e:
+        logger.debug(logf.format('Watching transform_directory failed with error {}.'.format(agent.transform_directory)))
 
+    #create notifier
+    notifier = pyinotify.Notifier(watcher, timeout=1)
 
 ##
 # Start main program loop
@@ -186,14 +135,13 @@ while(1):
         logger.info(logf.format("Time until next record refresh is {} seconds".format(until_next_refresh)))
     
     start = end
-
     while until_next_refresh > 0:
         time.sleep(sleep_time)
-        events = i.event_gen(yield_nones=False, timeout_s=0)
-        events = list(events)
 
-        if events:
+        if notifier and notifier.check_events():
             logger.info(logf.format("Configuration file change detected, refreshing records."))
+            notifier.read_events()
+            notifier.process_events()
             break
         elif agent.will_retry_pscheduler():
             logger.info(logf.format("Retrying pscheduler after failure"))

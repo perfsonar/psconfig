@@ -1,7 +1,7 @@
 from unittest import TestCase
 #from mock import patch
 
-from pscheduler.api_filters import ApiFilters
+from psconfig.client.pscheduler.api_filters import ApiFilters
 
 class TestApiFiltersTest(TestCase):
     def setUp(self) -> None:

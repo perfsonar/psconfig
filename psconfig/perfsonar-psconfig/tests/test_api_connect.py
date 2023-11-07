@@ -1,4 +1,4 @@
-from shared.client.psconfig.api_connect import ApiConnect
+from psconfig.client.psconfig.api_connect import ApiConnect
 conn = ApiConnect(url='../../doc/example-2-testbed.json')
 conn2 = ApiConnect(url='../../doc/example-4-snmp.json')
 
