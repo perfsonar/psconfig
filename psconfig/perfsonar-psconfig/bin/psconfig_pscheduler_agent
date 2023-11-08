@@ -32,7 +32,6 @@ import logging.config
 # Instantiate the parser
 parser = argparse.ArgumentParser(description='psconfig_pscheduler_agent')
 parser.add_argument('--config', dest='CONFIG_FILE', action='store', required=True, help='configuration file')
-parser.add_argument('--output', dest='LOGOUTPUT', action='store', help='Log output file')
 parser.add_argument('--logger', dest='LOGGER_CONF', action='store', help='Logger Config', required=False)
 parser.add_argument('--disable-inotify', dest='DISABLE_INOTIFY', action='store_true', help='disable inotify for file change detection.')
 parser.add_argument('--verbose', dest='DEBUGFLAG', action='store_true', help='Add additional debug output')
@@ -52,11 +51,7 @@ if not args.LOGGER_CONF:
     if args.DEBUGFLAG:
         output_level = logging.DEBUG
     
-    logoutput = None
-    if args.LOGOUTPUT:
-        logoutput = args.LOGOUTPUT
-    
-    logging.basicConfig(level=output_level, format=logf.logging_format, filename=logoutput)
+    logging.basicConfig(level=output_level, format=logf.logging_format)
     logger = logging.getLogger('pSConfig')
 
 else:

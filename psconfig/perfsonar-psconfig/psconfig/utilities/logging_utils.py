@@ -6,7 +6,7 @@ class LoggingUtils():
     '''A client for reading in JQTransform files'''
 
     def __init__(self, **kwargs) -> None:
-        self.logging_format = kwargs.get('logging_format', '%(asctime)s %(levelname)s pid=%(process)d prog=%(funcName)s line=%(lineno)d %(message)s')
+        self.logging_format = kwargs.get('logging_format', '%(asctime)s %(levelname)s pid=%(process)d prog=%(filename)s func=%(funcName)s line=%(lineno)d %(message)s')
         self.global_context = kwargs.get('global_context', {})
         self.guid = kwargs.get('guid', '')
         self.guid_label = kwargs.get('guid_label', 'guid')
@@ -20,10 +20,11 @@ class LoggingUtils():
         m += self._append_contexts(local_context, m)
 
         #add message
-        msg = msg.strip()
-        msg += self._append_msg('msg', msg, m)
+        if msg is None:
+            msg = ""
+        msg = self._append_msg('msg', msg.strip(), m)
 
-        return m
+        return msg
     
     def format_task(self, task, local_context=None):
 
