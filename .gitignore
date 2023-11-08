@@ -13,22 +13,8 @@ cover_db
 unibuild-log
 unibuild-work/
 unibuild-repo/
+#ignore python files
+__pycache__/
+*.egg-info/
+psconfig/perfsonar-psconfig/build/
 psconfig/perfsonar-psconfig/INSTALLED_FILES
-psconfig/perfsonar-psconfig/psconfig/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/psconfig/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/pscheduler/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/address_classes/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/address_classes/data_sources/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/address_classes/filters/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/address_selectors/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/addresses/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/groups/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/parsers/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/translators/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/psconfig/translators/mesh_config/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/client/tests/__pycache__
-psconfig/perfsonar-psconfig/psconfig/lib/shared/utilities/__pycache__
