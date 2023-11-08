@@ -121,7 +121,8 @@ class BaseNode(object):
             self.error = build_err_msg(http_response=response)
             return
         
-        return response.json()
+        #Note: delete does not return JSON in body
+        return response.text
 
     
     def _has_field(self, parent, field):

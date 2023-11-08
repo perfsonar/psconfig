@@ -37,3 +37,4 @@ endif
 clean:
 	make -C tests $@
 	find . -name "*.pyc" | xargs rm -f
+	python3 setup.py clean --all
