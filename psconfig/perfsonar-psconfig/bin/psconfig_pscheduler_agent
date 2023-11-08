@@ -76,7 +76,7 @@ if not args.DISABLE_INOTIFY:
     watcher = pyinotify.WatchManager()
     watchMask = pyinotify.IN_MODIFY
     watcher.add_watch(args.CONFIG_FILE, watchMask) ############verify if file is registered
-    watchMask2 = pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY | pyinotify.IN_MOVE
+    watchMask2 = pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY
     try:
         watcher.add_watch(agent.include_directory, watchMask2)
         logger.debug(logf.format('Watching include_directory {}.'.format(agent.include_directory)))
