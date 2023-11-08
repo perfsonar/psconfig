@@ -23,9 +23,14 @@ ifndef PYTHON-ROOTPATH
 	@echo No PYTHON-ROOTPATH specified for installation
 	@false
 endif
+ifndef PERFSONAR-DATAPATH
+	@echo No PERFSONAR-DATAPATH specified for installation
+	@false
+endif
 	python3 setup.py install --root=${PYTHON-ROOTPATH} -O1 --record=INSTALLED_FILES
 	mkdir -p ${PERFSONAR-ROOTPATH}/bin 
 	mkdir -p ${PERFSONAR-CONFIGPATH} 
+	mkdir -p ${PERFSONAR-DATAPATH} 
 	install -m 0644 bin/* ${PERFSONAR-ROOTPATH}/bin
 	install -m 0644 etc/* ${PERFSONAR-CONFIGPATH}/
 

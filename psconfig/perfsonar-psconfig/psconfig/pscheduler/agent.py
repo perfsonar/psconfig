@@ -130,6 +130,8 @@ class Agent(BaseAgent):
             )
             task_manager.logf.guid = self.logf.guid # make logging guids consistent'''
         except Exception as e:
+            import traceback 
+            traceback.print_exc()
             self.logger.error(self.logf.format("Problem initializing task_manager: {}".format(e)))
             return
 

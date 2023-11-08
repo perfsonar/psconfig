@@ -4,6 +4,7 @@ then does something with it
 '''
 
 import os
+import socket
 from urllib.parse import urlsplit
 from .utilities.iso8601 import duration_to_seconds
 from ipaddress import ip_address, IPv6Address, IPv4Address, IPv6Network
@@ -574,22 +575,32 @@ class BaseAgent(object):
         return requesting_agent.data 
 
     def _get_addresses(self):
-        
-        hostname = os.popen("hostname -f 2> /dev/null").read()
-        hostname = hostname.strip()
-
-        ips = Host().get_ips()
-
         ret_addresses = {}
         all_addresses = []
 
+        #try to get the hostname a few different ways
+        try:
+            hostname = socket.gethostname()
+            if hostname:
+                all_addresses.append(hostname.strip())
+        except:
+            pass
+        try:
+            fqdn = socket.getfqdn()
+            if fqdn:
+                all_addresses.append(fqdn.strip())
+        except:
+            pass
+
+        ips = Host().get_ips()
         for ip in ips:
-            ip_type_addr = ip_address(ip)
-            if not ((isinstance(ip_type_addr, IPv4Address) and ip_type_addr.is_loopback) or (isinstance(ip_type_addr, IPv6Address) and ip_type_addr in IPv6Network("::1/128"))): ####simplify
-                all_addresses.append(ip)
-        
-        if hostname:
-            all_addresses.append(hostname)
+            #skip invalid ips
+            try:
+                ip_type_addr = ip_address(ip)
+                if not ((isinstance(ip_type_addr, IPv4Address) and ip_type_addr.is_loopback) or (isinstance(ip_type_addr, IPv6Address) and ip_type_addr in IPv6Network("::1/128"))): ####simplify
+                    all_addresses.append(ip)
+            except:
+                pass
         
         for address in all_addresses:
             if (not address) or ret_addresses.get(address):

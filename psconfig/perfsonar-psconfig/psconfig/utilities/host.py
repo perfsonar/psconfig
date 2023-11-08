@@ -1,5 +1,4 @@
-import os
-import re
+import netifaces
 
 class Host():
     '''
@@ -11,38 +10,19 @@ class Host():
         '''A function that returns the IP addresses from a host. The current  
             implementation parses the output of the /sbin/ip command to look for the
             IP addresses.'''
-        ret_interfaces = {}
-        curr_interface = None
-        ifdetails = None
-
-        IP_ADDR = os.popen("ip addr show").readlines()
-
-        for line in IP_ADDR:
-            # detect primary interface line
-            interface = re.search('^\d+: ([^ ]+?)(@[^ ]+)?: (.+)$', line)
-
-            if interface:
-                curr_interface = interface.groups()[0]
-                ifdetails = interface.groups()[2]
-            
-            # parse inet and inet6 lines for addresses.
-            # To get interface aliases, we must use the name at end of the line.
-            # inet6 lines don't have an intf name at the end, so ipv6 addresses will always go with the non-alias name.
-            inet = re.search('inet (\d+\.\d+\.\d+\.\d+).+scope (global|host) (\S+)', line)
-
-            if inet:
-                ret_interfaces[curr_interface] = ret_interfaces.get(curr_interface, [])
-                ret_interfaces[curr_interface].append(inet.groups()[0])
-            
-            inet6 = re.search('inet6 ([a-fA-F0-9:]+)\/\d+ scope (global|host)', line)
-
-            if inet6:
-                ret_interfaces[curr_interface] = ret_interfaces.get(curr_interface, [])
-                ret_interfaces[curr_interface].append(inet6.groups()[0])
         
+        ret_interfaces = {}
+        for iface in netifaces.interfaces():
+            ret_interfaces[iface] = []
+            addresses = netifaces.ifaddresses(iface)
+            for family in addresses:
+                for addr_info in addresses[family]:
+                    if addr_info.get("addr", None):
+                        ret_interfaces[iface].append(addr_info["addr"])
+        
+
         if by_interface:
             return ret_interfaces
-        
         else:
             ret_values = []
             for key in ret_interfaces:

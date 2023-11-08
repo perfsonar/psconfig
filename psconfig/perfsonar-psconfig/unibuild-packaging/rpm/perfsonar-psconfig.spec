@@ -10,6 +10,7 @@
 %define install_base        /usr/lib/perfsonar/
 %define psconfig_base       %{install_base}/psconfig/
 %define psconfig_bin_base   %{psconfig_base}/bin
+%define psconfig_datadir    /var/lib/perfsonar/psconfig
 %define command_base        %{psconfig_bin_base}/psconfig_commands
 %define config_base         /etc/perfsonar/psconfig
 %define doc_base            /usr/share/doc/perfsonar/psconfig
@@ -38,6 +39,7 @@ Requires:       python3
 Requires:       python-requests
 Requires:       python-jsonschema >= 3.0
 Requires:       python-pyjq >= 2.2.0
+Requires:       python3-netifaces
 Requires:       python-isodate
 Requires:       python-dns
 BuildRequires:  python3
@@ -69,7 +71,7 @@ make
 
 %install
 rm -rf %{buildroot}
-make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base}
+make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir}
 
 %clean
 rm -rf %{buildroot}
@@ -81,6 +83,7 @@ rm -rf %{buildroot}
 %files pscheduler
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
+%dir /var/lib/perfsonar/psconfig
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_pscheduler_agent 
 %{config_base}/pscheduler-agent.json
 %{config_base}/pscheduler-agent-logger.conf

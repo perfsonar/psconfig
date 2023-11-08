@@ -4,9 +4,8 @@ A client tracking and maintaining pscheduler tasks across multiple servers
 
 import os
 import json
-#check the imports
-#from pscheduler.log import Log
 import time
+import uuid
 from ...utilities.iso8601 import duration_to_seconds
 from .api_filters import ApiFilters
 from .api_connect import ApiConnect
@@ -501,10 +500,10 @@ class TaskManager(object):
         Generates a uuid and stores in a file
         '''
         uuid_file = self.client_uuid_file
-        uuid = str(uuid.uuid4()).upper()
+        uuid_formatted = str(uuid.uuid4()).upper()
         with open(uuid_file, 'w') as file:
-            file.write(uuid)
-        return uuid
+            file.write(uuid_formatted)
+        return uuid_formatted
             
 
     def _update_lead(self, url, fields):
