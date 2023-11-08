@@ -53,6 +53,7 @@ The perfSONAR pSConfig python libraries
 Summary:		pSConfig pScheduler Agent
 Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
+Requires:       perfsonar-common
 BuildArch:		noarch
 
 %description pscheduler

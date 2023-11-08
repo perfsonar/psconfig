@@ -22,9 +22,9 @@ class LoggingUtils():
         #add message
         if msg is None:
             msg = ""
-        msg = self._append_msg('msg', msg.strip(), m)
+        m += self._append_msg('msg', msg.strip(), m)
 
-        return msg
+        return m
     
     def format_task(self, task, local_context=None):
 
