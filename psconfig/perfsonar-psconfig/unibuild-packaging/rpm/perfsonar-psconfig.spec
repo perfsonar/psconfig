@@ -54,6 +54,8 @@ Summary:		pSConfig pScheduler Agent
 Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
 Requires:       perfsonar-common
+%{?systemd_requires: %systemd_requires}
+BuildRequires: systemd
 BuildArch:		noarch
 
 %description pscheduler
@@ -73,9 +75,25 @@ make
 %install
 rm -rf %{buildroot}
 make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir}
+mkdir -p %{buildroot}/%{_unitdir}/
+install -m 644 systemd/* %{buildroot}/%{_unitdir}/
 
 %clean
 rm -rf %{buildroot}
+
+%post pscheduler
+mkdir -p %{config_base}/pscheduler.d/
+chown perfsonar:perfsonar %{config_base}/pscheduler.d/
+%systemd_post psconfig-pscheduler-agent.service
+if [ "$1" = "1" ]; then
+    systemctl enable --now psconfig-pscheduler-agent.service
+fi
+
+%preun pscheduler
+%systemd_preun psconfig-pscheduler-agent.service
+
+%postun pscheduler
+%systemd_postun_with_restart psconfig-pscheduler-agent.service
 
 %files -n python-perfsonar-psconfig -f INSTALLED_FILES
 %defattr(-,root,root)
@@ -88,6 +106,7 @@ rm -rf %{buildroot}
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_pscheduler_agent 
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
+%{_unitdir}/psconfig-pscheduler-agent.service
 
 %changelog
 * Thu Sep 14 2023 andy@es.net 5.1.0-0.0.a1
