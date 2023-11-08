@@ -86,8 +86,8 @@ rm -rf %{buildroot}
 %license LICENSE
 %dir /var/lib/perfsonar/psconfig
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_pscheduler_agent 
-%{config_base}/pscheduler-agent.json
-%{config_base}/pscheduler-agent-logger.conf
+%config(noreplace) %{config_base}/pscheduler-agent.json
+%config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 
 %changelog
 * Thu Sep 14 2023 andy@es.net 5.1.0-0.0.a1
