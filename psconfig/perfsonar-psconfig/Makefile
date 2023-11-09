@@ -4,9 +4,6 @@
 
 default: build
 
-test: file-setup
-	python3 -m nose
-
 build:
 	python3 setup.py build
 
@@ -31,8 +28,9 @@ endif
 	mkdir -p ${PERFSONAR-ROOTPATH}/bin 
 	mkdir -p ${PERFSONAR-CONFIGPATH} 
 	mkdir -p ${PERFSONAR-DATAPATH} 
-	install -m 0644 bin/* ${PERFSONAR-ROOTPATH}/bin
-	install -m 0644 etc/* ${PERFSONAR-CONFIGPATH}/
+	install -m 0755 bin/* ${PERFSONAR-ROOTPATH}/bin
+	install -m 0644 etc/*.json ${PERFSONAR-CONFIGPATH}/
+	install -m 0644 etc/*.conf ${PERFSONAR-CONFIGPATH}/
 
 clean:
 	make -C tests $@
