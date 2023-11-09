@@ -129,10 +129,8 @@ class BaseAgent(object):
         try:
             agent_conf = self._load_config(self.config_file)
         except Exception as e:
-            
             self.logger.error(self.logf.format("Error reading " + str(self.config_file) + ", not going to run any updates. Caused by: {}".format(e)))
             return
-        
 
         ##
         # Set assist server - Host/Post to URL
@@ -332,6 +330,8 @@ class BaseAgent(object):
             #process tasks
             self.logf.global_context = {"config_src" : 'include', 'config_file' : include_file}
             processed_psconfig = self._process_psconfig(psconfig_client, transform=None) ########################no transform supplied. does that mean no local transforms for default includes?
+            if not processed_psconfig:
+                continue
             processed_psconfig_checksum = processed_psconfig.checksum()
             if psconfig_checksum_tracker.get(processed_psconfig_checksum): 
                 self.logger.warn(self.logf.format("Checksum matches another psconfig already read, so skipping", log_ctx))

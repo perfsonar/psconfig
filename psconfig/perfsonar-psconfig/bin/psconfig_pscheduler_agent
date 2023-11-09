@@ -68,9 +68,7 @@ if not agent.init(args.CONFIG_FILE):
 ##########
 # Setup Inotify2 on config files and directories
 # NOTE: Don't watch requesting agent file because it may not exist
-# NOTE: These do not work in /vagrant directory on vagrant VM or the /etc/perfsonar/psconfig symlink
-#   If you need to test, set config to something outside of /vagrant shared directory.
-
+# NOTE: These do not work in well in container or VM shared directories. Use --disable-inotify
 notifier = None
 if not args.DISABLE_INOTIFY:
     watcher = pyinotify.WatchManager()
@@ -111,7 +109,6 @@ while(1):
     agent.logf.guid = logf.guid #pass to agent so guid consistent
     logger.info(logf.format("Running agent..."))
     agent.run()
-
     logger.info(logf.format("Agent completed running"))
 
     ###########

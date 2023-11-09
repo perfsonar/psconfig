@@ -5,6 +5,8 @@ After=network.target pscheduler-scheduler.service pscheduler-archiver.service ps
 [Service]
 Type=simple
 ExecStart=/usr/lib/perfsonar/psconfig/bin/psconfig_pscheduler_agent --config=/etc/perfsonar/psconfig/pscheduler-agent.json --logger=/etc/perfsonar/psconfig/pscheduler-agent-logger.conf 
+Restart=always
+RestartSec=30s
 
 [Install]
 WantedBy=multi-user.target
