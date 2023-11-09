@@ -52,11 +52,11 @@ if not args.LOGGER_CONF:
         output_level = logging.DEBUG
     
     logging.basicConfig(level=output_level, format=logf.logging_format)
-    logger = logging.getLogger('pSConfig')
+    logger = logging.getLogger('psconfig')
 
 else:
     logging.config.fileConfig(args.LOGGER_CONF)
-    logger = logging.getLogger("pSConfig")
+    logger = logging.getLogger("psconfig")
 
 ##########
 # Create agent
