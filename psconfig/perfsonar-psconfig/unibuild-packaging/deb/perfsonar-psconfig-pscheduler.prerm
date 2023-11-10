@@ -1,0 +1,8 @@
+#!/bin/bash
+# prerm script
+#
+# see: dh_installdeb(1)
+
+set -e
+
+systemctl stop psconfig-pscheduler-agent.service

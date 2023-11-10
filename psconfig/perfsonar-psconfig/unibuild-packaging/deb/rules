@@ -4,18 +4,14 @@
 #export DH_VERBOSE=1
 
 %:
-	dh $@ --with systemd
+	dh $@
 
 # Standard make install not needed
 override_dh_auto_install:
 
 override_dh_auto_build:
 
-# Skip tests linking to the perl-shared package
 override_dh_auto_test:
-
-override_dh_installinit:
-	dh_installinit --package=perfsonar-psconfig-pscheduler --name=psconfig-pscheduler-agent
 
 override_dh_install:
 	make PYTHON-ROOTPATH=. PERFSONAR-CONFIGPATH=etc/perfsonar/psconfig PERFSONAR-ROOTPATH=usr/lib/perfsonar/psconfig PERFSONAR-DATAPATH=var/lib/perfsonar/psconfig install

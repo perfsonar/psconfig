@@ -1,5 +1,5 @@
 #!/bin/bash
-# postinst script for perfsonar-grafana
+# postinst script
 #
 # see: dh_installdeb(1)
 
@@ -9,6 +9,14 @@ case "$1" in
     configure)
         mkdir -p /etc/perfsonar/psconfig/pscheduler.d/
         chown perfsonar:perfsonar /etc/perfsonar/psconfig/pscheduler.d/
+        # check if installation or update, where version is a parameter
+        if [ -z "$2" ]; then
+
+            #Enable service on new install
+            systemctl daemon-reload  || :
+            systemctl enable psconfig-pscheduler-agent.service  || :
+        fi
+        systemctl start psconfig-pscheduler-agent.service  || :
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

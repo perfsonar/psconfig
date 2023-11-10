@@ -1,0 +1,11 @@
+#!/bin/bash
+ # postrm script
+#
+# see: dh_installdeb(1)
+
+set -e
+
+if [ $1 = 'remove' ]; then
+    systemctl disable psconfig-pscheduler-agent.service  || :
+    systemctl daemon-reload  || :
+fi

@@ -31,7 +31,7 @@ setup(
                       'pyjq',
                       'isodate'
                       'python-dateutil==2.8.2',
-                      'inotify'],
+                      'pyinotify'],
     include_package_data=True,
     package_data={},
 
