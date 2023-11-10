@@ -5,4 +5,4 @@
 
 set -e
 
-systemctl stop psconfig-pscheduler-agent.service
+systemctl stop psconfig-pscheduler-agent.service || :
