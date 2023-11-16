@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import os
+
+from json import loads, dumps
+import psconfig.remote
+from psconfig.utilities.cli import PSCONFIG_CLI_AGENTS, load_agent_config, handle_arg_error, print_error, load_transform_config
+
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='remote',
+                    description='Add/delete/list remote URLs and associated parameters in agent configuration file(s)'
+                    )
+parser.add_argument('action', nargs=1, action='store', choices=['add', 'delete', 'list'], help='The action to perform')
+parser.add_argument('url', nargs='*',  action='store', help='A URL to the pSConfig JSON file. Not required for list. Can be of type http, https or file. If no prefix then assumed a local file.')
+parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
+parser.add_argument('--configure-archives', dest='configure_archives', action='store_true', default=None, help='Indicates archives defined in remote URL should be used (this is the default)')
+parser.add_argument('--no-configure-archives', dest='configure_archives', action='store_false', default=None, help='Indicates archives defined in remote URL should NOT be used')
+parser.add_argument('--file', '-f', dest='file', action='store', help='The file to edit. Must specify --agent if using this option. Default is installed agent defaults.')
+parser.add_argument('--agent', '-a', dest='agent', action='store', help='Name of agent to use (e.g. pscheduler, grafana). Default is to look at all installed agents.')
+parser.add_argument('--transform', dest='transform', action='store', help='JSON transform object or a path to a file starting with @ that alters downloaded json')
+parser.add_argument('--bind-address', dest='bind_address', action='store', help='Local address to bind to when downloading JSON')
+parser.add_argument('--ssl-ca-file', dest='ssl_ca_file', action='store', help='A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.')
+args = parser.parse_args()
+
+##
+#check requirements not handled by argparse
+action = args.action[0]
+#Require URL for add and delete actions
+if action == 'add' or action == 'delete':
+    if not args.url:
+        handle_arg_error("URL is required for action {}".format(action), quiet=args.quiet)
+#Don't allow file without agent
+if args.file and not args.agent:
+    handle_arg_error("Must specify --agent when specifying --file", quiet=args.quiet)
+
+#Don't allow file without agent
+if args.file and not os.path.isfile(args.file):
+    handle_arg_error("The specified --file does not exist. Please check your path or create the file first.", quiet=args.quiet)
+
+##
+# Iterate through agents
+agent_found = False
+for agent in PSCONFIG_CLI_AGENTS:
+    #if specified agent, them make sure we match
+    if args.agent and args.agent.lower() != agent['name'].lower():
+        continue
+    
+    #check config file exists. May be provided or default
+    config_file = args.file if args.file else agent['config_file']
+    if not os.path.isfile(config_file):
+        continue
+
+    #We found an agent
+    if agent_found:
+        #print a new line if we previously found an agent
+        print()
+    else:
+        #Looks like first agent we found
+        agent_found = True
+
+    #print heading
+    print("=== {} Agent ===".format(agent['name']))
+
+    #Load config file using appropriate config_connect class
+    config_client = agent['client_class']()
+    agent_conf = load_agent_config(config_file, config_client)
+    if not agent_conf:
+        continue
+
+    #Handle list action
+    save_file = False
+    if(action == "list"):
+        #build a JSON list then print
+        remote_list = []
+        for remote in agent_conf.remotes():
+            remote_list.append(loads(remote.to_json()))
+        print(dumps(remote_list, indent=3))
+    elif(action == "add"):
+        for url in args.url:
+            #build remote
+            remote = psconfig.remote.Remote()
+            remote.url(val=url)
+            if(args.configure_archives is not None):
+                remote.configure_archives(args.configure_archives)
+            if(args.bind_address is not None):
+                remote.bind_address(args.bind_address)   
+            if(args.ssl_ca_file is not None):
+                remote.ssl_ca_file(args.ssl_ca_file)
+            if(args.transform is not None):
+                jqt = None
+                if args.transform.startswith('@'):
+                    #load transform from file
+                    jqt = load_transform_config(args.transform[1:])
+                    if not jqt:
+                        sys.exit(1)
+                else:
+                    #load transform object
+                    jqt = psconfig.client.psconfig.jq_transform.JQTransform()
+                    jqt.script(args.transform)
+                remote.transform(jqt) 
+
+            #check how all that went
+            if remote.validation_error:
+                print_error(remote.validation_error)
+                continue
+
+            #determine if we need to replace 
+            url_found = False 
+            for i, old_remote in enumerate(agent_conf.remotes()):
+                if old_remote.url() == remote.url():
+                    agent_conf.remote(i, remote)
+                    print("Replaced existing remote configuration for {}".format(remote.url()))
+                    url_found = True
+                    break
+            if not url_found:
+                agent_conf.add_remote(remote)
+                print("Added remote configuration {}".format(remote.url()))
+            save_file = True
+    elif(action == "delete"):
+        for url in args.url:
+            url_found = False 
+            for i, old_remote in enumerate(agent_conf.remotes()):
+                if old_remote.url() == url:
+                    agent_conf.remove_list_item('remotes', i)
+                    print("Removed remote configuration for {}".format(url))
+                    url_found = True
+                    save_file = True
+                    break
+            if not url_found:
+                print("No remote configuration for {} found".format(url))
+
+    #save the file
+    if save_file:
+        config_client.save_config(agent_conf,formatting_params={'pretty': True})
+        if config_client.error:
+            print_error("Error saving configuration: {}".format(config_client.error))
+
+#Check if agent was found
+if(args.agent and not agent_found):
+    print_error("Unable to find installed agent with name {}".format(args.agent))
+    sys.exit(1)
+elif(not agent_found):
+    print_error("Unable to find any agents installed on this host".format(args.agent))
+    sys.exit(1)

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 '''
 psconfig_pscheduler_agent - Cooridnates various test definitions and manages them in

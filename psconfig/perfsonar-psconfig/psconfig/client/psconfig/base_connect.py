@@ -207,13 +207,9 @@ class BaseConnect(object):
         if not filename:
             self.error = 'No save_filename set'
             return
-        
-        psconfig_canonical = psconfig.to_json()
-        with open(filename, 'w') as file:
-            file.write(psconfig_canonical)
 
         try:
-            psconfig_canonical = psconfig.to_json()
+            psconfig_canonical = psconfig.to_json(formatting_params=formatting_params)
             with open(filename, 'w') as file:
                     file.write(psconfig_canonical)
         except Exception as e:

@@ -330,7 +330,7 @@ class BaseNode(object):
             self.data[field] = []
 
         if self._validate_class(field, field_class, val):
-            self.data[field] = val.data
+            self.data[field].append(val.data)
         
         else:
             return

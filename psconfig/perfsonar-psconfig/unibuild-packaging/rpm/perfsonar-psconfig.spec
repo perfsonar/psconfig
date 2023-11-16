@@ -11,7 +11,7 @@
 %define psconfig_base       %{install_base}/psconfig/
 %define psconfig_bin_base   %{psconfig_base}/bin
 %define psconfig_datadir    /var/lib/perfsonar/psconfig
-%define command_base        %{psconfig_bin_base}/psconfig_commands
+%define command_base        %{psconfig_bin_base}/commands
 %define config_base         /etc/perfsonar/psconfig
 %define doc_base            /usr/share/doc/perfsonar/psconfig
 %define publish_web_dir     /usr/lib/perfsonar/web-psconfig
@@ -62,6 +62,14 @@ BuildArch:		noarch
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
 
+%package utils
+Summary:		pSConfig Utilities
+Requires:       python-perfsonar-psconfig
+BuildArch:		noarch
+
+%description utils
+This package is the set of common command-line tools used for pSConfig
+
 %pre
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
@@ -74,7 +82,7 @@ make
 
 %install
 rm -rf %{buildroot}
-make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir}
+make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir} BINPATH=%{buildroot}/%{_bindir}
 mkdir -p %{buildroot}/%{_unitdir}/
 install -m 644 systemd/* %{buildroot}/%{_unitdir}/
 
@@ -107,6 +115,13 @@ fi
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %{_unitdir}/psconfig-pscheduler-agent.service
+
+%files utils
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/remote
+%{_bindir}/psconfig
 
 %changelog
 * Thu Sep 14 2023 andy@es.net 5.1.0-0.0.a1
