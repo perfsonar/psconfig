@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(
                     prog='remote',
                     description='Add/delete/list remote URLs and associated parameters in agent configuration file(s)'
                     )
-parser.add_argument('action', nargs=1, action='store', choices=['add', 'delete', 'list'], help='The action to perform')
+parser.add_argument('action', action='store', choices=['add', 'delete', 'list'], help='The action to perform')
 parser.add_argument('url', nargs='*',  action='store', help='A URL to the pSConfig JSON file. Not required for list. Can be of type http, https or file. If no prefix then assumed a local file.')
 parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
 parser.add_argument('--configure-archives', dest='configure_archives', action='store_true', default=None, help='Indicates archives defined in remote URL should be used (this is the default)')
@@ -30,18 +30,17 @@ cli = CLIUtil(quiet=args.quiet)
 
 ##
 #check requirements not handled by argparse
-action = args.action[0]
 #Require URL for add and delete actions
-if action == 'add' or action == 'delete':
+if args.action == 'add' or args.action == 'delete':
     if not args.url:
-        cli.handle_arg_error("URL is required for action {}".format(action))
+        cli.handle_arg_error("URL is required for action {}".format(args.action), parser)
 #Don't allow file without agent
 if args.file and not args.agent:
-    cli.handle_arg_error("Must specify --agent when specifying --file")
+    cli.handle_arg_error("Must specify --agent when specifying --file", parser)
 
 #Don't allow file without agent
 if args.file and not os.path.isfile(args.file):
-    cli.handle_arg_error("The specified --file does not exist. Please check your path or create the file first.")
+    cli.handle_arg_error("The specified --file does not exist. Please check your path or create the file first.", parser)
 
 ##
 # Iterate through agents
@@ -75,13 +74,13 @@ for agent in PSCONFIG_CLI_AGENTS:
 
     #Handle list action
     save_file = False
-    if(action == "list"):
+    if(args.action == "list"):
         #build a JSON list then print
         remote_list = []
         for remote in agent_conf.remotes():
             remote_list.append(loads(remote.to_json()))
         cli.print_msg(dumps(remote_list, indent=3))
-    elif(action == "add"):
+    elif(args.action == "add"):
         for url in args.url:
             #build remote
             remote = psconfig.remote.Remote()
@@ -122,7 +121,7 @@ for agent in PSCONFIG_CLI_AGENTS:
                 agent_conf.add_remote(remote)
                 cli.print_msg("Added remote configuration {}".format(remote.url()))
             save_file = True
-    elif(action == "delete"):
+    elif(args.action == "delete"):
         for url in args.url:
             url_found = False 
             for i, old_remote in enumerate(agent_conf.remotes()):
