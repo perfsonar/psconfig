@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import os
+from psconfig.utilities.cli import PSCONFIG_CLI_AGENTS, CLIUtil
+
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='agents',
+                    description='Lists the pSConfig agents installed on this host and validates the main configuration file.'
+                    )
+parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
+parser.add_argument('--agent', '-a', dest='agent', action='store', help='Name of agent to check and validate (e.g. pscheduler, maddash). Default is to look at all installed agents.')
+args = parser.parse_args()
+
+#Init CLI utility
+cli = CLIUtil(quiet=args.quiet)
+
+##
+# Iterate through agents
+exit_val = 0
+agent_found = False
+for agent in PSCONFIG_CLI_AGENTS:
+    #if specified agent, them make sure we match
+    if args.agent and args.agent.lower() != agent['name'].lower():
+        continue
+    
+    #check config file exists. May be provided or default
+    if not os.path.isfile(agent['command']):
+        continue
+
+    #We found an agent
+    if not agent_found:
+        #this is the first agent found
+        cli.print_msg("The following pSConfig agents are installed:")
+        agent_found = True
+
+    #Load config file using appropriate config_connect class
+    config_client = agent['client_class']()
+    agent_conf = cli.load_agent_config(agent['config_file'], config_client)
+    if agent_conf:
+        cli.print_msg(agent["name"])
+    else:
+        exit_val = 1
+        cli.print_msg("{} (configuration errors)".format(agent["name"]))
+    
+#Check if agent was found
+if args.agent and not agent_found:
+    cli.print_error("No agents installed with name {}".format(args.agent))
+    exit_val = 1
+elif not agent_found:
+    cli.print_error("No agents installed")
+    exit_val = 1
+
+sys.exit(exit_val)
