@@ -14,5 +14,5 @@ override_dh_auto_build:
 override_dh_auto_test:
 
 override_dh_install:
-	make PYTHON-ROOTPATH=. PERFSONAR-CONFIGPATH=etc/perfsonar/psconfig PERFSONAR-ROOTPATH=usr/lib/perfsonar/psconfig PERFSONAR-DATAPATH=var/lib/perfsonar/psconfig install
+	make PYTHON-ROOTPATH=. PERFSONAR-CONFIGPATH=etc/perfsonar/psconfig PERFSONAR-ROOTPATH=usr/lib/perfsonar/psconfig PERFSONAR-DATAPATH=var/lib/perfsonar/psconfig BINPATH=usr/bin install
 	dh_install

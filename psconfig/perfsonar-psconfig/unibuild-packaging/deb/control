@@ -27,3 +27,10 @@ Description: pSConfig pScheduler Agent
  The pSConfig pScheduler Agent downloads a centralized JSON file
  describing the tests to run, and uses it to generate appropriate 
  pScheduler tasks.
+
+Package: perfsonar-psconfig-utils
+Architecture: all
+Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig
+Description: pSConfig Utilities
+ This package is the set of common command-line tools used for pSConfig
+

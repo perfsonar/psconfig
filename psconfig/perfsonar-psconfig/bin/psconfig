@@ -4,7 +4,7 @@
 #
 
 WHOAMI=$(basename $0)
-SCRIPTDIR="$( cd "$( dirname "$(readlink -f "$0")" )" &> /dev/null && pwd )"
+SCRIPTDIR=$( dirname "$(readlink -f "$0")" )
 CMDDIR="${SCRIPTDIR}/commands"
 
 die()
