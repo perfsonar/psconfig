@@ -121,6 +121,7 @@ fi
 %license LICENSE
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/agents
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/agentctl
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/remote
 %{_bindir}/psconfig
 
