@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+
+'''
+This program will read a JSON file from local filesystem or an http(s) URL 
+and validate the JSON. An exit code of 0 indicates valid, 1 indicates it is 
+invalid, and 2 indicates an error occurred.
+
+Specifically the program validates the following:
+
+* The JSON can be retrieved and is valid JSON
+
+* The JSON validates against the pSConfig JSON schema
+
+* Include files can be expanded (if applicable)
+
+* Fields that reference other JSON objects only reference items that exist
+
+* It asks a pScheduler server if the test, archiver and context specifications are valid.
+
+The first two bullets always happen but the remaining items can be skipped with 
+command-line options. In addition, validation against a pScheduler server only
+occurs if there is a local pscheduler server running (default) or the 
+--pscheduler-server command-line option is given. pScheduler validation can either
+run the the default `quick` mode that only expands template variables for the
+first instance of task (e.g. the first source/destination pair). You can also
+run 'deep' mode using the --deep option that expands every possible task but can
+take a siginificant amount of time for large templates. The advantage is you get
+a more complete validation of all potential generated tasks and associated objects.
+'''
+
+import argparse
+
+import sys
+
+import psconfig.client.psconfig.api_filters
+import psconfig.client.psconfig.api_connect
+from psconfig.utilities.cli import CLIUtil, CLIProgressBar, CLIStatusRow
+
+'''
+main
+'''
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='validate',
+                    description='Validate the file is readable by pSConfig agents'
+                    )
+parser.add_argument('file', action='store', help='A path to a local file on the filesystem or an http(s) URL pointing at the JSON to validate.')
+parser.add_argument('--bind', '-B', dest='bind', action='store', help='Local address to bind to when sending http/https requests')
+parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
+parser.add_argument('--pscheduler-server', dest='pscheduler_server', action='store', help='Address of pScheduler server to contact to validate test and archiver specs in ' +
+    'use by tasks. If not specified, the script will check if pScheduler is running ' +
+    'on 127.0.0.1. If it is not, then it will silently skip the pScheduler validation.'
+)
+parser.add_argument('--deep', dest='deep', action='store', help='Perform deep validation where every task has its template variables expanded ' +
+    'and is validated against pscheduler. This is much more  thorough but can take a ' +
+    'significant amount of time for large templates. By default, if a pscheduler ' +
+    'server can be detected only one instance of each task is validated (this is ' +
+    'called `Quick` mode). While this will still catch many common issues, this can ' +
+    'miss address and host-specific validation errors in archives and contexts since ' +
+    'not every potential task is tested.'
+)
+parser.add_argument('--skip-expand', dest='skip_expand', action='store_true', help='Skip expanding include directives and just validate schema prior to processing includes.')
+parser.add_argument('--skip-pscheduler', dest='skip_pscheduler', action='store_true', help='Skip validating test, archives and contexts against pscheduler.')
+parser.add_argument('--skip-refs', dest='skip_refs', action='store_true', help='Skip validating that fields referencing other objects map to something that exists')
+parser.add_argument('--timeout', dest='timeout', action='store', default=0, help='The integer number of seconds to wait to retrieve JSON. Default is 0, which is no timeout. ' +
+    'The timeout is applied to each individual request separately. For example, if you have two ' +
+    'includes and a 30 second timeout, your program may spend up to 90 seconds retrieving ' +
+    'files: 30s for the original file and 30s for both includes'
+)
+args = parser.parse_args()
+
+#Init CLI utility
+cli = CLIUtil(quiet=args.quiet)
+
+##
+#Load pSConfig file
+pb = CLIStatusRow(msg="Loading config", quiet=args.quiet)
+#Init psconfig client
+psconfig_filters = psconfig.client.psconfig.api_filters.ApiFilters(timeout=args.timeout)
+psconfig_client = psconfig.client.psconfig.api_connect.ApiConnect(url=args.file, filters=psconfig_filters)
+if args.bind:
+    psconfig_client.bind_address = args.bind
+#Grab config
+psconfig_error = ""
+try:
+    psconfig = psconfig_client.get_config()
+    psconfig_error = psconfig_client.error
+except Exception as e:
+   psconfig_error = str(e)
+
+#Handle errors
+if psconfig_error:
+    pb.fail()
+    cli.print_error("\nError retrieving JSON. Encountered the following error:\n")
+    cli.print_error("   {}\n".format(str(psconfig_error)))
+    sys.exit(2)
+pb.ok()
+
+
+##
+# Validate schema
+pb = CLIStatusRow(msg="Validating JSON schema", quiet=args.quiet)
+errors = psconfig.validate()
+if(errors):
+    pb.fail()
+    cli.print_validation_error(errors)
+    sys.exit(1)
+pb.ok()
+
+##
+# Handle includes
+if not args.skip_expand and psconfig.includes() and len(psconfig.includes()) > 0:
+    #expand includes
+    pb = CLIStatusRow(msg="Expanding includes", quiet=args.quiet)
+    psconfig_client.expand_config(psconfig)
+    if psconfig_client.error:
+        pb.fail()
+        errors = psconfig_client.error.split("\n")
+        cli.print_error("Error(s) encountered expanding includes:\n")
+        for error in errors:
+            if error:
+                cli.print_error("   {}".format(error))
+        sys.exit(1)
+    pb.ok()
+
+    #validate again after expansion
+    pb = CLIStatusRow(msg="Validating JSON schema (post include expansion)", quiet=args.quiet)
+    errors = psconfig.validate()
+    if errors:
+        pb.fail()
+        cli.print_error("pSConfig JSON is not valid after expanding includes. Encountered the following validation errors:")
+        cli.print_validation_error(errors)
+        sys.exit(1)
+    pb.ok()
+
+######################
+#validate references
+if not args.skip_refs:
+    pb = CLIStatusRow(msg="Verifying object references", quiet=args.quiet)
+    ref_errors  = psconfig.validate_refs()
+    if ref_errors:
+        pb.fail()
+        cli.print_error("")
+        cli.print_error("\n".join(ref_errors))
+        cli.print_error("")
+        sys.exit(1)
+    pb.ok()

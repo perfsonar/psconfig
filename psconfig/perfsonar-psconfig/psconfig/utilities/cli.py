@@ -107,3 +107,31 @@ class CLIProgressBar:
     def close(self):
         if self.pb:
             self.pb.close()
+
+'''
+Common colors and style characters used on the terminal
+'''
+class CLITextStyles:
+    OKGREEN = '\033[92m'
+    FAIL = '\033[91m'
+    BOLD = '\033[1m'
+    RESET = '\033[0m'
+
+'''
+Displays result of a stage as a row
+Example: MESSGAGE ..... STATUS
+'''
+class CLIStatusRow:
+
+    def __init__(self, msg="", quiet=False, separator=" ...... "):
+        self.quiet = quiet
+        if not quiet:
+            print("{}{}".format(msg, separator), end="")
+
+    def ok(self):
+        if not self.quiet:
+            print("{}{}OK{}".format(CLITextStyles.BOLD, CLITextStyles.OKGREEN, CLITextStyles.RESET))
+
+    def fail(self):
+        if not self.quiet:
+            print("{}{}FAIL{}".format(CLITextStyles.BOLD, CLITextStyles.FAIL, CLITextStyles.RESET))
