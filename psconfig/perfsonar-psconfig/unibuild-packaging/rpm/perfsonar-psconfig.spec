@@ -65,6 +65,7 @@ describing the tests to run, and uses it to generate appropriate pScheduler task
 %package utils
 Summary:		pSConfig Utilities
 Requires:       python-perfsonar-psconfig
+Requires:       python3-tqdm
 BuildArch:		noarch
 
 %description utils
@@ -123,6 +124,7 @@ fi
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/agents
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/agentctl
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/remote
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/validate
 %{_bindir}/psconfig
 
 %changelog

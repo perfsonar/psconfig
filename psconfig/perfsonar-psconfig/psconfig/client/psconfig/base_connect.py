@@ -68,7 +68,7 @@ class BaseConnect(object):
 
             #iterate through psconfig2 but do not overwrite any fields that already exist
             for psconfig2_key in psconfig2.data.get(field).keys():
-                if psconfig1.data[field].get(psconfig2_key):
+                if psconfig1.data[field].get(psconfig2_key, None):
                     if self.logger:
                         self.logger.warn("PSConfig merge: Skipping {} field's {} because it already exists".format(field, psconfig2_key)) 
                 else:
@@ -234,7 +234,7 @@ class BaseConnect(object):
         errors = []
 
         for include_url in includes:
-            psconfig2_client = BaseConnect(url=include_url)
+            psconfig2_client = self.__class__(url=include_url)
             psconfig2 = psconfig2_client.get_config()
             if psconfig2_client.error:
                 #if error getting an include, proceed with the rest

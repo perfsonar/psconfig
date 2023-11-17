@@ -1,4 +1,4 @@
-from jsonschema import validate as jsonvalidate
+from jsonschema import validate as jsonvalidate, ValidationError
 from .archive import Archive
 from .host import Host
 from .schedule import Schedule
@@ -202,6 +202,8 @@ class Config(BaseMetaNode):
         try:
             validator = jsonvalidate(instance=self.data, schema=schema)
             return []
+        except ValidationError as e:
+            return [e]
         except Exception as e:
             return [e]
 

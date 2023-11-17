@@ -4,6 +4,8 @@ Provides common utilities for CLI clients
 import psconfig.pscheduler.config_connect
 import psconfig.transform_connect
 import sys
+from tqdm import tqdm
+from jsonschema import ValidationError
 
 PSCONFIG_CLI_AGENTS = [
     {
@@ -51,13 +53,10 @@ class CLIUtil:
 
         transform_client_errors = transform.validate() 
         if transform_client_errors:
-            err = "{} is not valid. The following errors were encountered: ".format(config_file)
-            for error in transform_client_errors:
-                err += "    JSON Path: " + error.path + '\n' 
-                err += "    Error: " + error.message + '\n\n'   
-            self.print_error(err)
+            self.print_error("{} is not valid. The following errors were encountered: ".format(config_file))
+            self.print_validation_error(transform_client_errors)
             return
-        
+
         return transform
 
     def load_agent_config(self, config_file, agent_conf_client):
@@ -72,11 +71,39 @@ class CLIUtil:
 
         agent_conf_errors = agent_conf.validate() 
         if agent_conf_errors:
-            err = "{} is not valid. The following errors were encountered: ".format(config_file)
-            for error in agent_conf_errors:
-                err += "    JSON Path: " + error.path + '\n' 
-                err += "    Error: " + error.message + '\n\n'   
-            self.print_error(err)
+            self.print_error("{} is not valid. The following errors were encountered: ".format(config_file))
+            self.print_validation_error(agent_conf_errors)
             return
 
         return agent_conf
+
+    def print_validation_error(self, errors):
+        for error in errors:
+            if isinstance(error, ValidationError):
+                if error.path:
+                    self.print_error("\n    JSON Path: {}".format("/".join(error.path)))
+                self.print_error("    Error: {}".format(error.message))
+            else:
+                self.print_error("\n    {}".format(str(error)))
+
+
+'''
+Progress Bar for CLIs. Disabled in quiet mode.
+Wrap tqdm - see https://tqdm.github.io/docs/tqdm
+'''
+class CLIProgressBar:
+
+    def __init__(self, msg="", total=100, quiet=False, bar_format="{l_bar}{bar}[{elapsed}<{remaining}]"):
+        self.quiet = quiet
+        if not quiet:
+            self.pb = tqdm(desc=msg, total=total, bar_format=bar_format)
+        else:
+            self.pb = None
+
+    def update(self, n):
+        if self.pb:
+            self.pb.update(n)
+
+    def close(self):
+        if self.pb:
+            self.pb.close()

@@ -123,10 +123,7 @@ def _save_and_validate(agent_conf, config_client, cli):
     agent_conf_errors = agent_conf.validate()
     if agent_conf_errors:
         cli.print_msg("{} is not valid after applying change. The following errors were encountered:".format(config_file))
-        for error in agent_conf_errors:
-            cli.print_error("    {}".format(error))
-#            cli.print_msg("    JSON Path: {}".format(error['path']))
-#            cli.print_msg("    Error: {}".format(error['message']))
+        cli.print_validation_error(agent_conf_errors)
         sys.exit(1)
     #save file
     config_client.save_config(agent_conf,formatting_params={'pretty': True})

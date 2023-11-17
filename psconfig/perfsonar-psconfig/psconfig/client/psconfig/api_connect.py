@@ -17,17 +17,6 @@ class ApiConnect(BaseConnect):
         '''
         return PSConfig()
     
-    def needs_translation(self, json_obj):
-        '''
-        Indicates needs translation unless there is an address field or includes.
-        '''
-        # optimization that looks for simple required field
-        # proper way would be to validate, but expensive to do for just the meshconfig
-        if not (json_obj.get('addresses') or json_obj.get('includes')):
-            return True
-        
-        return False
-    
     def translators(self):
         '''
         Returns a list of possible translators
