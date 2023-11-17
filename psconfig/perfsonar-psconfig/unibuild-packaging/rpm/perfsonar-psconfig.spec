@@ -116,6 +116,7 @@ fi
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %{_unitdir}/psconfig-pscheduler-agent.service
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/pscheduler-tasks
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
