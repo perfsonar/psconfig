@@ -553,7 +553,7 @@ class TaskGenerator(object):
         
         #init some values
         psconfig = self.psconfig
-        for context_ref in address.context_ref():
+        for context_ref in address.context_refs():
             context = psconfig.context(context_ref)
 
             if not context:

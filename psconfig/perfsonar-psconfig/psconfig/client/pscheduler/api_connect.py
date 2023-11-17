@@ -491,4 +491,124 @@ class ApiConnect(object):
         participants_number = len(participants_json_array)
 
         return participants_number
-    
+
+    def get_test_spec_is_valid(self, test_name, spec):
+        #build url
+        test_url = self.url
+        test_url = test_url.strip()
+        if not test_url.endswith('/'):
+            test_url += '/'
+        test_url += "tests/{}/spec/is-valid".format(test_name)
+
+        #fetch test
+        result = Utils().send_http_request(
+            connection_type = 'GET',
+            url = test_url,
+            timeout = self.filters.timeout,
+            get_params = { "spec": spec },
+            ca_certificate_file = self.filters.ca_certificate_file,
+            ca_certificate_path = self.filters.ca_certificate_path,
+            verify_hostname = self.filters.verify_hostname,
+            local_address = self.bind_address,
+            bind_map = self.bind_map,
+            address_map = self.lead_address_map
+        )
+
+        response = result['response']
+        if result['exception']:
+            self.error = result['exception']
+            return
+        elif not response.ok:
+            self.error = build_err_msg(http_response=response)
+            return
+        
+        response_json = response.json()
+        if not response_json:
+            self.error = "No validation object returned from {}".format(test_url)
+            return
+        elif response_json.get('valid', None) is None:
+            self.error = "Returned validation object missing 'valid' field"
+            return
+        
+        return response_json
+
+    def get_archiver_is_valid(self, archiver_name, data):
+        #build url
+        test_url = self.url
+        test_url = test_url.strip()
+        if not test_url.endswith('/'):
+            test_url += '/'
+        test_url += "archivers/{}/data-is-valid".format(archiver_name)
+
+        #fetch test
+        result = Utils().send_http_request(
+            connection_type = 'GET',
+            url = test_url,
+            timeout = self.filters.timeout,
+            get_params = { "data": data },
+            ca_certificate_file = self.filters.ca_certificate_file,
+            ca_certificate_path = self.filters.ca_certificate_path,
+            verify_hostname = self.filters.verify_hostname,
+            local_address = self.bind_address,
+            bind_map = self.bind_map,
+            address_map = self.lead_address_map
+        )
+
+        response = result['response']
+        if result['exception']:
+            self.error = result['exception']
+            return
+        elif not response.ok:
+            self.error = build_err_msg(http_response=response)
+            return
+        
+        response_json = response.json()
+        if not response_json:
+            self.error = "No validation object returned from {}".format(test_url)
+            return
+        elif response_json.get('valid', None) is None:
+            self.error = "Returned validation object missing 'valid' field"
+            return
+        
+        return response_json
+
+    def get_context_is_valid(self, context_name, data):
+        #build url
+        test_url = self.url
+        test_url = test_url.strip()
+        if not test_url.endswith('/'):
+            test_url += '/'
+        test_url += "contexts/{}/data-is-valid".format(context_name)
+
+        #fetch test
+        result = Utils().send_http_request(
+            connection_type = 'GET',
+            url = test_url,
+            timeout = self.filters.timeout,
+            get_params = { "data": data },
+            ca_certificate_file = self.filters.ca_certificate_file,
+            ca_certificate_path = self.filters.ca_certificate_path,
+            verify_hostname = self.filters.verify_hostname,
+            local_address = self.bind_address,
+            bind_map = self.bind_map,
+            address_map = self.lead_address_map
+        )
+
+        response = result['response']
+        if result['exception']:
+            self.error = result['exception']
+            return
+        elif not response.ok:
+            self.error = build_err_msg(http_response=response)
+            return
+        
+        response_json = response.json()
+        if not response_json:
+            self.error = "No validation object returned from {}".format(test_url)
+            return
+        elif response_json.get('valid', None) is None:
+            self.error = "Returned validation object missing 'valid' field"
+            return
+        
+        return response_json
+

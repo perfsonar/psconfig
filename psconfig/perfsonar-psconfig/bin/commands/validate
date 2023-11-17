@@ -29,12 +29,28 @@ a more complete validation of all potential generated tasks and associated objec
 '''
 
 import argparse
-
 import sys
-
 import psconfig.client.psconfig.api_filters
 import psconfig.client.psconfig.api_connect
-from psconfig.utilities.cli import CLIUtil, CLIProgressBar, CLIStatusRow
+
+from psconfig.client.pscheduler.api_connect import ApiConnect as PSchedulerAPIConnect
+from psconfig.client.pscheduler.api_filters import ApiFilters as PSchedulerAPIFilters
+from psconfig.client.psconfig.parsers.task_generator import TaskGenerator
+from psconfig.utilities.cli import CLIUtil, CLIProgressBar, CLIStatusRow, CLITextStyles
+from urllib.parse import urlunparse
+
+'''
+Helpers for clearing progress bar when done
+'''
+def _fail_progress_bar(pb, msg, quiet):
+    pb.close()
+    new_pb = CLIStatusRow(msg=msg, quiet=quiet)
+    new_pb.fail()
+    
+def _ok_progress_bar(pb, msg, quiet):
+    pb.close()
+    new_pb = CLIStatusRow(msg=msg, quiet=quiet)
+    new_pb.ok()
 
 '''
 main
@@ -51,7 +67,7 @@ parser.add_argument('--pscheduler-server', dest='pscheduler_server', action='sto
     'use by tasks. If not specified, the script will check if pScheduler is running ' +
     'on 127.0.0.1. If it is not, then it will silently skip the pScheduler validation.'
 )
-parser.add_argument('--deep', dest='deep', action='store', help='Perform deep validation where every task has its template variables expanded ' +
+parser.add_argument('--deep', dest='deep', action='store_true', help='Perform deep validation where every task has its template variables expanded ' +
     'and is validated against pscheduler. This is much more  thorough but can take a ' +
     'significant amount of time for large templates. By default, if a pscheduler ' +
     'server can be detected only one instance of each task is validated (this is ' +
@@ -62,7 +78,7 @@ parser.add_argument('--deep', dest='deep', action='store', help='Perform deep va
 parser.add_argument('--skip-expand', dest='skip_expand', action='store_true', help='Skip expanding include directives and just validate schema prior to processing includes.')
 parser.add_argument('--skip-pscheduler', dest='skip_pscheduler', action='store_true', help='Skip validating test, archives and contexts against pscheduler.')
 parser.add_argument('--skip-refs', dest='skip_refs', action='store_true', help='Skip validating that fields referencing other objects map to something that exists')
-parser.add_argument('--timeout', dest='timeout', action='store', default=0, help='The integer number of seconds to wait to retrieve JSON. Default is 0, which is no timeout. ' +
+parser.add_argument('--timeout', dest='timeout', action='store', default=10, type=int, help='The integer number of seconds to wait to retrieve JSON. Default is 10. ' +
     'The timeout is applied to each individual request separately. For example, if you have two ' +
     'includes and a 30 second timeout, your program may spend up to 90 seconds retrieving ' +
     'files: 30s for the original file and 30s for both includes'
@@ -95,7 +111,6 @@ if psconfig_error:
     cli.print_error("   {}\n".format(str(psconfig_error)))
     sys.exit(2)
 pb.ok()
-
 
 ##
 # Validate schema
@@ -148,3 +163,112 @@ if not args.skip_refs:
 
 ##
 # Validate specs against pscheduler
+pscheduler = None
+if not args.skip_pscheduler:
+    server_address = "[::1]"
+    server_specified = False
+    if args.pscheduler_server:
+        server_specified = True
+        server_address = args.pscheduler_server
+    #autodetect pscheduler
+    server_url = urlunparse(("https", server_address, "pscheduler", "", "", ""))
+    pscheduler_filters = PSchedulerAPIFilters(timeout=args.timeout)
+    pscheduler = PSchedulerAPIConnect(url=server_url, filters=pscheduler_filters)
+    #test if server works at all
+    pscheduler.get_hostname()
+    if pscheduler.error:
+        #client didn't work so skip
+        if server_specified:
+            cli.print_error("Error connecting to {}: {}".format(server_url, pscheduler.error))
+        pscheduler = None
+
+if pscheduler:
+    task_max = len(psconfig.task_names())
+    pscheduler_validation_type = "Quick"
+    if args.deep:
+        pscheduler_validation_type = "Deep"
+    psched_pb_msg = "pScheduler Validation ({})".format(pscheduler_validation_type)
+    pb = CLIProgressBar(msg=psched_pb_msg, total=task_max, quiet=args.quiet, leave=False)
+    task_count = 0
+    for task_name in psconfig.task_names():
+        tg = TaskGenerator(
+                psconfig=psconfig,
+                task_name=task_name,
+                use_psconfig_archives=True
+            )
+        
+        task = psconfig.task(task_name)
+        test_ref = task.test_ref()
+        if tg.start():
+            while tg.next() :
+                #test spec validation
+                validation = pscheduler.get_test_spec_is_valid(
+                    tg.expanded_test.get("type", None),
+                    tg.expanded_test.get("spec", None)
+                )
+                if pscheduler.error:
+                    _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+                    cli.print_error("\nProblem communicating with pscheduler while validating test spec {} when used in task {}: \n".format(test_ref, task_name))
+                    cli.print_error("    {}".format(pscheduler.error))
+                    sys.exit(1)
+                elif not validation.get('valid', None):
+                    _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+                    cli.print_error("\nTest spec {} is invalid when used in task {}: \n".format(test_ref, task_name))
+                    cli.print_error("    {}".format(validation.get("error", "No error given")))
+                    cli.print_error("")
+                    sys.exit(1)
+
+                #archiver validation
+                if tg.expanded_archives:
+                    for expanded_archive in tg.expanded_archives:
+                        #can't be sure of exact reference since may come from host or defaults
+                        archiver_type = expanded_archive.get('archiver', None)
+                        validation = pscheduler.get_archiver_is_valid(
+                            archiver_type,
+                            expanded_archive.get("data", None)
+                        )
+                        if pscheduler.error:
+                            _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+                            cli.print_error("\nProblem communicating with pscheduler while validating archiver spec of type {} used in task {}:\n".format(archiver_type, task_name))
+                            cli.print_error("    {}".format(pscheduler.error))
+                            sys.exit(1)
+                        elif not validation.get('valid', None):
+                            _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+                            cli.print_error("\nArchiver of type {} is invalid when used in task {}:\n".format(archiver_type, task_name))
+                            cli.print_error("    {}".format(validation.get("error", "No error given")))
+                            cli.print_error("")
+                            sys.exit(1)
+
+                #context validation
+                if tg.expanded_contexts:
+                    for expanded_context in tg.expanded_contexts:
+                        context_type = expanded_context.get('context', None)
+                        validation = pscheduler.get_context_is_valid(
+                            context_type,
+                            expanded_context.get("data", None)
+                        )
+                        if pscheduler.error:
+                            _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+                            cli.print_error("\nProblem communicating with pscheduler while validating context spec of type {} used in task {}:\n".format(context_type, task_name))
+                            cli.print_error("    {}".format(pscheduler.error))
+                            sys.exit(1)
+                        elif not validation.get('valid', None):
+                            _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+                            pb.close()
+                            cli.print_error("\nContext of type {} is invalid when used in task {}:\n".format(context_type, task_name))
+                            cli.print_error("    {}".format(validation.get("error", "No error given")))
+                            cli.print_error("")
+                            sys.exit(1)
+
+                if not args.deep:
+                    break
+            #update progress bar
+            pb.update(1)
+        else:
+            _fail_progress_bar(pb, psched_pb_msg, args.quiet)
+            sys.exit(1)
+
+    _ok_progress_bar(pb, psched_pb_msg, args.quiet)
+
+#print success messgae
+cli.print_msg("{}{}\npSConfig JSON is valid{}".format(CLITextStyles.BOLD, CLITextStyles.OKGREEN, CLITextStyles.RESET))

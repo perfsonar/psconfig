@@ -93,16 +93,20 @@ Wrap tqdm - see https://tqdm.github.io/docs/tqdm
 '''
 class CLIProgressBar:
 
-    def __init__(self, msg="", total=100, quiet=False, bar_format="{l_bar}{bar}[{elapsed}<{remaining}]"):
+    def __init__(self, msg="", total=100, quiet=False, bar_format="{l_bar}{bar}[{elapsed}<{remaining}]", leave=True):
         self.quiet = quiet
         if not quiet:
-            self.pb = tqdm(desc=msg, total=total, bar_format=bar_format)
+            self.pb = tqdm(desc=msg, total=total, bar_format=bar_format,leave=leave)
         else:
             self.pb = None
 
     def update(self, n):
         if self.pb:
             self.pb.update(n)
+
+    def clear(self):
+        if self.pb:
+            self.pb.clear()
 
     def close(self):
         if self.pb:
