@@ -133,8 +133,8 @@ if not args.skip_expand and psconfig.includes() and len(psconfig.includes()) > 0
         sys.exit(1)
     pb.ok()
 
-######################
-#validate references
+##
+# Validate references
 if not args.skip_refs:
     pb = CLIStatusRow(msg="Verifying object references", quiet=args.quiet)
     ref_errors  = psconfig.validate_refs()
@@ -145,3 +145,6 @@ if not args.skip_refs:
         cli.print_error("")
         sys.exit(1)
     pb.ok()
+
+##
+# Validate specs against pscheduler

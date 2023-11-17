@@ -119,7 +119,7 @@ class CLITextStyles:
 
 '''
 Displays result of a stage as a row
-Example: MESSGAGE ..... STATUS
+Example: MESSAGE ..... STATUS
 '''
 class CLIStatusRow:
 
