@@ -8,5 +8,8 @@ changecom()dnl
 # more information.
 #
 
+# Dependencies
+python-file-read-backwards
+
 # Build primary packages
 psconfig
