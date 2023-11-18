@@ -3,7 +3,6 @@
 import argparse
 import sys
 
-from json import dumps
 from psconfig.utilities.cli import CLIUtil
 from psconfig.utilities.metrics import PSConfigMetricCalculator
 
