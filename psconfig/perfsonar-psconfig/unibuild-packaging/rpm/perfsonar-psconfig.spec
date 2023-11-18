@@ -14,7 +14,14 @@
 %define command_base        %{psconfig_bin_base}/commands
 %define config_base         /etc/perfsonar/psconfig
 %define doc_base            /usr/share/doc/perfsonar/psconfig
+%define httpd_config_base   /etc/httpd/conf.d
 %define publish_web_dir     /usr/lib/perfsonar/web-psconfig
+
+# defining macros needed by SELinux
+# SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
+%global selinuxtype targeted
+# default boolean value needs to be changed to enable http proxy
+%global selinuxbooleans httpd_can_network_connect=1
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.1.0
@@ -72,6 +79,22 @@ BuildArch:		noarch
 %description utils
 This package is the set of common command-line tools used for pSConfig
 
+%package publisher
+Summary:		pSConfig pScheduler Publisher
+Group:			Applications/Communications
+Requires:		perfsonar-psconfig-utils = %{version}-%{release}
+Requires:		httpd
+Requires:		mod_ssl
+Requires(post): httpd
+%{?systemd_requires: %systemd_requires}
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
+BuildRequires:  selinux-policy-devel
+%{?selinux_requires}
+
+%description publisher
+Environment for publishing pSConfig template files in standard way
+
 %pre
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
@@ -84,7 +107,7 @@ make
 
 %install
 rm -rf %{buildroot}
-make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir} BINPATH=%{buildroot}/%{_bindir}
+make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir} BINPATH=%{buildroot}/%{_bindir} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base}
 mkdir -p %{buildroot}/%{_unitdir}/
 install -m 644 systemd/* %{buildroot}/%{_unitdir}/
 
@@ -98,6 +121,29 @@ chown perfsonar:perfsonar %{config_base}/pscheduler.d/
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-pscheduler-agent.service
 fi
+
+%post utils
+mkdir -p /var/log/perfsonar
+chown perfsonar:perfsonar /var/log/perfsonar
+mkdir -p %{config_base}/transforms.d
+chown perfsonar:perfsonar %{config_base}/transforms.d
+mkdir -p %{config_base}/archives.d
+chown perfsonar:perfsonar %{config_base}/archives.d
+
+%post publisher
+# create publish directory
+mkdir -p %{publish_web_dir}
+chown -R perfsonar:perfsonar %{publish_web_dir}
+chmod 755 %{publish_web_dir}
+
+#enable httpd on fresh install
+if [ "$1" = "1" ]; then
+    #set SELinux booleans to allow httpd proxy to work
+    %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
+    systemctl enable httpd
+fi
+#reload httpd
+systemctl restart httpd &>/dev/null || :
 
 %preun pscheduler
 %systemd_preun psconfig-pscheduler-agent.service
@@ -117,18 +163,25 @@ fi
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %{_unitdir}/psconfig-pscheduler-agent.service
-%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/pscheduler-stats
-%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/pscheduler-tasks
+%attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-stats
+%attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-tasks
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig
-%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/agents
-%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/agentctl
-%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/remote
-%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/validate
+%attr(0755, perfsonar, perfsonar) %{command_base}/agents
+%attr(0755, perfsonar, perfsonar) %{command_base}/agentctl
+%attr(0755, perfsonar, perfsonar) %{command_base}/remote
+%attr(0755, perfsonar, perfsonar) %{command_base}/validate
 %{_bindir}/psconfig
+
+%files publisher
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-psconfig-publisher.conf
+%attr(0755,perfsonar,perfsonar) %{command_base}/publish
+%attr(0755,perfsonar,perfsonar) %{command_base}/published
 
 %changelog
 * Thu Sep 14 2023 andy@es.net 5.1.0-0.0.a1

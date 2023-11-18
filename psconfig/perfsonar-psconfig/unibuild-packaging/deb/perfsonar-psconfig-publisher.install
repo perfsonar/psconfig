@@ -1,0 +1,3 @@
+etc/apache2/conf-available/apache-psconfig-publisher.conf
+usr/lib/perfsonar/psconfig/bin/commands/publish
+usr/lib/perfsonar/psconfig/bin/commands/published

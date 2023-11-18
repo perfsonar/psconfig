@@ -34,3 +34,10 @@ Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig, python3-tqdm
 Description: pSConfig Utilities
  This package is the set of common command-line tools used for pSConfig
 
+Package: perfsonar-psconfig-publisher
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+ perfsonar-psconfig-utils (= ${binary:Version}), openssl, apache2, apache2-ssl-dev
+Description: pSConfig pScheduler Agent
+ Downloads a centralized JSON file describing the tests to run,
+ and uses it to generate appropriate pScheduler tasks.
