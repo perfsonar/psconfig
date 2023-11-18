@@ -90,7 +90,7 @@ for file in args.files:
     except:
         pass
     published_url = "https://{}/psconfig/{}".format(web_hostname, filename)
-    cli.print_msg("\nSuccess! File saved to {}{}{}".format(CLITextStyles.BOLD, output_file, CLITextStyles.RESET))
+    cli.print_msg("\n{}Success!{} File saved to {}{}{}".format(CLITextStyles.OKGREEN, CLITextStyles.RESET, CLITextStyles.BOLD, output_file, CLITextStyles.RESET))
     cli.print_msg("Published file can be accessed at {}{}{}".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))
     cli.print_msg("Execute the following on a host running an agent to use this file:")
     cli.print_msg("    {}psconfig remote add \"{}\"{}\n".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))
