@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+import argparse
+import datetime
+import isodate
+import sys
+import os
+from urllib.parse import urlparse
+import socket
+import psconfig.client.psconfig.api_filters
+import psconfig.client.psconfig.api_connect
+from psconfig.utilities.cli import CLIUtil, CLITextStyles
+
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='publish',
+                    description='Validates a JSON file(s) and publishes it to a web server'
+                    )
+parser.add_argument('files', nargs='+',  action='store', help='The path to the pSConfig to publish. The file can be a local file or http/https URL.')
+parser.add_argument('--bind-address', '-B', dest='bind', action='store', help='Local address to bind to when downloading JSON')
+parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
+parser.add_argument('--timeout', dest='timeout', action='store', default=10, type=int, help='The integer number of seconds to wait to retrieve JSON. Default is 10.')
+parser.add_argument('--skip-meta', dest='skip_meta', action='store_true', help='Skip adding _meta object with publish details')
+parser.add_argument('--skip-validate', dest='skip_validate', action='store_true', help='Skip validation of JSON before copying')
+parser.add_argument('--pretty', dest='pretty', action='store_true', help='Published file will contain pretty printed JSON')
+parser.add_argument('--directory', '-d', dest='dir', action='store', default='/usr/lib/perfsonar/web-psconfig', help='Output directory where file will be published')
+args = parser.parse_args()
+
+#Init CLI utility
+cli = CLIUtil(quiet=args.quiet)
+
+#build api filters
+psconfig_filters = psconfig.client.psconfig.api_filters.ApiFilters(timeout=args.timeout)
+
+#Loop through files
+for file in args.files:
+    #determine filename
+    filename = os.path.basename(urlparse(file).path)
+    if not filename:
+        cli.print_error("No filename in URL {}".format(file))
+        sys.exit(1)
+    output_file = "{}/{}".format(args.dir.rstrip('/'), filename)
+
+    #load file
+    psconfig_client = psconfig.client.psconfig.api_connect.ApiConnect(url=file, save_filename=output_file, filters=psconfig_filters)
+    if args.bind:
+        psconfig_client.bind_address = args.bind
+    #Grab config
+    psconfig_error = ""
+    try:
+        psconfig = psconfig_client.get_config()
+        psconfig_error = psconfig_client.error
+    except Exception as e:
+        psconfig_error = str(e)
+
+    #Handle errors
+    if psconfig_error:
+        cli.print_error("\nError retrieving JSON. Encountered the following error:\n")
+        cli.print_error("   {}\n".format(str(psconfig_error)))
+        sys.exit(2)
+
+    ##
+    # Validate schema
+    if not args.skip_validate:
+        errors = psconfig.validate()
+        if(errors):
+            cli.print_validation_error(errors)
+            sys.exit(1)
+
+    ##
+    # add some details to meta
+    if not args.skip_meta:
+        psconfig.psconfig_meta_param('psconfig-publisher', {
+            "publish-source": 'psconfig-publish-cli',
+            "publish-time": isodate.datetime_isoformat(datetime.datetime.now())
+        })
+    
+    #save the file
+    psconfig_client.save_config(psconfig,formatting_params={'pretty': args.pretty}, chmod=0o644)
+    if psconfig_client.error:
+        cli.print_error("Error saving configuration: {}".format(psconfig_client.error))
+        sys.exit(1)
+
+    #Output success and location
+    if args.quiet:
+        continue
+    web_hostname = 'localhost'
+    try:
+        web_hostname = socket.gethostname()
+    except:
+        pass
+    published_url = "https://{}/psconfig/{}".format(web_hostname, filename)
+    cli.print_msg("\nSuccess! File saved to {}{}{}".format(CLITextStyles.BOLD, output_file, CLITextStyles.RESET))
+    cli.print_msg("Published file can be accessed at {}{}{}".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))
+    cli.print_msg("Execute the following on a host running an agent to use this file:")
+    cli.print_msg("    {}psconfig remote add \"{}\"{}\n".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))

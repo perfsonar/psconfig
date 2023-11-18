@@ -21,7 +21,7 @@ parser.add_argument('--no-configure-archives', dest='configure_archives', action
 parser.add_argument('--file', '-f', dest='file', action='store', help='The file to edit. Must specify --agent if using this option. Default is installed agent defaults.')
 parser.add_argument('--agent', '-a', dest='agent', action='store', help='Name of agent to use (e.g. pscheduler, grafana). Default is to look at all installed agents.')
 parser.add_argument('--transform', dest='transform', action='store', help='JSON transform object or a path to a file starting with @ that alters downloaded json')
-parser.add_argument('--bind-address', dest='bind_address', action='store', help='Local address to bind to when downloading JSON')
+parser.add_argument('--bind-address', '-B', dest='bind_address', action='store', help='Local address to bind to when downloading JSON')
 parser.add_argument('--ssl-ca-file', dest='ssl_ca_file', action='store', help='A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.')
 args = parser.parse_args()
 

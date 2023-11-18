@@ -4,6 +4,7 @@ Abstract class for reading in a JSON from http or file
 from ..utils import build_err_msg, Utils
 from .api_filters import ApiFilters
 import re
+import os
 import json
 from urllib.parse import urlparse
 import logging
@@ -193,7 +194,7 @@ class BaseConnect(object):
             return
     
 
-    def save_config(self, psconfig, formatting_params=None):
+    def save_config(self, psconfig, formatting_params=None, chmod=None):
         '''
         Saves configuration file to disk
         '''
@@ -212,6 +213,8 @@ class BaseConnect(object):
             psconfig_canonical = psconfig.to_json(formatting_params=formatting_params)
             with open(filename, 'w') as file:
                     file.write(psconfig_canonical)
+                    if chmod:
+                        os.fchmod(file.fileno(), chmod)
         except Exception as e:
             self.error = e
         
