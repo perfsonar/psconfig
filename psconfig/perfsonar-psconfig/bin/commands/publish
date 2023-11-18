@@ -5,10 +5,10 @@ import datetime
 import isodate
 import sys
 import os
-from urllib.parse import urlparse
 import socket
-import psconfig.client.psconfig.api_filters
-import psconfig.client.psconfig.api_connect
+from urllib.parse import urlparse
+from psconfig.client.psconfig.api_connect import ApiConnect as PSConfigAPIConnect
+from psconfig.client.psconfig.api_filters import ApiFilters as PSConfigAPIFilters
 from psconfig.utilities.cli import CLIUtil, CLITextStyles
 
 #Parse command-line arguments
@@ -29,20 +29,20 @@ args = parser.parse_args()
 #Init CLI utility
 cli = CLIUtil(quiet=args.quiet)
 
-#build api filters
-psconfig_filters = psconfig.client.psconfig.api_filters.ApiFilters(timeout=args.timeout)
-
 #Loop through files
 for file in args.files:
+    cli.print_msg("")
     #determine filename
     filename = os.path.basename(urlparse(file).path)
     if not filename:
+        cli.print_error("{}Failure{} publishing {}{}{}".format(CLITextStyles.FAIL, CLITextStyles.RESET, CLITextStyles.BOLD, file, CLITextStyles.RESET))
         cli.print_error("No filename in URL {}".format(file))
         sys.exit(1)
     output_file = "{}/{}".format(args.dir.rstrip('/'), filename)
 
     #load file
-    psconfig_client = psconfig.client.psconfig.api_connect.ApiConnect(url=file, save_filename=output_file, filters=psconfig_filters)
+    psconfig_filters = PSConfigAPIFilters(timeout=args.timeout)
+    psconfig_client = PSConfigAPIConnect(url=file, save_filename=output_file, filters=psconfig_filters)
     if args.bind:
         psconfig_client.bind_address = args.bind
     #Grab config
@@ -55,7 +55,8 @@ for file in args.files:
 
     #Handle errors
     if psconfig_error:
-        cli.print_error("\nError retrieving JSON. Encountered the following error:\n")
+        cli.print_error("{}Failure{} publishing {}{}{}".format(CLITextStyles.FAIL, CLITextStyles.RESET, CLITextStyles.BOLD, file, CLITextStyles.RESET))
+        cli.print_error("Error retrieving JSON. Encountered the following error:\n")
         cli.print_error("   {}\n".format(str(psconfig_error)))
         sys.exit(2)
 
@@ -64,6 +65,8 @@ for file in args.files:
     if not args.skip_validate:
         errors = psconfig.validate()
         if(errors):
+            cli.print_error("{}Failure{} publishing {}{}{}".format(CLITextStyles.FAIL, CLITextStyles.RESET, CLITextStyles.BOLD, file, CLITextStyles.RESET))
+            cli.print_error("pSConfig JSON is not valid. Encountered the following validation errors:")
             cli.print_validation_error(errors)
             sys.exit(1)
 
@@ -78,6 +81,7 @@ for file in args.files:
     #save the file
     psconfig_client.save_config(psconfig,formatting_params={'pretty': args.pretty}, chmod=0o644)
     if psconfig_client.error:
+        cli.print_error("{}Failure{} publishing {}{}{}".format(CLITextStyles.FAIL, CLITextStyles.RESET, CLITextStyles.BOLD, file, CLITextStyles.RESET))
         cli.print_error("Error saving configuration: {}".format(psconfig_client.error))
         sys.exit(1)
 
@@ -90,7 +94,8 @@ for file in args.files:
     except:
         pass
     published_url = "https://{}/psconfig/{}".format(web_hostname, filename)
-    cli.print_msg("\n{}Success!{} File saved to {}{}{}".format(CLITextStyles.OKGREEN, CLITextStyles.RESET, CLITextStyles.BOLD, output_file, CLITextStyles.RESET))
+    cli.print_msg("{}Success!{} File saved to {}{}{}".format(CLITextStyles.OKGREEN, CLITextStyles.RESET, CLITextStyles.BOLD, output_file, CLITextStyles.RESET))
     cli.print_msg("Published file can be accessed at {}{}{}".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))
     cli.print_msg("Execute the following on a host running an agent to use this file:")
-    cli.print_msg("    {}psconfig remote add \"{}\"{}\n".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))
+    cli.print_msg("    {}psconfig remote add \"{}\"{}".format(CLITextStyles.BOLD, published_url, CLITextStyles.RESET))
+cli.print_msg("")
