@@ -42,6 +42,7 @@ Requires:       python-pyjq >= 2.2.0
 Requires:       python3-netifaces
 Requires:       python-isodate
 Requires:       python-dns
+Requires:       python-file-read-backwards
 BuildRequires:  python3
 BuildRequires:  python3-setuptools
 BuildArch:		noarch
@@ -116,6 +117,7 @@ fi
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %{_unitdir}/psconfig-pscheduler-agent.service
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/pscheduler-stats
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/commands/pscheduler-tasks
 
 %files utils

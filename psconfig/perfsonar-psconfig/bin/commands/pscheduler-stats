@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+
+from json import dumps
+from psconfig.utilities.cli import CLIUtil
+from psconfig.utilities.metrics import PSConfigMetricCalculator
+
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='pscheduler-stats',
+                    description='Get statistics about the pSConfig pScheduler agent by parsing logs'
+                    )
+parser.add_argument('--logdir', '-d', dest='logdir', action='store', default='/var/log/perfsonar', help='Directory containing log files to parse')
+parser.add_argument('--format', '-f', dest='format', action='store', default='text', choices=["text", "json", "prometheus"], help='Output format to use.')
+args = parser.parse_args()
+
+#Init CLI utility
+cli = CLIUtil()
+calculator = PSConfigMetricCalculator("pscheduler", logdir=args.logdir)
+
+#find run info
+metrics = calculator.run_metrics()
+if not metrics.guid:
+    cli.print_error(f"Unable to find last guid in {calculator.agent_log_file()}. Make sure the agent has completed at least one run.")
+    sys.exit(1)
+
+#output
+if args.format == "json":
+    cli.print_msg(metrics.to_json(pretty=True))
+elif args.format == "prometheus":
+    cli.print_msg(metrics.to_prometheus())
+else:
+    print(metrics)

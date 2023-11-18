@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-import re
 import sys
-import os
 
-from file_read_backwards import FileReadBackwards
-from json import loads, dumps
+from json import dumps
 from psconfig.utilities.cli import CLIUtil
+from psconfig.utilities.metrics import PSConfigMetricCalculator
 
 #Parse command-line arguments
 parser = argparse.ArgumentParser(
@@ -19,45 +17,13 @@ args = parser.parse_args()
 
 #Init CLI utility
 cli = CLIUtil()
-
-#Init log file
-AGENT_LOG_FILE = "{}/psconfig-pscheduler-agent.log".format(args.logdir)
-TASKS_LOG_FILE = "{}/psconfig-pscheduler-agent-tasks.log".format(args.logdir)
+metrics = PSConfigMetricCalculator("pscheduler", logdir=args.logdir)
 
 #find guid
-guid = None
-guid_regex = re.compile('^.*guid=(.+?) msg=Agent completed running$')
-with FileReadBackwards(AGENT_LOG_FILE, encoding="utf-8") as frb:
-    while True:
-        l = frb.readline()
-        if not l:
-            break
-        
-        guid_match = guid_regex.match(l)
-        if guid_match:
-            guid = guid_match.group(1)
-            break
+guid = metrics.find_guid()
 if not guid:
-    cli.print_error(f"Unable to find last guid in {AGENT_LOG_FILE}. Make sure the agent has completed at least one run.")
+    cli.print_error(f"Unable to find last guid in {metrics.agent_log_file()}. Make sure the agent has completed at least one run.")
     sys.exit(1)
 
 #find tasks
-tasks = []
-task_regex = re.compile(f"^.+ INFO guid={guid} .+ task=(.+)$")
-with FileReadBackwards(TASKS_LOG_FILE, encoding="utf-8") as frb:
-    while True:
-        l = frb.readline()
-        if not l:
-            break
-        
-        task_match = task_regex.match(l)
-        if task_match:
-            task_json = task_match.group(1)
-            try:
-                tasks.append(loads(task_json))
-            except Exception as e:
-                cli.print_error("Error parsing task: {}".format(str(e)))
-        elif tasks:
-            #no use in looking, we reached end of guid
-            break
-print(dumps(tasks, indent=2))
+print(dumps(metrics.get_tasks(guid, print_func=cli.print_error), indent=2))

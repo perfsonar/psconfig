@@ -303,7 +303,7 @@ class BaseAgent(object):
             )
 
             #process tasks
-            self.logf.global_context = {"config_src" : 'remote', 'config_url' : remote.url}
+            self.logf.global_context = {"config_src" : 'remote', 'config_url' : remote.url()}
             processed_psconfig = self._process_psconfig(psconfig_client, remote.transform()) 
             if not processed_psconfig:
                 continue
