@@ -20,6 +20,10 @@ set -e
 
 case "$1" in
     configure)
+        #create web directory
+        mkdir -p /usr/lib/perfsonar/web-psconfig
+        chown -R perfsonar:perfsonar /usr/lib/perfsonar/web-psconfig
+
         # reconfigure apache
         if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
             . /usr/share/apache2/apache2-maintscript-helper
