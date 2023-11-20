@@ -36,7 +36,7 @@ Description: pSConfig Utilities
 
 Package: perfsonar-psconfig-publisher
 Architecture: all
-Depends: ${misc:Depends}, ${perl:Depends}, perfsonar-common,
+Depends: ${misc:Depends}, python3, perfsonar-common,
  perfsonar-psconfig-utils (= ${binary:Version}), openssl, apache2, apache2-ssl-dev
 Description: pSConfig pScheduler Agent
  Downloads a centralized JSON file describing the tests to run,
