@@ -1,0 +1,6 @@
+libmo-perl (0.40-1) perfsonar-5.0; urgency=low
+
+  * Initial Release.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 24 Jul 2023 10:39:30 -0400 
+
