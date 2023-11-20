@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+"""
+Base for the unit tests.
+"""
+
+import unittest
+
+
+class PSConfigTestBase(unittest.TestCase):
+    """
+    Base class for any shared functionalty for the unit tests.
+    """
+
+    def setUp(self):
+        """"""
+        # print "in setup"
+        pass
+
+
+if __name__ == '__main__':
+    unittest.main()

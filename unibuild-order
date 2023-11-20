@@ -8,6 +8,8 @@ changecom()dnl
 # more information.
 #
 
+# Dependencies
+python-file-read-backwards
+
 # Build primary packages
-libmo-perl
-psconfig --no-install
+psconfig

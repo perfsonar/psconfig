@@ -1,0 +1,267 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import os
+
+from psconfig.utilities.cli import PSCONFIG_CLI_AGENTS, CLIUtil
+
+
+'''
+Check if option is valid according to schema
+'''
+def prop_is_valid(prop, schema, agent):
+    if schema.get('properties', {}).get(prop, None) and not agent.get('agentctl_ignore', {}).get(prop, None):
+        return True
+    return False
+
+'''
+Format values such that they can be copy/pasted to command
+'''
+def _print_prop(name, val, cli):
+    formatted_val = ""
+    if val is None:
+        formatted_val = "UNDEF"
+    elif isinstance(val, dict):
+        for k,v in val.items():
+            formatted_val += "{}={} ".format(k,v) 
+    elif isinstance(val, list):
+        formatted_val = ' '.join(val)
+    else:
+        formatted_val = val
+    cli.print_msg("{} = {}".format(name, str(formatted_val)))
+
+'''
+Provide info on schema data type
+'''
+def _type_info(schema_prop_info):
+    #get description
+    description = schema_prop_info.get('description', None)
+    if not description:
+        description = "n/a"
+    
+    #get type
+    raw_type = schema_prop_info.get('type', None)
+    if not raw_type:
+        raw_type = schema_prop_info.get('$ref', None)
+    translated_type = "unrecognized"
+    example = ""
+    if raw_type == 'array':
+        items_type_info = _type_info(schema_prop_info.get('items', ""))
+        translated_type = "{} list".format(items_type_info['type'])
+        example = items_type_info['example']
+    elif raw_type == 'boolean':
+        translated_type = "Boolean"
+        example = "true or false"
+    elif raw_type == '#/pSConfig/URLHostPort':
+        translated_type = "Hostname/IP and Port"
+        example = "10.1.1.1:8443"
+    elif raw_type == '#/pSConfig/Cardinal':
+        translated_type = "Integer > 0"
+        example = "5"
+    elif raw_type == '#/pSConfig/Host':
+        translated_type = "Hostname or IP Address"
+        example = "10.1.1.1"
+    elif raw_type == '#/pSConfig/AddressMap':
+        translated_type = "Address Map (remote=local)"
+        example = "10.1.1.2=10.1.1.1"
+    elif raw_type == '#/pSConfig/Duration':
+        translated_type = "ISO8601 Duration"
+        example = "PT60S"
+    elif raw_type == '#/pSConfig/Probablilty':
+        translated_type = "Decimal between 0 and 1"
+        example = "0.5"
+    elif raw_type == 'string':
+        translated_type = "String"
+        example = "foo"
+    
+    return {
+        'type': translated_type,
+        'raw_type': raw_type,
+        'description': description,
+        'example': example
+    }
+
+'''
+Parse value to set
+'''
+def _parse_opt_value(schema_prop_info, values, cli):
+    type_info = _type_info(schema_prop_info)
+    raw_type = type_info['raw_type']
+    parsed_value = None
+    
+    if raw_type == 'array':
+        parsed_value = values
+    elif raw_type == '#/pSConfig/AddressMap':
+        parsed_value = {}
+        for v in values:
+            kv = v.split('=')
+            if len(kv) != 2:
+                cli.print_error('Invalid value {}. Must be in form key=value.'.format(v))
+                return
+            parsed_value[kv[0]] = kv[1]
+    elif len(values) > 1:
+        cli.print_error("Property does not accept multiple values.")
+    elif len(values) > 0 and raw_type == 'boolean':
+        if str(values[0]).lower() == 'true' or str(values[0]) == '1':
+            parsed_value = True
+        elif str(values[0]).lower() == 'false' or str(values[0]) == '0':
+            parsed_value = False
+        else:
+            cli.print_error('Invalid value {}. Must be true or false'.format(values[0]))
+            return
+    elif len(values) > 0:
+        parsed_value = values[0]
+    
+    return parsed_value
+
+'''
+validate config file and save
+'''
+def _save_and_validate(agent_conf, config_client, cli):
+    #validate before saving
+    agent_conf_errors = agent_conf.validate()
+    if agent_conf_errors:
+        cli.print_msg("{} is not valid after applying change. The following errors were encountered:".format(config_file))
+        cli.print_validation_error(agent_conf_errors)
+        sys.exit(1)
+    #save file
+    config_client.save_config(agent_conf,formatting_params={'pretty': True})
+    if config_client.error:
+        cli.print_error("Error saving configuration: {}".format(config_client.error))
+        sys.exit(1)
+
+'''
+main
+'''
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='agentctl',
+                    description='View/set/unset properties for pSConfig agents'
+                    )
+parser.add_argument('agent', action='store', choices=[ a['name'].lower() for a in PSCONFIG_CLI_AGENTS ] + ['?'], help='The name of the agent to which to apply this ' +
+    'command. If a ? is given then a list of installed agents will be displayed. Note: ? is a shell wildcard so you may need to escape it with \?.')
+parser.add_argument('prop', nargs='?',  action='store', help='The name of the property on which to operate. If not provided, then all set " +'
+    'properties will be listed (unless --all is given, then both set and unset properties ' +
+    'are listed). If given with no value then the current value will be displayed. If ' +
+    'given with the --unset option then the option will be removed from the ' +
+    'configuration. If a ? is given then a list of available properties will be ' +
+    'displayed. If given with one or more  values, then the option will be set ' +
+    'to the given value(s).'
+)
+parser.add_argument('values', nargs='*',  action='store', help='An optional value to which to set the parameter. If multiple given separated by ' +
+    'spaces then treated as an array. If given in the form "x=y" then treated as a ' +
+    'key/value pair. If a ? is given then documentation of the property specified ' +
+    'will be displayed.'
+)
+parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
+parser.add_argument('--file', '-f', dest='file', action='store', help='The file to edit. Defaults to standard location if unspecified.')
+parser.add_argument('--unset', dest='unset', action='store_true', help='Remove the property specified by name argument')
+parser.add_argument('--all', '-a', dest='all', action='store_true', help='List all properties and their value even if they are undefined. Only applies when no name argument provided.')
+args = parser.parse_args()
+
+#Init CLI utility
+cli = CLIUtil(quiet=args.quiet)
+
+##
+#check requirements not handled by argparse
+#If given file, make sure it exists
+if args.file and not os.path.isfile(args.file):
+    cli.handle_arg_error("The specified --file does not exist. Please check your path or create the file first.", parser)
+
+#make sure we unset variables with sane options
+if args.unset and len(args.values) > 0:
+    cli.handle_arg_error("You cannot specify anything after the option name when using --unset", parser)
+elif args.unset and not args.prop:
+    cli.handle_arg_error("You cannot use --unset without an argument with the name of the option to unset", parser)
+
+##
+# Determine agents on this machine or allow all if given a filename
+# Also find the matching agent
+valid_agents = []
+agent = None
+for cli_agent in PSCONFIG_CLI_AGENTS:
+    if args.file or os.path.isfile(cli_agent['config_file']):
+        valid_agents.append(cli_agent['name'].lower())
+        if cli_agent['name'].lower() == args.agent.lower():
+            agent = cli_agent
+
+if args.agent == '?':
+    #list agents if given ?
+    for valid_agent in valid_agents:
+        cli.print_msg(valid_agent)
+    sys.exit(0)
+elif agent is None:
+    #if we get here then user gave a valid agent, but not installed on system
+    cli.print_error("Agent {} is not installed on this system. Install the agent or specify --file.".format(args.agent))
+    sys.exit(1)
+
+##
+# Load the config and schema
+config_file = args.file if args.file else agent['config_file']
+config_client = agent['client_class']()
+agent_conf = cli.load_agent_config(config_file, config_client)
+if not agent_conf:
+    sys.exit(1)
+schema = agent_conf.schema()
+if not schema.get("properties", None):
+    cli.print_error("Error with schema, missing properties. File a bug with perfSONAR devolopers.")
+    sys.exit(2)
+
+##
+# Handle the requested prop
+if not args.prop:
+    #if no prop, then print set props (and unset props if --all given)
+    found_prop = False
+    for schema_prop in schema['properties'].keys():
+        if agent.get('agentctl_ignore', {}).get(schema_prop, None):
+            continue
+        
+        prop_val = agent_conf.data.get(schema_prop, None)
+        if args.all or prop_val is not None:
+            found_prop = True
+            _print_prop(schema_prop, prop_val, cli)
+    if not found_prop:
+        cli.print_msg("No options currently set")
+    sys.exit(0)
+elif args.prop == '?':
+    #if given ?, then list all props that can be set
+    sorted_schema_props = list(schema['properties'].keys())
+    sorted_schema_props.sort()
+    for schema_prop in sorted_schema_props:
+        #ignore properties like remote that we can't set with this tool
+        if agent.get('agentctl_ignore', {}).get(schema_prop, None):
+            continue
+        cli.print_msg(schema_prop)
+    sys.exit(0)
+elif not prop_is_valid(args.prop, schema, agent):
+    cli.print_error("Invalid option {}".format(args.prop))
+    sys.exit(1)
+
+##
+# Handle value(s)
+# don't need .get since have checked property at this point
+schema_prop_info = schema['properties'][args.prop]
+if(len(args.values) == 1 and args.values[0] == '?'):
+    #? provided, so provide property help info
+    cli.print_msg("\n{}\n".format(args.prop))
+    type_info = _type_info(schema_prop_info)
+    cli.print_msg("Type: {}\n".format(type_info['type']))
+    cli.print_msg("Description:\n{}\n".format(type_info['description']))
+    cli.print_msg("Example: {}\n".format(type_info['example']))
+elif len(args.values) > 0:
+    # set values
+    parsed_value = _parse_opt_value(schema_prop_info, args.values, cli)
+    if not parsed_value:
+        sys.exit(1)
+    agent_conf.data[args.prop] = parsed_value
+    _save_and_validate(agent_conf, config_client, cli)
+    cli.print_msg("Successfully set {} in {}".format(args.prop, config_file))
+elif args.unset:
+    #unset an option
+    del agent_conf.data[args.prop]
+    _save_and_validate(agent_conf, config_client, cli)
+    cli.print_msg("Successfully unset {} in {}".format(args.prop, config_file))
+else:
+    # print current value of property
+    _print_prop(args.prop, agent_conf.data.get(args.prop, None), cli)

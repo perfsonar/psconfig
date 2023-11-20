@@ -1,13 +1,11 @@
 #!/bin/sh -e
 #
-# psconfig - Front-end CLI program for psconfig
+# pscheduler - Front-end CLI program for pScheduler
 #
 
 WHOAMI=$(basename $0)
-#SCRIPT_DIR=$(dirname $(readlink -f $0))
-SCRIPT_PATH=`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`
-SCRIPT_DIR=$(dirname $SCRIPT_PATH)
-COMMAND_DIR="${SCRIPT_DIR}/psconfig_commands"
+SCRIPTDIR=$( dirname "$(readlink -f "$0")" )
+CMDDIR="${SCRIPTDIR}/commands"
 
 die()
 {
@@ -22,7 +20,7 @@ help()
     echo
     echo "Commands:  (Use 'command --help' for further help.)"
     echo
-    ls "${COMMAND_DIR}" \
+    ls "$CMDDIR" \
 	| fgrep -xv internal \
 	| pr -4 -T -t \
 	| sed -e 's/^/    /g'
@@ -52,7 +50,7 @@ case "${COMMAND}" in
 	;;
 
     *)
-	RUN="${COMMAND_DIR}/${COMMAND}"
+	RUN="${CMDDIR}/${COMMAND}"
 
 	[ -x "${RUN}" ] \
 	    || die "${COMMAND}: Unknown command.  Use --help for help."

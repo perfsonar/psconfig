@@ -1,9 +1,0 @@
-policy_module(psconfig-maddash, 1.0)
-
-require {
-        type init_t;
-}
-
-#============= init_t ==============
-corenet_tcp_connect_http_port(init_t)
-files_rw_etc_files(init_t)

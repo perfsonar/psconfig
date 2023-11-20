@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import socket
+from psconfig.utilities.cli import CLIUtil, CLITextStyles
+
+#Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='published',
+                    description='Lists published JSON documents'
+                    )
+parser.add_argument('--directory', '-d', dest='dir', action='store', default='/usr/lib/perfsonar/web-psconfig', help='Output directory where file will be published')
+args = parser.parse_args()
+
+#Init CLI utility
+cli = CLIUtil()
+
+#Building base URL
+web_hostname = 'localhost'
+try:
+    web_hostname = socket.gethostname()
+except:
+    pass
+base_url = "https://{}/psconfig".format(web_hostname)
+
+#list directory
+empty = True
+for dir_entry in os.scandir(args.dir):
+    if not dir_entry.is_file() or not dir_entry.name.endswith(".json"):
+        continue
+    empty = False
+    print("\n[{}]".format(dir_entry.name))
+    print("    Local File: {}/{}".format(args.dir.rstrip('/'), dir_entry.name))
+    print("    Web URL: {}/{}".format(base_url, dir_entry.name))
+if empty:
+    cli.print_msg("No files currently published")
+else:
+    cli.print_msg("")

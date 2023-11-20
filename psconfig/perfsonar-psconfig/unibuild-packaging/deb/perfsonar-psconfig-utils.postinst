@@ -1,0 +1,28 @@
+#!/bin/bash
+# postinst script
+#
+# see: dh_installdeb(1)
+
+set -e
+
+case "$1" in
+    configure)
+        mkdir -p /var/log/perfsonar
+        chown perfsonar:perfsonar /var/log/perfsonar
+        mkdir -p /etc/perfsonar/psconfig/transforms.d
+        chown perfsonar:perfsonar /etc/perfsonar/psconfig/transforms.d
+        mkdir -p /etc/perfsonar/psconfig/archives.d
+        chown perfsonar:perfsonar /etc/perfsonar/psconfig/archives.d
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+exit 0

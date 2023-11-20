@@ -1,33 +1,51 @@
-PACKAGE=perfsonar-psconfig
-ROOTPATH=/usr/lib/perfsonar
-CONFIGPATH=/etc/perfsonar/psconfig
-PERFSONAR_AUTO_VERSION=5.1.0
-PERFSONAR_AUTO_RELNUM=0.a1.0
-VERSION=${PERFSONAR_AUTO_VERSION}
-RELEASE=${PERFSONAR_AUTO_RELNUM}
+#
+# Makefile for python-pscheduler module
+#
 
-default:
-	@echo No need to build the package. Just run \"make install\"
+default: build
 
-dist:
-	mkdir /tmp/$(PACKAGE)-$(VERSION)
-	tar ch -T MANIFEST | tar x -C /tmp/$(PACKAGE)-$(VERSION)
-	tar czf $(PACKAGE)-$(VERSION).tar.gz -C /tmp $(PACKAGE)-$(VERSION)
-	rm -rf /tmp/$(PACKAGE)-$(VERSION)
-
+build:
+	python3 setup.py build
 
 install:
-	mkdir -p ${ROOTPATH}
-	mkdir -p ${CONFIGPATH}/pscheduler.d
-	mkdir -p ${CONFIGPATH}/maddash.d
-	mkdir -p ${CONFIGPATH}/archives.d
-	mkdir -p ${CONFIGPATH}/transforms.d
-	tar ch --exclude=etc/* --exclude=*spec --exclude=dependencies --exclude=LICENSE --exclude=MANIFEST --exclude=Makefile -T MANIFEST | tar x -C ${ROOTPATH}
-	for i in `cat MANIFEST | grep ^etc/ | sed "s/^etc\///"`; do  mkdir -p `dirname $(CONFIGPATH)/$${i}`; if [ -e $(CONFIGPATH)/$${i} ]; then install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}.new; else install -m 640 -c etc/$${i} $(CONFIGPATH)/$${i}; fi; done
+ifndef PERFSONAR-ROOTPATH
+	@echo No PERFSONAR-ROOTPATH specified for installation
+	@false
+endif
+ifndef PERFSONAR-CONFIGPATH
+	@echo No PERFSONAR-CONFIGPATH specified for installation
+	@false
+endif
+ifndef PYTHON-ROOTPATH
+	@echo No PYTHON-ROOTPATH specified for installation
+	@false
+endif
+ifndef PERFSONAR-DATAPATH
+	@echo No PERFSONAR-DATAPATH specified for installation
+	@false
+endif
+ifndef BINPATH
+	@echo No BINPATH specified for installation
+	@false
+endif
+ifndef HTTPD-CONFIGPATH
+	@echo No HTTPD-CONFIGPATH specified for installation
+	@false
+endif
+	python3 setup.py install --root=${PYTHON-ROOTPATH} -O1 --record=INSTALLED_FILES
+	mkdir -p ${PERFSONAR-ROOTPATH}/bin/commands
+	mkdir -p ${PERFSONAR-CONFIGPATH} 
+	mkdir -p ${PERFSONAR-DATAPATH} 
+	mkdir -p ${BINPATH}
+	mkdir -p ${HTTPD-CONFIGPATH}
+	install -m 0755 bin/psconfig* ${PERFSONAR-ROOTPATH}/bin
+	ln -fs  /usr/lib/perfsonar/psconfig/bin/psconfig ${BINPATH}/psconfig
+	install -m 0755 bin/commands/* ${PERFSONAR-ROOTPATH}/bin/commands
+	install -m 0644 etc/*.json ${PERFSONAR-CONFIGPATH}/
+	install -m 0644 etc/*.conf ${PERFSONAR-CONFIGPATH}/
+	install -m 644 apache-psconfig-publisher.conf ${HTTPD-CONFIGPATH}/
 
-test:
-	PERL_DL_NONLAZY=1 /usr/bin/perl "-MExtUtils::Command::MM" "-e" "test_harness(0)" t/*.t
-
-test_jenkins:
-	mkdir -p tap_output
-	PERL5OPT=-MDevel::Cover prove t/ --archive tap_output/
+clean:
+	make -C tests $@
+	find . -name "*.pyc" | xargs rm -f
+	python3 setup.py clean --all

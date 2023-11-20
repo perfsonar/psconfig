@@ -13,5 +13,10 @@ cover_db
 unibuild-log
 unibuild-work/
 unibuild-repo/
+#ignore python files
+__pycache__/
+*.egg-info/
+psconfig/perfsonar-psconfig/build/
+psconfig/perfsonar-psconfig/INSTALLED_FILES
 multiarch_build/
 INSTALLED_FILES

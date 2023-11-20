@@ -1,210 +1,147 @@
-#!/usr/bin/perl
+#!/usr/bin/env python3
 
-use strict;
-use warnings;
-
-=head1 NAME
-
+'''
 psconfig_pscheduler_agent - Cooridnates various test definitions and manages them in
 pScheduler
-
-=head1 DESCRIPTION
 
 This daemon does the following:
     * Reads test definitions from an include directory
     * Reads remote test definitions and combines with local settings
     * Manages creation, deletion and maintenance all test definitions in pScheduler
-=cut
+'''
 
-use FindBin qw($Bin);
-use lib "$Bin/../lib";
+import pathlib
 
-use Getopt::Long;
-use Linux::Inotify2;
-use Log::Log4perl qw/:easy/;
+import os
+parentdir = pathlib.Path(__file__).resolve().parents[1]
 
-use perfSONAR_PS::PSConfig::PScheduler::Agent;
-use perfSONAR_PS::Utils::Logging;
-use perfSONAR_PS::Utils::Daemon qw/daemonize setids lockPIDFile unlockPIDFile/;
+from psconfig.pscheduler.agent import Agent
+from psconfig.utilities.logging_utils import LoggingUtils
+import pyinotify
+import argparse
+import time
+import logging
+import logging.config
 
 ##########
 # set the process name
-$0 = "psconfig_pscheduler_agent";
+############################# not straight forward in python?
 
 ##########
 # Parse command-line options
-my $CONFIG_FILE;
-my $LOGOUTPUT;
-my $LOGGER_CONF;
-my $PIDFILE;
-my $DEBUGFLAG;
-my $HELP;
-my $RUNAS_USER;
-my $RUNAS_GROUP;
+# Instantiate the parser
+parser = argparse.ArgumentParser(description='psconfig_pscheduler_agent')
+parser.add_argument('--config', dest='CONFIG_FILE', action='store', required=True, help='configuration file')
+parser.add_argument('--logger', dest='LOGGER_CONF', action='store', help='Logger Config', required=False)
+parser.add_argument('--disable-inotify', dest='DISABLE_INOTIFY', action='store_true', help='disable inotify for file change detection.')
+parser.add_argument('--verbose', dest='DEBUGFLAG', action='store_true', help='Add additional debug output')
+############
+#parser.add_argument('--help', dest='HELP', action='store', help='HELP')
 
-my ( $status, $res );
-
-$status = GetOptions(
-    'config=s'  => \$CONFIG_FILE,
-    'output=s'  => \$LOGOUTPUT,
-    'logger=s'  => \$LOGGER_CONF,
-    'pidfile=s' => \$PIDFILE,
-    'verbose'   => \$DEBUGFLAG,
-    'user=s'    => \$RUNAS_USER,
-    'group=s'   => \$RUNAS_GROUP,
-    'help'      => \$HELP
-);
-
-if(!$CONFIG_FILE){
-    print STDERR "Error: no configuration file specified\n";
-    exit( -1 );
-}
-
-if(!$PIDFILE){
-    $PIDFILE = "/var/run/psconfig-pscheduler-agent.pid";
-}
-
-($status, $res) = lockPIDFile( $PIDFILE );
-if($status != 0){
-    print STDERR "Error: $res\n";
-    exit( -1 );
-}
-
-my $fileHandle = $res;
-
-##########
-# Check if the daemon should run as a specific user/group and then switch to
-# that user/group.
-if($RUNAS_USER && $RUNAS_GROUP){
-    if(setids(USER => $RUNAS_USER, GROUP => $RUNAS_GROUP) != 0){
-        print STDERR "Error: Could not drop privileges\n";
-        exit( -1 );
-    }
-}elsif($RUNAS_USER || $RUNAS_GROUP){
-    # they need to specify both the user and group
-    print STDERR "Error: You need to specify both the user and group if you specify either\n";
-    exit( -1 );
-}
+args = parser.parse_args()
 
 ##########
 # Now that we've dropped privileges, create the logger. If we do it in reverse
 # order, the daemon won't be able to write to the logger.
-my $logf = new perfSONAR_PS::Utils::Logging();
-my $logger;
-if(!defined $LOGGER_CONF || $LOGGER_CONF eq q{}) {
-    use Log::Log4perl qw(:easy);
+logf = LoggingUtils()
 
-    my $output_level = $INFO;
-    if($DEBUGFLAG){
-        $output_level = $DEBUG;
-    }
+if not args.LOGGER_CONF:
 
-    my %logger_opts = (
-        level  => $output_level,
-        layout => $logf->log4perl_format(),
-    );
+    output_level = logging.INFO
+    if args.DEBUGFLAG:
+        output_level = logging.DEBUG
+    
+    logging.basicConfig(level=output_level, format=logf.logging_format)
+    logger = logging.getLogger('psconfig')
 
-    if(defined $LOGOUTPUT and $LOGOUTPUT ne q{}){
-        $logger_opts{file} = $LOGOUTPUT;
-    }
-
-    Log::Log4perl->easy_init(\%logger_opts);
-    $logger = get_logger("perfSONAR_PS");
-}else{
-    Log::Log4perl->init( $LOGGER_CONF );
-    $logger = get_logger("perfSONAR_PS");
-}
-
-##########
-# Before daemonizing, set die and warn handlers so that any Perl errors or
-# warnings make it into the logs.
-my $insig = 0;
-$SIG{__WARN__} = sub {
-    $logger->warn($logf->format("Warned: ".join( '', @_ )));
-    return;
-};
-
-$SIG{__DIE__} = sub {                       ## still dies upon return
-    die @_ if $^S;                      ## see perldoc -f die perlfunc
-    die @_ if $insig;                   ## protect against reentrance.
-    $insig = 1;
-    $logger->error($logf->format("Died: ".join( '', @_ )));
-    $insig = 0;
-    return;
-};
-
-if(!$DEBUGFLAG){
-    ($status, $res) = daemonize();
-    if($status != 0){
-        $logger->error($logf->format("Couldn't daemonize: " . $res ));
-        exit(-1);
-    }
-}
-
-unlockPIDFile($fileHandle);
+else:
+    logging.config.fileConfig(args.LOGGER_CONF)
+    logger = logging.getLogger("psconfig")
 
 ##########
 # Create agent
-my $agent = new  perfSONAR_PS::PSConfig::PScheduler::Agent();
-$agent->debug($DEBUGFLAG);
-$agent->init($CONFIG_FILE) or die("Error initializing agent: " . $agent->error());
+agent = Agent()
+agent.debug = args.DEBUGFLAG
+if not agent.init(args.CONFIG_FILE):
+    raise Exception('Error initializing agent: {}'.format(agent.error))
 
 ##########
 # Setup Inotify2 on config files and directories
 # NOTE: Don't watch requesting agent file because it may not exist
-# NOTE: These do not work in /vagrant directory on vagrant VM or the /etc/perfsonar/psconfig symlink
-#   If you need to test, set config to something outside of /vagrant shared directory.
-my $inotify = new Linux::Inotify2 or die "Unable to create new inotify object: $!" ;
-$inotify->blocking(0);
-$inotify->watch("$CONFIG_FILE", IN_MODIFY) or die "$CONFIG_FILE watcher creation failed" ;
-$inotify->watch($agent->include_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->include_directory() . " watcher creation failed" ;
-$inotify->watch($agent->archive_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->archive_directory() . " watcher creation failed" ;
-$inotify->watch($agent->transform_directory(), IN_MODIFY | IN_MOVE | IN_CREATE | IN_DELETE) or die $agent->transform_directory() . " watcher creation failed" ;
+# NOTE: These do not work in well in container or VM shared directories. Use --disable-inotify
+notifier = None
+if not args.DISABLE_INOTIFY:
+    watcher = pyinotify.WatchManager()
+    watchMask = pyinotify.IN_MODIFY
+    watcher.add_watch(args.CONFIG_FILE, watchMask) ############verify if file is registered
+    watchMask2 = pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY
+    try:
+        watcher.add_watch(agent.include_directory, watchMask2)
+        logger.debug(logf.format('Watching include_directory {}.'.format(agent.include_directory)))
+    except Exception as e:
+        logger.debug(logf.format('Watching include_directory failed with error {}.'.format(agent.include_directory)))
+    try:
+        watcher.add_watch(agent.archive_directory, watchMask2)
+        logger.debug(logf.format('Watching archive_directory {}.'.format(agent.archive_directory)))
+    except Exception as e:
+        logger.debug(logf.format('Watching archive_directory failed with error {}.'.format(agent.archive_directory)))
+    try:
+        watcher.add_watch(agent.transform_directory, watchMask2)
+        logger.debug(logf.format('Watching transform_directory {}.'.format(agent.transform_directory)))
+    except Exception as e:
+        logger.debug(logf.format('Watching transform_directory failed with error {}.'.format(agent.transform_directory)))
+
+    #create notifier
+    notifier = pyinotify.Notifier(watcher, timeout=1)
 
 ##
 # Start main program loop
-$logger->info($logf->format("Starting pSConfig pScheduler agent"));
-while(1){
+logger.info(logf.format('Starting pSConfig pScheduler agent'))
+
+while(1):
     ###########
     #Initialize start
-    my $start = time;   
-    
+    start = time.time()
+
     #############
     #refresh configs
-    $logf->generate_guid(); #generate new log id for run
-    $agent->logf()->guid($logf->guid()); #pass to agent so guid consistent
-    $logger->info($logf->format("Running agent..."));
-    $agent->run();
-    $logger->info($logf->format("Agent completed running"));
-    
+    logf.generate_guid() #generate new log id for run
+    agent.logf.guid = logf.guid #pass to agent so guid consistent
+    logger.info(logf.format("Running agent..."))
+    agent.run()
+    logger.info(logf.format("Agent completed running"))
+
     ###########
     # Sleep until its time to look for file updates or time to refesh
-    my $end = time;
-    my $until_next_refresh = $agent->check_interval_seconds() - ($end - $start);
-    my $until_next_file_check = $agent->check_config_interval_seconds();
-    my $sleep_time = $until_next_refresh < $until_next_file_check ? $until_next_refresh : $until_next_file_check;
-    if($agent->will_retry_pscheduler()){
-        $logger->info($logf->format("Retrying pscheduler in $sleep_time seconds..."));
-    }else{
-        $logger->info($logf->format("Time until next record refresh is $until_next_refresh seconds"));
-    }
-    $start = $end;
-    while($until_next_refresh > 0){
-        sleep($sleep_time);
-        if($inotify->poll()){
-            $logger->info($logf->format("Configuration file change detected, refreshing records."));
-            last;
-        }elsif($agent->will_retry_pscheduler()){
-            $logger->info($logf->format("Retrying pscheduler after failure"));
-            last;
-        }else{
-            $end = time;
-            $until_next_refresh -= ($end - $start);
-            $start = $end;
-        }
-    }
-}
+    end = time.time()
+    until_next_refresh = agent.check_interval_seconds - (end - start)
+    until_next_file_check = agent.check_config_interval_seconds
+    if until_next_refresh < until_next_file_check:
+        sleep_time = until_next_refresh
+    else:
+        sleep_time = until_next_file_check
+    
+    if agent.will_retry_pscheduler():
+        logger.info(logf.format("Retrying pscheduler in {} seconds...".format(sleep_time)))
+    else:
+        logger.info(logf.format("Time until next record refresh is {} seconds".format(until_next_refresh)))
+    
+    start = end
+    while until_next_refresh > 0:
+        time.sleep(sleep_time)
 
-###########
-# Exit the program
-exit(0);
+        if notifier and notifier.check_events():
+            logger.info(logf.format("Configuration file change detected, refreshing records."))
+            notifier.read_events()
+            notifier.process_events()
+            break
+        elif agent.will_retry_pscheduler():
+            logger.info(logf.format("Retrying pscheduler after failure"))
+            break
+        else:
+            end = time.time()
+            until_next_refresh -= end-start
+            start = end
+
+#Exit the whole process
+os._exit()
