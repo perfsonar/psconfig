@@ -78,7 +78,7 @@ class BaseNode(object):
         del self.data[field][index]
     
     def _add_list_item(self, field, val=None):
-        if not val:
+        if val is None:
             return
         
         if not self.data.get(field):
@@ -87,7 +87,7 @@ class BaseNode(object):
         self.data[field].append(val)
 
     def _field(self, field, val=None):
-        if val:
+        if val is not None:
             self.data[field] = val
         
         return self.data.get(field)
@@ -96,7 +96,7 @@ class BaseNode(object):
     def _field_list(self, field, val=None):
 
         #handle case where scalar is provided
-        if val:
+        if val is not None:
             if isinstance(val, list):
                 self.data[field] = val
             
@@ -109,7 +109,7 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_map(self, field, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, dict):
                 self.validation_error = 'Unable to set {}. Value must be a dictionary.'.format(field)
                 return
@@ -123,7 +123,7 @@ class BaseNode(object):
         if not (field and param):
             return
 
-        if val:
+        if val is not None:
             self._init_field(self.data, field)
             self.data[field][param] = val
         
@@ -139,7 +139,7 @@ class BaseNode(object):
         if not (field and field_class):
             return
         
-        if val:
+        if val is not None:
             if self._validate_class(field, field_class, val):
                 self.data[field] = val.data
             else:
@@ -151,7 +151,7 @@ class BaseNode(object):
         return field_class(data=self.data.get(field))
     
     def _field_class_list(self, field, field_class, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, list):
                 self.validation_error = '{} must be a list'.format(field)
                 return
@@ -177,7 +177,7 @@ class BaseNode(object):
                 (index is not None) and len(self.data[field]) > index):
                 return
         
-        if val:
+        if val is not None:
             if self._validate_class(field, field_class, val):
                 self.data[field][index] = val.data
             else:
@@ -186,7 +186,7 @@ class BaseNode(object):
         return field_class(data=self.data[field][index])
     
     def _field_class_map(self, field, field_class, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, dict):
                 self.validation_error = 'Unable to set {}. value must be a dictionary'.fomat(field)
                 return
@@ -212,7 +212,7 @@ class BaseNode(object):
         if not (field and param and field_class):
             return
         
-        if val:
+        if val is not None:
             if self._validate_class(field, field_class, val):
                 self._init_field(self.data, field)
                 self.data[field][param] = val.data
@@ -233,7 +233,7 @@ class BaseNode(object):
         if not (field and base_class and factory_class):
             return
         
-        if val:
+        if val is not None:
             if self._validate_class(field, base_class, val):
                 self.data[field] = val.data
             else:
@@ -242,7 +242,7 @@ class BaseNode(object):
         return factory.build(self.data.get(field))
     
     def _field_class_factory_list(self, field, base_class, factory_class, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, list):
                 self.validation_error = '{} must be an array'.format(field)
                 return
@@ -269,7 +269,7 @@ class BaseNode(object):
             len(self.data.get(field))  > index):
             return
 
-        if val:
+        if val is not None:
             if self._validate_class(field, base_class, val):
                 self.data[field][index] = val.data
             else:
@@ -280,7 +280,7 @@ class BaseNode(object):
     
     
     def _field_class_factory_map(self, field, base_class, factory_class, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, dict):
                 self.validation_error = 'Unable to set {}. Value must be a dictionary'.format(field)
                 return
@@ -305,7 +305,7 @@ class BaseNode(object):
         if not (field and param and base_class and factory_class):
             return None
         
-        if val:
+        if val is not None:
             if (self._validate_class(field, base_class, val)):
                 self._init_field(self.data, field)
                 self.data[field][param] = val.data
@@ -338,7 +338,7 @@ class BaseNode(object):
     
 
     def _field_refs(self, field, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, list):
                 self.validation_error = '{} must be a list'.format(field)
                 return
@@ -379,7 +379,7 @@ class BaseNode(object):
         if not (field and param):
             return
         
-        if val:
+        if val is not None:
             self._init_field(self.data, field)
             self.data[field][param] = val
         
@@ -389,7 +389,7 @@ class BaseNode(object):
         return self.data.get(field, {}).get(param)
 
     def _field_enum(self, field, val, valid):
-        if val:
+        if val is not None:
             if valid:
                 if val in valid:
                     self.data[field] = val
@@ -402,7 +402,7 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_name(self, field, val=None):
-        if val:
+        if val is not None:
             if self._validate_name(val):
                 self.data[field] = val
             else:
@@ -411,7 +411,7 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_bool(self, field, val=None):
-        if val:
+        if val is not None:
             if val is True:
                 self.data[field] = True
             elif val is False:
@@ -432,7 +432,7 @@ class BaseNode(object):
         return self._field_bool(field, val)
 
     def _field_ipversion(self, field, val=None):
-        if val:
+        if val is not None:
             if val==4 or val==6:
                 self.data[field] = val
             else:
@@ -441,7 +441,7 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_ipcidr(self, field, val):
-        if val:
+        if val is not None:
             try:
                 if type(ip_network(val, strict=False)) is IPv4Network:
                     self.data[field] = val
@@ -455,7 +455,7 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_host(self, field, val=None):
-        if val:
+        if val is not None:
             if self._validate_host(val):
                 self.data[field] = val
             else:
@@ -464,7 +464,7 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_host_list(self, field, val=None):
-        if val:
+        if val is not None:
             if not isinstance(val, list):
                 self.validation_error = '{} must be a list'.format(field)
                 return
@@ -482,7 +482,7 @@ class BaseNode(object):
             (index is not None) and len(self.data.get(field))> index):
             return
         
-        if val:
+        if val is not None:
             if self._validate_host(val):
                 self.data[field][index] = val
             else:
@@ -504,7 +504,7 @@ class BaseNode(object):
         self.data[field].append(val)
 
     def _field_cardinal(self, field, val=None):
-        if val:
+        if val is not None:
             if int(val) > 0:
                 self.data[field] = int(val)
             else:
@@ -513,12 +513,12 @@ class BaseNode(object):
         return self.data.get(field)
     
     def _field_int(self, field, val=None):
-        if val:
+        if val is not None:
             self.data[field] = int(val)
         return self.data.get(field)
     
     def _field_intzero(self, field, val=None):
-        if val:
+        if val is not None:
             if int(val) >= 0:
                 self.data[field] = int(val)
             else:
@@ -527,8 +527,20 @@ class BaseNode(object):
         
         return self.data.get(field)
     
+    def _field_numbernull(self, field, val=None, set_null=False):
+        if set_null:
+            self.data[field] = None
+        elif val is not None:
+            try:
+                self.data[field] = float(val)
+            except:
+                self.validation_error = '{} cannot be set to {}. Must evaluate to float'.format(field, val)
+                return
+        
+        return self.data.get(field)
+    
     def _field_probability(self, field, val=None):
-        if val:
+        if val is not None:
             if (val >= 0.0 and val <= 1.0):
                 self.data[field] = val + 0.0
             else:
@@ -537,7 +549,7 @@ class BaseNode(object):
         return self.data.get(field)
 
     def _field_duration(self, field, val=None):
-        if val:
+        if val is not None:
             if self._validate_duration(val):
                 self.data[field] = val
             else:
@@ -549,7 +561,7 @@ class BaseNode(object):
         if not allowed_scheme_map:
             allowed_scheme_map = {'http': True, 'https': True, 'file': True}
         
-        if val:
+        if val is not None:
             #allowed URLs or absolute file paths
             uri = urllib.parse.urlsplit(val)
             if uri.scheme and not allowed_scheme_map.get(uri.scheme):
@@ -572,7 +584,7 @@ class BaseNode(object):
 
     
     def _field_urlhostport(self, field, val=None):
-        if val:
+        if val is not None:
             if self._validate_urlhostport(val):
                 self.data[field] = val
             else:
@@ -581,7 +593,7 @@ class BaseNode(object):
         return self.data.get(field)
 
     def _field_timestampabsrel(self, field, val=None):
-        if val:
+        if val is not None:
             if self._validate_duration(val):
                 self.data[field] = val
             elif self._validate_datetime(val):
