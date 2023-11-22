@@ -13,7 +13,7 @@ class Schema(object):
             "description": "Schema for pSConfig Grafana agent configuration file. This is the file that tells the agent what pSConfig files to download and controls basic behaviors of agent script.",
             "type": "object",
             "additionalProperties": False,
-            "required": [ "displays", "grafana-url" ],
+            "required": [ "displays" ],
             "properties": {
             
                 "remotes": {
