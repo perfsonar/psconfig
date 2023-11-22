@@ -36,7 +36,7 @@ class BaseAgent(object):
         #return ###### remove this return
         raise Exception('''override this''')
 
-    def _init(self):
+    def _init(self, agent_conf):
         return
     
     def _run_start(self, agent_conf):
@@ -134,7 +134,7 @@ class BaseAgent(object):
         # Set assist server - Host/Post to URL
         if not agent_conf.pscheduler_assist_server(): 
             default = 'localhost'
-            self.logger.debug(self.logf.format( "No pscheduler-assist-server specified. Defaulting to $default" ))
+            self.logger.debug(self.logf.format( "No pscheduler-assist-server specified. Defaulting to {}".format(default) ))
             agent_conf.pscheduler_assist_server(default)
 
         self.pscheduler_url = self._build_pscheduler_url(agent_conf.pscheduler_assist_server()) 
