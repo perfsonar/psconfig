@@ -3,6 +3,7 @@
 %define psconfig_bin_base   %{psconfig_base}/bin
 %define psconfig_datadir    /var/lib/perfsonar/psconfig
 %define command_base        %{psconfig_bin_base}/commands
+%define template_base       %{psconfig_base}/templates
 %define config_base         /etc/perfsonar/psconfig
 %define doc_base            /usr/share/doc/perfsonar/psconfig
 %define httpd_config_base   /etc/httpd/conf.d
@@ -190,6 +191,7 @@ systemctl restart httpd &>/dev/null || :
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_grafana_agent 
 %config(noreplace) %{config_base}/grafana-agent.json
 %config(noreplace) %{config_base}/grafana-agent-logger.conf
+%{template_base}/grafana.json.j2
 %{_unitdir}/psconfig-grafana-agent.service
 # %attr(0755, perfsonar, perfsonar) %{command_base}/grafana
 # %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-stats

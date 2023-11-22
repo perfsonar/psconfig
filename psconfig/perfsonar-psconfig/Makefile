@@ -34,6 +34,7 @@ ifndef HTTPD-CONFIGPATH
 endif
 	python3 setup.py install --root=${PYTHON-ROOTPATH} -O1 --record=INSTALLED_FILES
 	mkdir -p ${PERFSONAR-ROOTPATH}/bin/commands
+	mkdir -p ${PERFSONAR-ROOTPATH}/templates
 	mkdir -p ${PERFSONAR-CONFIGPATH} 
 	mkdir -p ${PERFSONAR-DATAPATH} 
 	mkdir -p ${BINPATH}
@@ -41,6 +42,7 @@ endif
 	install -m 0755 bin/psconfig* ${PERFSONAR-ROOTPATH}/bin
 	ln -fs  /usr/lib/perfsonar/psconfig/bin/psconfig ${BINPATH}/psconfig
 	install -m 0755 bin/commands/* ${PERFSONAR-ROOTPATH}/bin/commands
+	install -m 0644 templates/* ${PERFSONAR-ROOTPATH}/templates
 	install -m 0644 etc/*.json ${PERFSONAR-CONFIGPATH}/
 	install -m 0644 etc/*.conf ${PERFSONAR-CONFIGPATH}/
 	install -m 644 apache-psconfig-publisher.conf ${HTTPD-CONFIGPATH}/
