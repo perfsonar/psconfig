@@ -1,12 +1,3 @@
-###
-# Packages:
-#   - python-perfsonar-psconfig
-#   - perfsonar-psconfig-pscheduler
-#   - perfsonar-psconfig-grafana
-#   - perfsonar-psconfig-publisher (maybe merge with utils?)
-#   - perfsonar-psconfig-utils
-###
-
 %define install_base        /usr/lib/perfsonar/
 %define psconfig_base       %{install_base}/psconfig/
 %define psconfig_bin_base   %{psconfig_base}/bin
@@ -70,6 +61,19 @@ BuildArch:		noarch
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
 
+%package grafana
+Summary:		pSConfig pScheduler Agent
+Requires:       python-perfsonar-psconfig
+Requires:       python3-inotify
+Requires:       perfsonar-common
+%{?systemd_requires: %systemd_requires}
+BuildRequires: systemd
+BuildArch:		noarch
+
+%description grafana
+The pSConfig Grafana Agent downloads a centralized JSON file
+describing the tests to run, and uses it to generate Grafana dashboards.
+
 %package utils
 Summary:		pSConfig Utilities
 Requires:       python-perfsonar-psconfig
@@ -122,6 +126,14 @@ if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-pscheduler-agent.service
 fi
 
+%post grafana
+mkdir -p %{config_base}/grafana.d/
+chown perfsonar:perfsonar %{config_base}/grafana.d/
+%systemd_post psconfig-grafana-agent.service
+if [ "$1" = "1" ]; then
+    systemctl enable --now psconfig-grafana-agent.service
+fi
+
 %post utils
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
@@ -148,8 +160,14 @@ systemctl restart httpd &>/dev/null || :
 %preun pscheduler
 %systemd_preun psconfig-pscheduler-agent.service
 
+%preun grafana
+%systemd_preun psconfig-grafana-agent.service
+
 %postun pscheduler
 %systemd_postun_with_restart psconfig-pscheduler-agent.service
+
+%postun grafana
+%systemd_postun_with_restart psconfig-grafana-agent.service
 
 %files -n python-perfsonar-psconfig -f INSTALLED_FILES
 %defattr(-,root,root)
@@ -165,6 +183,17 @@ systemctl restart httpd &>/dev/null || :
 %{_unitdir}/psconfig-pscheduler-agent.service
 %attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-stats
 %attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-tasks
+
+%files grafana
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_grafana_agent 
+%config(noreplace) %{config_base}/grafana-agent.json
+%config(noreplace) %{config_base}/grafana-agent-logger.conf
+%{_unitdir}/psconfig-grafana-agent.service
+# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana
+# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-stats
+# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-tasks
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)

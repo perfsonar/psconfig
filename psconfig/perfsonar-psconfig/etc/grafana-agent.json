@@ -1,0 +1,143 @@
+{
+    "remotes": [],
+    "displays": {
+        "packet_loss": {
+            "task_selector":{
+                "test_types": ["latencybg"]
+            },
+            "archive_selector":{
+                "auto": true
+            },
+            "stat_field": "result.packets.loss",
+            "stat_type": "max",
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Max",
+            "value_text": "Loss",
+            "unit": "percentunit",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "super-light-yellow",
+                    "value": 0.01
+                },
+                {
+                    "color": "red",
+                    "value": 0.1
+                }
+            ]
+        },
+        "rtt_min": {
+            "task_selector":{
+                "test_types": ["rtt"]
+            },
+            "archive_selector":{
+                "auto": true
+            },
+            "stat_field": "result.rtt.min",
+            "stat_type": "min",
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Min",
+            "value_text": "RTT",
+            "unit": "s",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 1
+                }
+            ]
+        },
+        "throughput_avg": {
+            "task_selector":{
+                "test_types": ["throughput"]
+            },
+            "archive_selector":{
+                "auto": true
+            },
+            "stat_field": "result.throughput",
+            "stat_type": "avg",
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Average",
+            "value_text": "Throughput",
+            "unit": "bps",
+            "thresholds": [
+                {
+                    "color": "red",
+                    "value": null
+                },
+                {
+                    "color": "super-light-yellow",
+                    "value": 2000000000
+                },
+                {
+                    "color": "green",
+                    "value": 5000000000
+                }
+            ]
+        },
+        "trace_hop_count": {
+            "task_selector":{
+                "test_types": ["trace"]
+            },
+            "archive_selector": {
+                "auto": true
+            },
+            "stat_field": "result.hop.count",
+            "stat_type": "extended_stats",
+            "stat_meta": {
+                "std_deviation": true,
+                "std_deviation_bounds_lower": false,
+                "std_deviation_bounds_upper": false
+            },
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Std Dev",
+            "value_text": "Hop Count Standard Deviation",
+            "unit": "none",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 0.001
+                }
+            ]
+        },
+        "dns_result_time": {
+            "task_selector":{
+                "test_types": ["dns"]
+            },
+            "archive_selector": {
+                "auto": true
+            },
+            "stat_field": "result.time",
+            "stat_type": "max",
+            "row_field": "test.spec.host.keyword",
+            "col_field": "test.spec.query.keyword",
+            "value_field": "Max",
+            "value_text": "Time",
+            "unit": "s",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 1
+                }
+            ]
+        }
+    }
+}
