@@ -1,0 +1,4 @@
+usr/lib/perfsonar/psconfig/bin/psconfig_grafana_agent 
+etc/perfsonar/psconfig/grafana-agent.json
+etc/perfsonar/psconfig/grafana-agent-logger.conf
+systemd/psconfig-grafana-agent.service lib/systemd/system/
