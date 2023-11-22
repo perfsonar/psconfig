@@ -14,17 +14,15 @@ from .transform_connect import TransformConnect
 from .client.psconfig.api_connect import ApiConnect
 from .client.psconfig.config import Config
 from .client.psconfig.api_filters import ApiFilters
-from .client.psconfig.archive import Archive
+from .client.psconfig.base_node import BaseNode
+from .remote import Remote
 from .utilities.cache_handler import CacheHandler
 from .utilities.host import Host
 from .utilities.dns import reverse_dns, resolve_address
 import glob
 import re
 import logging
-
-
-#from ..shared.client.psconfig.parsers
-
+from jsonschema import validate as jsonvalidate, ValidationError
 
 class BaseAgent(object):
 
@@ -244,12 +242,7 @@ class BaseAgent(object):
             if errors:
                 cat = "archive_schema_validation_error"
                 for error in errors:
-                    path = error.path 
-                    path = re.sub('^/archives/', '', path) #makes prettier error message
-                    self.logger.error(self.logf.format(error.message, {
-                    'category' : cat,
-                    'json_path' : path
-                    }))
+                    self._log_validation_error(error, cat, strip_prefix="archives")
                 continue
             
             default_archives.append(archive)
@@ -277,12 +270,7 @@ class BaseAgent(object):
             if errors:
                 cat = "transform_schema_validation_error"
                 for error in errors:
-                    path = error.path 
-                    path = re.sub('^/transform/', '', path) #makes prettier error message
-                    self.logger.error(self.logf.format(error.message, {
-                    'category' : cat,
-                    'json_path' : path
-                    }))
+                    self._log_validation_error(error, cat, strip_prefix="transform")
                 continue
 
             default_transforms.append(transform)
@@ -368,12 +356,7 @@ class BaseAgent(object):
         if errors:
             cat = "psconfig_schema_validation_error"
             for error in errors:
-                self.logger.error(self.logf.format(error.message, {
-                'category' : cat,
-                'expanded' : False,
-                'transformed' : False,
-                'json_path' : error.path
-                }))
+                self._log_validation_error(error, cat, log_obj={'expanded' : False, 'transformed' : False})
 
             psconfig = self._get_cached_template(psconfig_client.url)
             if not psconfig:
@@ -396,12 +379,7 @@ class BaseAgent(object):
             if errors:
                 cat = "psconfig_schema_validation_error"
                 for error in errors:
-                    self.logger.error(self.logf.format(error.message, {
-                    'category' : cat,
-                    'expanded' : True,
-                    'transformed' : False,
-                    'json_path' : error.path
-                    }))
+                    self._log_validation_error(error, cat, log_obj={'expanded' : True, 'transformed' : False})
                 psconfig = self._get_cached_template(psconfig_client.url)
                 if not psconfig:
                     return
@@ -464,11 +442,7 @@ class BaseAgent(object):
             if errors:
                 self.logger.debug("Invalid cached template found for {}".format(key))
                 for error in errors:
-                    path = error.path
-                    self.logger.error(self.logf.format(error.message, {
-                    'category' : "cached_schema_validation_error",
-                    'json_path' : path
-                    }))
+                    self._log_validation_error(error, "cached_schema_validation_error")
             else:
                 self.logger.info("Using cached JSON template for {}".format(key))
         
@@ -505,13 +479,7 @@ class BaseAgent(object):
             #validation errors
             cat = "psconfig_schema_validation_error"
             for error in errors:
-                self.logger.error(self.logf.format(error.message, {
-                'category' : cat,
-                'json_path' : error.path,
-                'expanded' : True,
-                'transformed' : True,
-                'transform_src' : transform_src
-                }))
+                self._log_validation_error(error, cat, log_obj={'expanded' : True, 'transformed' : True, 'transform_src' : transform_src})
             return
         log_ctx['json'] = psconfig.to_json()
         self.logger.debug(self.logf.format("Transform completed", log_ctx))
@@ -560,13 +528,7 @@ class BaseAgent(object):
         if errors:
             cat = "requesting_agent_schema_validation_error"
             for error in errors:
-                path = error.path
-                path = re.sub('^/addresses','', path) #makes prettier error message
-            self.logger.error(self.logf.format(error.message, {
-                'category' : cat,
-                'json_path' : path,
-                'requesting_agent_file' : requesting_agent_file
-            }))
+                self._log_validation_error(error, cat, strip_prefix='addresses', log_obj={'requesting_agent_file' : requesting_agent_file})
             return
         
         #return data
@@ -633,12 +595,103 @@ class BaseAgent(object):
         
         agent_conf_errors = agent_conf.validate() 
         if agent_conf_errors:
-            err = "{} is not valid. The following errors were encountered: ".format(config_file)
-            for error in agent_conf_errors:
-                err += "    JSON Path: " + error.path + '\n' 
-                err += "    Error: " + error.message + '\n\n'   
+            err = self._format_validation_error(
+                    agent_conf_errors, 
+                    msg="{} is not valid. The following errors were encountered:".format(config_file)
+                )
             raise Exception(err)
         
         return agent_conf
-        
     
+    def _format_validation_error(self, validation_errors, msg=""):
+        for error in validation_errors:
+            if msg:
+                msg += "\n"
+            if isinstance(error, ValidationError):
+                if error.path:
+                    msg += "    JSON Path: {}\n".format("/".join(error.path))
+                msg += "    Error: {}\n".format(error.message)
+            else:
+                msg +=  "    {}".format(str(error))
+        return msg
+
+    def _log_validation_error(self, error, cat, strip_prefix="", log_obj={}):
+        log_obj['category'] = cat
+        msg = ""
+        if isinstance(error, ValidationError):
+            path = error.path 
+            if strip_prefix:
+                path = re.sub('^/{}/'.format(strip_prefix), '', path) #makes prettier error message
+            log_obj['json_path'] = path
+            msg = error.message
+        else:
+            msg = str(error)
+        self.logger.error(self.logf.format(msg, log_obj))
+
+class BaseAgentNode(BaseNode):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.error = ''
+    
+    def remotes(self, val=None):
+        '''Sets/gets list of Remote objects'''
+        return self._field_class_list('remotes', Remote, val)
+    
+    def remote(self, index, val=None):
+        '''Sets/gets Remote object at given index'''
+        return self._field_class_list_item('remotes', index, Remote, val)
+    
+    def add_remote(self, val=None):
+        '''Adds Remote object to remotes list'''
+        self._add_field_class('remotes', Remote, val)
+    
+    def include_directory(self, val=None):
+        '''Gets/sets the directory where local configuration files live'''
+        return self._field('include-directory', val)
+    
+    def archive_directory(self, val=None):
+        '''Gets/sets the directory where local archiver definitions live'''
+        return self._field('archive-directory', val)
+    
+    def transform_directory(self, val=None):
+        '''Gets/sets the directory where local transform scripts live'''
+        return self._field('transform-directory', val)
+    
+    def requesting_agent_file(self, val=None):
+        '''Gets/sets the location of a file with the requesting agent definition'''
+        return self._field('requesting-agent-file', val)
+    
+    def check_interval(self, val=None):
+        '''Gets/sets how often to check for changes to remote configuation files. Formatted as IS8601
+        duration.'''
+        return self._field_duration('check-interval', val)
+    
+    def check_config_interval(self, val=None):
+        '''Gets/sets how often to check for changes to local configuation files. Formatted as IS8601
+        duration.'''
+        return self._field_duration('check-config-interval', val)
+        
+    def disable_cache(self, val=None):
+        '''Gets/sets whether templates should be cached'''
+        return self._field_bool('disable-cache', val)
+    
+    def cache_directory(self, val=None):
+        '''Gets/sets the directory where cached templates live'''
+        return self._field('cache-directory', val)
+    
+    def cache_expires(self, val=None):
+        '''Gets/sets how long to keep templates cached'''
+        return self._field_duration('cache-expires', val)
+    
+    def schema(self):
+        '''Override this'''
+        return {}
+
+    def validate(self):
+        '''Validates this object against JSON schema. Returns error messages of a 0 length array if valid'''
+        schema = self.schema()
+        try:
+            validator = jsonvalidate(instance=self.data, schema=schema)
+            return []
+        except Exception as e:
+            return [e]
