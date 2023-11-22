@@ -24,6 +24,7 @@ setup(
         'psconfig.client.psconfig.translators',
         'psconfig.client.psconfig.translators.mesh_config',
         'psconfig.pscheduler',
+        'psconfig.grafana',
         'psconfig.utilities'
     ],
     install_requires=['requests',
