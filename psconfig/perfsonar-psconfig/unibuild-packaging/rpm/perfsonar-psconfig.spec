@@ -122,6 +122,8 @@ rm -rf %{buildroot}
 %post pscheduler
 mkdir -p %{config_base}/pscheduler.d/
 chown perfsonar:perfsonar %{config_base}/pscheduler.d/
+mkdir -p %{psconfig_datadir}/template_cache
+chown perfsonar:perfsonar %{psconfig_datadir}/template_cache
 %systemd_post psconfig-pscheduler-agent.service
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-pscheduler-agent.service
@@ -130,6 +132,8 @@ fi
 %post grafana
 mkdir -p %{config_base}/grafana.d/
 chown perfsonar:perfsonar %{config_base}/grafana.d/
+mkdir -p %{psconfig_datadir}/grafana_template_cache
+chown perfsonar:perfsonar %{psconfig_datadir}/grafana_template_cache
 %systemd_post psconfig-grafana-agent.service
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-grafana-agent.service
@@ -138,6 +142,8 @@ fi
 %post utils
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
+mkdir -p %{psconfig_datadir}
+chown perfsonar:perfsonar %{psconfig_datadir}
 mkdir -p %{config_base}/transforms.d
 chown perfsonar:perfsonar %{config_base}/transforms.d
 mkdir -p %{config_base}/archives.d

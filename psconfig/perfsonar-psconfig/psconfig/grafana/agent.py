@@ -33,7 +33,7 @@ class Agent(BaseAgent):
         # Set cache directory per agent. Will not work to share since agents may
         #  have different permissions
         if not agent_conf.cache_directory():
-            default = "/var/lib/perfsonar/psconfig/template_cache"
+            default = "/var/lib/perfsonar/psconfig/grafana_template_cache"
             self.logger.debug(self.logf.format("No cache-dir specified. Defaulting to {}".format(default)))
             agent_conf.cache_directory(default)
 

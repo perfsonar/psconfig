@@ -9,6 +9,8 @@ case "$1" in
     configure)
         mkdir -p /etc/perfsonar/psconfig/pscheduler.d/
         chown perfsonar:perfsonar /etc/perfsonar/psconfig/pscheduler.d/
+        mkdir -p /var/lib/perfsonar/psconfig/template_cache
+        chown perfsonar:perfsonar /var/lib/perfsonar/psconfig/template_cache
         # check if installation or update, where version is a parameter
         if [ -z "$2" ]; then
 
