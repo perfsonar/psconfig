@@ -609,7 +609,7 @@ class BaseAgent(object):
                 msg += "\n"
             if isinstance(error, ValidationError):
                 if error.path:
-                    msg += "    JSON Path: {}\n".format("/".join(error.path))
+                    msg += "    JSON Path: {}\n".format("/".join(list(map(lambda x: str(x), error.path))))
                 msg += "    Error: {}\n".format(error.message)
             else:
                 msg +=  "    {}".format(str(error))
@@ -619,7 +619,7 @@ class BaseAgent(object):
         log_obj['category'] = cat
         msg = ""
         if isinstance(error, ValidationError):
-            path = error.path 
+            path = "/".join(list(map(lambda x: str(x), error.path)))
             if strip_prefix:
                 path = re.sub('^/{}/'.format(strip_prefix), '', path) #makes prettier error message
             log_obj['json_path'] = path

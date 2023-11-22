@@ -81,7 +81,7 @@ class CLIUtil:
         for error in errors:
             if isinstance(error, ValidationError):
                 if error.path:
-                    self.print_error("\n    JSON Path: {}".format("/".join(error.path)))
+                    self.print_error("\n    JSON Path: {}".format("/".join(list(map(lambda x: str(x), error.path)))))
                 self.print_error("    Error: {}".format(error.message))
             else:
                 self.print_error("\n    {}".format(str(error)))
