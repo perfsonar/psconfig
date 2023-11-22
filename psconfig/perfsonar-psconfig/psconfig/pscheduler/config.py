@@ -7,10 +7,6 @@ class Config(BaseAgentNode):
         super().__init__(**kwargs)
         self.error = ''
     
-    def pscheduler_assist_server(self, val=None):
-        '''Sets/gets the pscheduler-assist-server field as a host with optional port in form HOST:PORT'''
-        return self._field_urlhostport('pscheduler-assist-server', val)
-    
     def pscheduler_bind_map(self, val=None):
         '''Sets/gets HasRef used in binding to pscheduler servers. The key is the remote host and the
             value is the local address to use for binding'''

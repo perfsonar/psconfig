@@ -660,7 +660,11 @@ class BaseAgentNode(BaseNode):
     def requesting_agent_file(self, val=None):
         '''Gets/sets the location of a file with the requesting agent definition'''
         return self._field('requesting-agent-file', val)
-    
+
+    def pscheduler_assist_server(self, val=None):
+        '''Sets/gets the pscheduler-assist-server field as a host with optional port in form HOST:PORT'''
+        return self._field_urlhostport('pscheduler-assist-server', val)
+
     def check_interval(self, val=None):
         '''Gets/sets how often to check for changes to remote configuation files. Formatted as IS8601
         duration.'''
