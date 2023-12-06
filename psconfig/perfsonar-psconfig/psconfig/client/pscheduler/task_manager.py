@@ -23,6 +23,7 @@ class TaskManager(object):
         self.deleted_tasks = kwargs.get('deleted_tasks', [])
         self.leads_to_keep = kwargs.get('leads_to_keep', {})
         self.added_tasks = kwargs.get('added_tasks', [])
+        self.hostname = kwargs.get('agent_hostname', None)
         #self.leads = {}
         
         #mandatory
@@ -194,7 +195,7 @@ class TaskManager(object):
         for cp in self.created_by:
             tmp_created_by[cp] = self.created_by[cp]
         
-        new_task.reference_param(self.reference_label, {'created-by': tmp_created_by})
+        new_task.reference_param(self.reference_label, {'created-by': tmp_created_by, 'agent-hostname': self.hostname})
 
         #determine if we need new task and create
         need_new_task, new_task_start = self._need_new_task(new_task)

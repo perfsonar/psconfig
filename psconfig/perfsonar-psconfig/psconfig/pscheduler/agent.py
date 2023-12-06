@@ -9,6 +9,7 @@ from ..base_agent import BaseAgent
 import time
 import logging
 from ..utilities.logging_utils import LoggingUtils
+import os
 
 class Agent(BaseAgent):
     '''Agent that loads config, grabs meshes and submits to pscheduler'''
@@ -126,7 +127,8 @@ class Agent(BaseAgent):
                 bind_map=agent_conf.pscheduler_bind_map(),
                 lead_address_map={}, #\%pscheduler_addr_map,
                 debug=self.debug,
-                logger=self.transaction_logger
+                logger=self.transaction_logger,
+                agent_hostname=os.uname().nodename
             )
             task_manager.logf.guid = self.logf.guid # make logging guids consistent'''
         except Exception as e:
