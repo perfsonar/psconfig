@@ -1,7 +1,7 @@
 Index: b/plugins/checks/ps-nagios-dns.json
 ===================================================================
---- a/plugins/checks/ps-nagios-dns.json	2023-11-10 15:22:09.844057333 -0500
-+++ b/plugins/checks/ps-nagios-dns.json	2023-11-10 15:22:11.096306735 -0500
+--- a/plugins/checks/ps-nagios-dns.json	2023-12-08 15:19:38.380337170 -0500
++++ b/plugins/checks/ps-nagios-dns.json	2023-12-08 15:19:39.351287494 -0500
 @@ -65,7 +65,7 @@
              ]
          }
@@ -13,8 +13,8 @@ Index: b/plugins/checks/ps-nagios-dns.json
              "required": true,
 Index: b/plugins/checks/ps-nagios-http.json
 ===================================================================
---- a/plugins/checks/ps-nagios-http.json	2023-11-10 15:22:09.844129438 -0500
-+++ b/plugins/checks/ps-nagios-http.json	2023-11-10 15:22:11.096770235 -0500
+--- a/plugins/checks/ps-nagios-http.json	2023-12-08 15:19:38.380398134 -0500
++++ b/plugins/checks/ps-nagios-http.json	2023-12-08 15:19:39.351700157 -0500
 @@ -61,7 +61,7 @@
              ]
          }
@@ -26,8 +26,8 @@ Index: b/plugins/checks/ps-nagios-http.json
              "required": true,
 Index: b/plugins/checks/ps-nagios-loss.json
 ===================================================================
---- a/plugins/checks/ps-nagios-loss.json	2023-11-10 15:22:09.844189707 -0500
-+++ b/plugins/checks/ps-nagios-loss.json	2023-11-10 15:22:11.097034932 -0500
+--- a/plugins/checks/ps-nagios-loss.json	2023-12-08 15:19:38.380447847 -0500
++++ b/plugins/checks/ps-nagios-loss.json	2023-12-08 15:19:39.351944138 -0500
 @@ -45,7 +45,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -46,8 +46,8 @@ Index: b/plugins/checks/ps-nagios-loss.json
 +}
 Index: b/plugins/checks/ps-nagios-owdelay.json
 ===================================================================
---- a/plugins/checks/ps-nagios-owdelay.json	2023-11-10 15:22:09.844253810 -0500
-+++ b/plugins/checks/ps-nagios-owdelay.json	2023-11-10 15:22:11.097242405 -0500
+--- a/plugins/checks/ps-nagios-owdelay.json	2023-12-08 15:19:38.380507228 -0500
++++ b/plugins/checks/ps-nagios-owdelay.json	2023-12-08 15:19:39.352151158 -0500
 @@ -46,7 +46,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -66,8 +66,8 @@ Index: b/plugins/checks/ps-nagios-owdelay.json
 +}
 Index: b/plugins/checks/ps-nagios-pathmtu.json
 ===================================================================
---- a/plugins/checks/ps-nagios-pathmtu.json	2023-11-10 15:22:09.844313828 -0500
-+++ b/plugins/checks/ps-nagios-pathmtu.json	2023-11-10 15:22:11.097433873 -0500
+--- a/plugins/checks/ps-nagios-pathmtu.json	2023-12-08 15:19:38.380564067 -0500
++++ b/plugins/checks/ps-nagios-pathmtu.json	2023-12-08 15:19:39.352342092 -0500
 @@ -45,7 +45,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -86,8 +86,8 @@ Index: b/plugins/checks/ps-nagios-pathmtu.json
 +}
 Index: b/plugins/checks/ps-nagios-ping-loss.json
 ===================================================================
---- a/plugins/checks/ps-nagios-ping-loss.json	2023-11-10 15:22:09.844379307 -0500
-+++ b/plugins/checks/ps-nagios-ping-loss.json	2023-11-10 15:22:11.097627217 -0500
+--- a/plugins/checks/ps-nagios-ping-loss.json	2023-12-08 15:19:38.380622490 -0500
++++ b/plugins/checks/ps-nagios-ping-loss.json	2023-12-08 15:19:39.352528818 -0500
 @@ -45,7 +45,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -106,8 +106,8 @@ Index: b/plugins/checks/ps-nagios-ping-loss.json
 +}
 Index: b/plugins/checks/ps-nagios-pscheduler-raw.json
 ===================================================================
---- a/plugins/checks/ps-nagios-pscheduler-raw.json	2023-11-10 15:22:09.844440409 -0500
-+++ b/plugins/checks/ps-nagios-pscheduler-raw.json	2023-11-10 15:22:11.097822687 -0500
+--- a/plugins/checks/ps-nagios-pscheduler-raw.json	2023-12-08 15:19:38.380682454 -0500
++++ b/plugins/checks/ps-nagios-pscheduler-raw.json	2023-12-08 15:19:39.352729420 -0500
 @@ -44,7 +44,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -126,8 +126,8 @@ Index: b/plugins/checks/ps-nagios-pscheduler-raw.json
 +}
 Index: b/plugins/checks/ps-nagios-retransmits.json
 ===================================================================
---- a/plugins/checks/ps-nagios-retransmits.json	2023-11-10 15:22:09.844516599 -0500
-+++ b/plugins/checks/ps-nagios-retransmits.json	2023-11-10 15:22:11.098027326 -0500
+--- a/plugins/checks/ps-nagios-retransmits.json	2023-12-08 15:19:38.380733917 -0500
++++ b/plugins/checks/ps-nagios-retransmits.json	2023-12-08 15:19:39.352931231 -0500
 @@ -45,7 +45,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -146,8 +146,8 @@ Index: b/plugins/checks/ps-nagios-retransmits.json
 +}
 Index: b/plugins/checks/ps-nagios-rtt.json
 ===================================================================
---- a/plugins/checks/ps-nagios-rtt.json	2023-11-10 15:22:09.844580118 -0500
-+++ b/plugins/checks/ps-nagios-rtt.json	2023-11-10 15:22:11.098231298 -0500
+--- a/plugins/checks/ps-nagios-rtt.json	2023-12-08 15:19:38.380787298 -0500
++++ b/plugins/checks/ps-nagios-rtt.json	2023-12-08 15:19:39.353109539 -0500
 @@ -46,7 +46,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
@@ -166,8 +166,8 @@ Index: b/plugins/checks/ps-nagios-rtt.json
 +}
 Index: b/plugins/checks/ps-nagios-throughput.json
 ===================================================================
---- a/plugins/checks/ps-nagios-throughput.json	2023-11-10 15:22:09.844643596 -0500
-+++ b/plugins/checks/ps-nagios-throughput.json	2023-11-10 15:22:11.098434103 -0500
+--- a/plugins/checks/ps-nagios-throughput.json	2023-12-08 15:19:38.380842512 -0500
++++ b/plugins/checks/ps-nagios-throughput.json	2023-12-08 15:19:39.353285180 -0500
 @@ -58,7 +58,7 @@
              "script": [ ".test.spec.bandwidth" ]
          }
@@ -186,8 +186,8 @@ Index: b/plugins/checks/ps-nagios-throughput.json
 +}
 Index: b/plugins/checks/ps-nagios-traceroute.json
 ===================================================================
---- a/plugins/checks/ps-nagios-traceroute.json	2023-11-10 15:22:09.844703906 -0500
-+++ b/plugins/checks/ps-nagios-traceroute.json	2023-11-10 15:22:11.098639450 -0500
+--- a/plugins/checks/ps-nagios-traceroute.json	2023-12-08 15:19:38.380893975 -0500
++++ b/plugins/checks/ps-nagios-traceroute.json	2023-12-08 15:19:39.353470406 -0500
 @@ -44,7 +44,7 @@
              "script": [".test.spec.\"ip-version\"==6"]
          }
