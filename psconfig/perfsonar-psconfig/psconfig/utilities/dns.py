@@ -7,6 +7,21 @@ import socket
 import dns.resolver
 from ipaddress import ip_address
 
+def read_etc_hosts():
+    ip_hosts = {}
+    host_ips = {}
+    try:
+        with open('/etc/hosts', 'r') as file:
+            for line in file:
+                entry = line.split()
+                ip_hosts[entry[0]] = entry[1:]
+                for host in entry[1:]:
+                    host_ips[host] = host_ips.get(host, []) + [entry[0]]
+    except FileNotFoundError:
+        pass
+    
+    return ip_hosts, host_ips
+
 def resolve_address(name, timeout=None):
     '''Resolve an ip address to a DNS name.'''
     if not timeout:
@@ -52,27 +67,35 @@ def resolve_address_multi(addresses, timeout=60):
     results = {}
     
     for address in addresses:
-        #v4 lookup
-        try:
-            v4_result = res.resolve(address, 'A')
-            if v4_result:
-                results[address] = results.get(address, [])
-                for result in v4_result:
-                    results[address].append(result.to_text())
-        except Exception as e:
-            #can not resolve #####add logging
-            pass
+        #try /etc/hosts first
+        ip_hosts, host_ips = read_etc_hosts()
 
-        #v6 lookup
-        try:
-            v6_result = res.resolve(address, 'AAAA')
-            if v6_result:
-                results[address] = results.get(address, [])
-                for result in v6_result:
-                    results[address].append(result.to_text())
-        except Exception as e:
-            #can not resolve #####add logging
-            pass
+        if address in host_ips:
+            results[address] = results.get(address, [])
+            results[address] += host_ips[address]
+        
+        else:
+            #v4 lookup
+            try:
+                v4_result = res.resolve(address, 'A')
+                if v4_result:
+                    results[address] = results.get(address, [])
+                    for result in v4_result:
+                        results[address].append(result.to_text())
+            except Exception as e:
+                #can not resolve #####add logging
+                pass
+
+            #v6 lookup
+            try:
+                v6_result = res.resolve(address, 'AAAA')
+                if v6_result:
+                    results[address] = results.get(address, [])
+                    for result in v6_result:
+                        results[address].append(result.to_text())
+            except Exception as e:
+                #can not resolve #####add logging
+                pass
 
     return results
 
@@ -83,16 +106,24 @@ def reverse_dns_multi(addresses, timeout=60):
     res.lifetime = timeout
     results = {}
     for address in addresses:
-        #v4 lookup
-        try:
-            resolver_result = res.resolve_address(address)
-            if resolver_result:
-                results[address] = results.get(address, [])
-                for result in resolver_result:
-                    results[address].append(result.to_text())
-        except Exception as e:
-            #can not resolve #####add logging
-            pass
+        #try /etc/hosts first
+        ip_hosts, host_ips = read_etc_hosts()
+
+        if address in ip_hosts:
+            results[address] = results.get(address, [])
+            results[address] += ip_hosts[address]
+
+        else:
+            #dns reverse lookup
+            try:
+                resolver_result = res.resolve_address(address)
+                if resolver_result:
+                    results[address] = results.get(address, [])
+                    for result in resolver_result:
+                        results[address].append(result.to_text())
+            except Exception as e:
+                #can not resolve #####add logging
+                pass
     return results
     
 

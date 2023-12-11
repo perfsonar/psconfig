@@ -34,7 +34,7 @@ class Config(BaseMetaNode):
     
     def remove_address(self, field):
         '''Remove address at specified field'''
-        return self._remove_map_item('addresses', field)
+        self._remove_map_item('addresses', field)
     
     def address_classes(self, val=None):
         '''Gets/sets addresses-classes as dictionary'''

@@ -31,7 +31,8 @@ setup(
                       'pyjq',
                       'isodate'
                       'python-dateutil==2.8.2',
-                      'pyinotify'],
+                      'pyinotify'
+                      'dnspython==2.2.1'],
     include_package_data=True,
     package_data={},
 
