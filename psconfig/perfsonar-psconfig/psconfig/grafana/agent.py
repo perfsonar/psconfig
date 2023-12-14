@@ -99,33 +99,13 @@ class Agent(BaseAgent):
         if grafana_error:
             self.logger.error(self.logf.format("Unable to reach grafana at {}: {}".format(self.grafana_url, grafana_error)))
             return False
+
         if not agent_conf.grafana_folder():
             default = "General"
             self.logger.debug(self.logf.format("No grafana-folder specified. Defaulting to {}".format(default)))
             agent_conf.grafana_folder(default)
         self.grafana_folder = agent_conf.grafana_folder()
 
-        if not agent_conf.grafana_matrix_url():
-            #This is the standard endpoint pair dashboard
-            default = "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1"
-            self.logger.debug(self.logf.format("No grafana-matrix-url specified. Defaulting to {}".format(default)))
-            agent_conf.grafana_matrix_url(default)
-        self.grafana_matrix_url = agent_conf.grafana_matrix_url()
-
-        if not agent_conf.grafana_matrix_url_var1():
-            #This is the standard endpoint pair dashboard
-            default = "source"
-            self.logger.debug(self.logf.format("No grafana-matrix-url-var1 specified. Defaulting to {}".format(default)))
-            agent_conf.grafana_matrix_url_var1(default)
-        self.grafana_matrix_url_var1 = agent_conf.grafana_matrix_url_var1()
-
-        if not agent_conf.grafana_matrix_url_var2():
-            #This is the standard endpoint pair dashboard
-            default = "target"
-            self.logger.debug(self.logf.format("No grafana-matrix-url-var2 specified. Defaulting to {}".format(default)))
-            agent_conf.grafana_matrix_url_var2(default)
-        self.grafana_matrix_url_var2 = agent_conf.grafana_matrix_url_var2()
-        
         if not agent_conf.grafana_datasource_name_format():
             agent_conf.grafana_datasource_name_format(self.DEFAULT_GRAFANA_DS_NAME_FORMAT)
         self.grafana_datasource_name_format = agent_conf.grafana_datasource_name_format()

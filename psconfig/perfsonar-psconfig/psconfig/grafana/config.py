@@ -28,15 +28,6 @@ class Config(BaseAgentNode):
     def grafana_folder(self, val=None):
         return self._field('grafana-folder', val)
 
-    def grafana_matrix_url(self, val=None):
-        return self._field_url('grafana-matrix-url', val)
-
-    def grafana_matrix_url_var1(self, val=None):
-        return self._field('grafana-matrix-url-var1', val)
-    
-    def grafana_matrix_url_var2(self, val=None):
-        return self._field('grafana-matrix-url-var2', val)
-
     def grafana_datasource_create(self, val=None):
         return self._field_bool_default_true('grafana-datasource-create', val)
 

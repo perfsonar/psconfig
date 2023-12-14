@@ -89,22 +89,6 @@
             "type": "string",
             "description": "The folder in Grafana to store dashboards."
         },
-        
-        "grafana-matrix-url": {
-            "type": "string",
-            "format": "uri",
-            "description": "The url to follow when clicking a box in a matrix"
-        },
-
-        "grafana-matrix-url-var1": {
-            "type": "string",
-            "description": "The variable name used when passing the row to the link"
-        },
-
-        "grafana-matrix-url-var2": {
-            "type": "string",
-            "description": "The variable name used when passing the column to the link"
-        },
 
         "grafana-datasource-create": {
             "type": "boolean",
@@ -333,7 +317,7 @@
                 },
                 "configure-archives": { 
                     "type": "boolean",
-                    "description": "If true will use archives specified in remote psconfig file. Default it false."
+                    "description": "If enabled will use archives specified in remote psconfig file. Default is True."
                 },
                 "transform": { 
                     "$ref": "#/pSConfig/JQTransformSpecification",
