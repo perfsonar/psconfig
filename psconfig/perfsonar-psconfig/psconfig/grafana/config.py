@@ -37,15 +37,21 @@ class Config(BaseAgentNode):
     def grafana_matrix_url_var2(self, val=None):
         return self._field('grafana-matrix-url-var2', val)
 
-    def grafana_datasource_type(self, val=None):
-        return self._field('grafana-datasource-type', val)
-
-    def grafana_datasource_discover(self, val=None):
-        return self._field_bool_default_true('grafana-datasource-discover', val)
-    
     def grafana_datasource_create(self, val=None):
         return self._field_bool_default_true('grafana-datasource-create', val)
 
+    def grafana_datasource_settings(self, val=None):
+        return self._field_anyobj('grafana-datasource-settings', val)
+    
+    def grafana_datasource_name(self, val=None):
+        return self._field('grafana-datasource-name', val)
+    
+    def grafana_datasource_name_format(self, val=None):
+        return self._field('grafana-datasource-name-format', val)
+    
+    def grafana_datasource_url_format(self, val=None):
+        return self._field('grafana-datasource-url-format', val)
+    
     def displays(self, val=None):
         return self._field_class_map('displays', Display, val)
 
@@ -57,6 +63,21 @@ class Config(BaseAgentNode):
     
     def remove_display(self, field):
         self._remove_map_item('displays', field)
+
+    def task_group_default(self, val=None):
+        return self._field('task-group-default', val)
+    
+    def task_groups(self, val=None):
+        return self._field_map('task-groups', val)
+
+    def task_group(self, field, val=None):
+        return self._field_map_item('task-groups', field, val)
+    
+    def task_group_names(self):
+        return self._get_map_names('task-groups')
+    
+    def remove_task_group(self, field):
+        self._remove_map_item('task-groups', field)
 
 class Display(BaseNode):
 
@@ -96,8 +117,8 @@ class Display(BaseNode):
     def task_selector(self, val=None):
         return self._field_class('task_selector', TaskSelector, val)
     
-    def archive_selector(self, val=None):
-        return self._field_class('archive_selector', ArchiveSelector, val)
+    def datasource_selector(self, val=None):
+        return self._field_enum('datasource_selector', val, [ "auto", "manual" ])
 
     def priority(self, val=None):
         return self._field_class('priority', Priority, val)
@@ -122,30 +143,6 @@ class TaskSelector(BaseNode):
     def jq(self, val=None):
         return self._field_class('jq', JQTransform, val)
 
-class ArchiveSelector(BaseNode):
-
-    def auto(self, val=None):
-        return self._field_bool('grafana-datasource-discover', val)
-    
-    def types(self, val=None):
-        return self._field_list('test_types', val)
-
-    def names(self, val=None):
-        return self._field_list('names', val)
-    
-    def jq(self, val=None):
-        return self._field_class('jq', JQTransform, val)
-
-    def datasource(self, val=None):
-        return self._field_class('jq', ManualDatasourceSpecification, val)
-
-class ManualDatasourceSpecification(BaseNode):
-    
-    def type(self, val=None):
-        return self._field('type', val)
-    
-    def uid(self, val=None):
-        return self._field('uid', val)
 
 class Priority(BaseNode):
 

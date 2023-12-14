@@ -1,13 +1,12 @@
 {
     "remotes": [],
+    "task-group-default": "All perfSONAR Measurements",
     "displays": {
         "packet_loss": {
             "task_selector":{
                 "test_types": ["latencybg"]
             },
-            "archive_selector":{
-                "auto": true
-            },
+            "datasource_selector": "auto",
             "stat_field": "result.packets.loss",
             "stat_type": "max",
             "row_field": "meta.source.hostname.keyword",
@@ -34,9 +33,7 @@
             "task_selector":{
                 "test_types": ["rtt"]
             },
-            "archive_selector":{
-                "auto": true
-            },
+            "datasource_selector": "auto",
             "stat_field": "result.rtt.min",
             "stat_type": "min",
             "row_field": "meta.source.hostname.keyword",
@@ -59,9 +56,7 @@
             "task_selector":{
                 "test_types": ["throughput"]
             },
-            "archive_selector":{
-                "auto": true
-            },
+            "datasource_selector": "auto",
             "stat_field": "result.throughput",
             "stat_type": "avg",
             "row_field": "meta.source.hostname.keyword",
@@ -88,9 +83,7 @@
             "task_selector":{
                 "test_types": ["trace"]
             },
-            "archive_selector": {
-                "auto": true
-            },
+            "datasource_selector": "auto",
             "stat_field": "result.hop.count",
             "stat_type": "extended_stats",
             "stat_meta": {
@@ -118,9 +111,7 @@
             "task_selector":{
                 "test_types": ["dns"]
             },
-            "archive_selector": {
-                "auto": true
-            },
+            "datasource_selector": "auto",
             "stat_field": "result.time",
             "stat_type": "max",
             "row_field": "test.spec.host.keyword",

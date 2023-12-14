@@ -106,14 +106,43 @@
             "description": "The variable name used when passing the column to the link"
         },
 
-        "grafana-datasource-type": {
-            "type": "string",
-            "description": "The type of datasource in Grafana"
-        },
-
         "grafana-datasource-create": {
             "type": "boolean",
-            "description": "Indicates whether we should automatically create datasources in Grafana if an existing match cannot be found"
+            "description": "Indicates whether we should automatically create datasources in Grafana from a default or use the existing datasource specified by grafana-datasource-name"
+        },
+
+        "grafana-datasource-settings": {
+            "type": "object",
+            "description": "Default settings for datasources created based on the archive definition in pSConfig template. Defaults to set for an Opensearch datasource setup as a perfSONAR Archive"
+        },
+
+        "grafana-datasource-name": {
+            "type": "string",
+            "description": "The name of an existing datasource in Grafana to use of automatic datasource creation is disabled or no suitable archive can be mapped to a data source for a task."
+        },
+
+        "grafana-datasource-name-format": {
+            "type": "string",
+            "description": "A python style formatted string used to generate Grafana datsource names. Any {} will be replaced with the datasource URL. Default: https://{}/opensearch"
+        },
+
+        "grafana-datasource-url-format": {
+            "type": "string",
+            "description": "A python style formatted string used to generate Grafana datsource names. Any {} will be replaced with the datasource URL. Default: pSConfig pScheduler - {}"
+        },
+
+        "task-group-default": {
+            "type": "string",
+            "description": "The name of a default task group for all displays. Example: 'All Dashboards'"
+        },
+
+        "task-groups": {
+            "type": "object",
+            "patternProperties": { 
+                "^[a-zA-Z0-9:._\\-]+$": { "type": "array", "items": { "type": "string" } }
+            },
+            "description": "Groups tasks together into the same dashboard. The key is just a name and the values must map to task names in a pSConfig file",
+            "additionalProperties": false
         },
 
         "displays": {
@@ -151,9 +180,10 @@
                     "$ref": "#/pSConfig/TaskSelector",
                     "description": "Matches tasks that will be used to generate display"
                 },
-                "archive_selector": {
-                    "$ref": "#/pSConfig/ArchiveSelector",
-                    "description": "Determines archive to be used to retrive data for display"
+                "datasource_selector": {
+                    "type": "string",
+                    "enum": [ "auto", "manual" ],
+                    "description": "Define how to determine the data source to use. 'auto' means it will try to detrmine an archive based on pSConfig template and will fallback to the default defined by grafana-datasource-name. 'manual' means it will just use grafana-datasource-name. "
                 },
                 "priority": {
                     "$ref": "#/pSConfig/Priority",
@@ -213,7 +243,7 @@
                 }
             },
             "additionalProperties": false,
-            "required": [ "task_selector", "archive_selector", "stat_field", "stat_type", "row_field", "col_field", "value_field", "value_text", "unit", "thresholds" ]
+            "required": [ "task_selector", "datasource_selector", "stat_field", "stat_type", "row_field", "col_field", "value_field", "value_text", "unit", "thresholds" ]
         },
 
         "Duration": {
@@ -324,6 +354,13 @@
         },
         
         "TaskSelector": {
+            "oneOf": [
+                { "$ref": "#/pSConfig/TaskTestTypesSelector" },
+                { "$ref": "#/pSConfig/TaskNamesSelector" }
+            ]
+        },
+
+        "TaskTestTypesSelector": {
             "type": "object",
             "properties": {
                 "test_types": {
@@ -331,83 +368,25 @@
                     "items": { "type": "string" },
                     "description": "Match a task in your pSConfig file if it is of any type in the list"
                 },
-                "names": {
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "Match a task in your pSConfig file if it has one of the names in the list"
-                },
                 "jq": { 
                     "$ref": "#/pSConfig/JQTransformSpecification",
                     "description": "Match a task in your pSConfig file unless it is boolean false or an empty string"
                 }
             },
+            "required": ["test_types"],
             "additionalProperties": false
         },
 
-        "ArchiveSelector": {
-            "oneOf": [
-                { "$ref": "#/pSConfig/AutoArchiveSelector" },
-                { "$ref": "#/pSConfig/ManualArchiveSelector" }
-            ]
-        },
-
-        "AutoArchiveSelector": {
+        "TaskNamesSelector": {
             "type": "object",
             "properties": {
-                "auto": {
-                    "type": "boolean",
-                    "enum": [ true ],
-                    "description": "Indicates whether to automatically detect archiver from template or to use manual specification."
-                },
-                "types": {
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "Match an archive in your pSConfig file if it is of any type in the list"
-                },
                 "names": {
                     "type": "array",
                     "items": { "type": "string" },
-                    "description": "Match an archive in your pSConfig file if it has one of the names in the list"
-                },
-                "jq": { 
-                    "$ref": "#/pSConfig/JQTransformSpecification",
-                    "description": "Match an archive in your pSConfig file unless it is boolean false or an empty string"
+                    "description": "Match a task in your pSConfig file if it has one of the names in the list"
                 }
             },
-            "required": ["auto"],
-            "additionalProperties": false
-        },
-
-        "ManualArchiveSelector": {
-            "type": "object",
-            "properties": {
-                "auto": {
-                    "type": "boolean",
-                    "enum": [ false ],
-                    "description": "Indicates whether to automatically detect archiver from template or to use manual specification."
-                },
-                "datasource": { 
-                    "$ref": "#/pSConfig/ManualDatasourceSpecification",
-                    "description": "A manual specification or the datasource to use in Grafana"
-                }
-            },
-            "required": ["auto", "datasource"],
-            "additionalProperties": false
-        },
-
-        "ManualDatasourceSpecification": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "description": "The grafana datasource type"
-                },
-                "uid": {
-                    "type": "string",
-                    "description": "The uid of the datasource"
-                }
-            },
-            "required": ["type", "uid"],
+            "required": ["names"],
             "additionalProperties": false
         },
 
