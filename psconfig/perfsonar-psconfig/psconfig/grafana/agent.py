@@ -6,9 +6,9 @@ import os
 import uuid
 import requests
 from .config_connect import ConfigConnect
-from ..client.psconfig.parsers.task_generator import TaskGenerator
 from ..base_agent import BaseAgent
 from ..client.psconfig.archive import Archive
+from ..client.psconfig.parsers.task_generator import TaskGenerator
 from ..client.psconfig.test import Test
 from ..utilities.logging_utils import LoggingUtils
 from jinja2 import Environment, FileSystemLoader
@@ -228,9 +228,14 @@ class Agent(BaseAgent):
 
             #now try the test type matches
             for disp_name, disp_config in display_by_task_type.get(expanded_test.type(), {}).items():
-                if disp_config.task_selector().jq():
-                    #TODO: run some jq, if does not match then continue
-                    pass
+                json_obj = {
+                    "test": expanded_test.data,
+                    "reference": task.reference(tg.expanded_reference)
+                }
+                if disp_config.task_selector().jq() and not disp_config.task_selector().jq().apply(json_obj):
+                    #if jq script specified, skip if script does not match
+                    self.logger.debug(self.logf.format("JQ from display config {} does not match task {}. Skipping.".format(disp_name, task_name)))
+                    continue
                 self._eval_display(disp_name, disp_config, matching_display_config, displays_by_prio)
 
             # make sure we have at least one matching display

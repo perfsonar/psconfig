@@ -18,11 +18,15 @@ class JQTransform(BaseNode):
         #reset error
         self.error = ''
 
+        #convert script to string
+        script = self.script()
+        if isinstance(script, list):
+            script = "\n".join(script)
+
         #apply script
         transformed = None
-
         try:
-            transformed = jq(self.script(), json_obj)
+            transformed = jq(script, json_obj)
         except Exception as e:
             self.error = e
             return
