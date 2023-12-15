@@ -120,7 +120,7 @@ class Schema(object):
 
                 "grafana-datasource-name": {
                     "type": "string",
-                    "description": "The name of an existing datasource in Grafana to use of automatic datasource creation is disabled or no suitable archive can be mapped to a data source for a task."
+                    "description": "The name of an existing datasource in Grafana to use if automatic datasource creation is disabled or no suitable archive can be mapped to a data source for a task."
                 },
 
                 "grafana-datasource-name-format": {

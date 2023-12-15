@@ -614,8 +614,12 @@ class Agent(BaseAgent):
                 self.grafana_datasource_updated_this_run[ds_name] = True
                 return ds
 
-        #if no matches, then return 
-        self.logger.error(self.logf.format("Unable to find a suitable archive to use as Grafana datasource"))
+        #if no matches, then fallback to manual if set
+        if self.grafana_datasource:
+            return self.grafana_datasource
+        else:
+            self.logger.error(self.logf.format("Unable to find a suitable archive to use as Grafana datasource"))
+
         return {}
 
     def _gf_find_folder(self, name):
