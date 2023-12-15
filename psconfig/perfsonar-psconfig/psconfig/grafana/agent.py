@@ -24,6 +24,7 @@ class Agent(BaseAgent):
     PSCONFIG_KEY_GF_DS_URL = "grafana-datasource-url"
     PSCONFIG_KEY_GF_DS_SETTINGS = "grafana-datasource-settings"
     DEFAULT_GRAFANA_FOLDER = "perfSONAR pSConfig"
+    DEFAULT_GRAFANA_DASHBOARD_TAG = "perfsonar-psconfig"
     DEFAULT_GRAFANA_DS_NAME_FORMAT = "pSConfig pScheduler - {}"
     DEFAULT_GRAFANA_URL_FORMAT = "https://{}/opensearch"
     DEFAULT_GRAFANA_DS_SETTINGS = {
@@ -116,6 +117,13 @@ class Agent(BaseAgent):
             self.logger.debug(self.logf.format("No grafana-folder specified. Defaulting to {}".format(default)))
             agent_conf.grafana_folder(default)
         self.grafana_folder = agent_conf.grafana_folder()
+
+        if not agent_conf.grafana_dashboard_tag():
+            default = self.DEFAULT_GRAFANA_DASHBOARD_TAG
+            self.logger.debug(self.logf.format("No grafana-dashboard-tag specified. Defaulting to {}".format(default)))
+            agent_conf.grafana_dashboard_tag(default)
+        self.grafana_dashboard_tag = agent_conf.grafana_dashboard_tag()
+        self.managed_dashboards_by_uid = self._gf_list_dashboards_by_tag(self.grafana_dashboard_tag)
 
         if not agent_conf.grafana_datasource_name_format():
             agent_conf.grafana_datasource_name_format(self.DEFAULT_GRAFANA_DS_NAME_FORMAT)
@@ -327,10 +335,10 @@ class Agent(BaseAgent):
                 # add to template variables organized by display task group
                 for dtg in display_task_groups:
                     if dtg not in jinja_vars.keys():
-                        uuid.uuid5(self.UUID_NAMESPACE_PS, dtg)
                         jinja_vars[dtg] = {
                             "display_task_group": dtg, 
                             "grafana_uuid": str(uuid.uuid5(self.UUID_NAMESPACE_PS, dtg)),
+                            "dashboard_tag": self.grafana_dashboard_tag,
                             "tasks": []
                         }
                     jinja_vars[dtg]['tasks'].append(mdc_var_obj)
@@ -341,15 +349,11 @@ class Agent(BaseAgent):
         # Apply jinja template
         print("jinja_vars={}".format(jinja_vars))
         for jv in jinja_vars.values():
+            #Remove from list we will use to delete old dashboards
+            if self.managed_dashboards_by_uid.get(jv["grafana_uuid"]):
+                del self.managed_dashboards_by_uid[jv["grafana_uuid"]]
             rendered_content = self.grafana_dashboard_template.render(jv)
-            print(f'----- START TEMPLATE {jv} -----')
-            print(rendered_content)
-            print(f'----- END TEMPLATE {jv} -----')
             self._gf_create_dashboard(rendered_content, self.folder_uid)
-
-        #TODO:Delete old data sources
-        #TODO:Delete old dashboards
-        #TODO:can we use tags to indicate which dashboard psconfig controls?
 
     def _eval_display(self, disp_name, disp_config, matching_display_config, displays_by_prio):
         if disp_config.priority() is not None:
@@ -400,6 +404,8 @@ class Agent(BaseAgent):
                 r = requests.post(url, json=data, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
             elif method == "put":
                 r = requests.put(url, json=data, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
+            elif method == "delete":
+                r = requests.delete(url, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
             else:
                 return None, "Invalid method specified."
             r.raise_for_status()
@@ -461,6 +467,20 @@ class Agent(BaseAgent):
                 }
 
         return ds_by_name
+
+    def _gf_list_dashboards_by_tag(self, tag):
+        r, msg = self._gf_http(f'/api/search?type=dash-db&tag={tag}', "search_dashboards_by_tag")
+        if msg or not r:
+            return {}
+        dash_list = r.json()
+        if not isinstance(dash_list, list):
+            return {}
+        dash_by_uid = {}
+        for dash in dash_list:
+            if dash.get("uid", None):
+                dash_by_uid[dash['uid']] = True
+
+        return dash_by_uid
 
     def _build_ds_name(self, ds_url):
         return  self.grafana_datasource_name_format.format(ds_url)
@@ -580,6 +600,14 @@ class Agent(BaseAgent):
         if msg:
             self.logger.error(self.logf.format("Unable to create grafana dashboard: {}".format(msg)))
 
+    def _gf_delete_dashboard(self, dash_uid):
+        r, msg = self._gf_http(f'/api/dashboards/uid/{dash_uid}', "delete_dashboard", method="delete")
+        if msg:
+            self.logger.error(self.logf.format("Unable to delete grafana dashboard {}: {}".format(dash_uid, msg)))
+
     def _run_end(self, agent_conf):
-        pass
+        ##
+        # Delete old dashboards
+        for dash_uid in self.managed_dashboards_by_uid.keys():
+            self._gf_delete_dashboard(dash_uid)
 

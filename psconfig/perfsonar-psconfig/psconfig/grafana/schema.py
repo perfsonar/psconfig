@@ -103,6 +103,11 @@ class Schema(object):
                     "description": "The folder in Grafana to store dashboards."
                 },
 
+                "grafana-dashboard-tag": {
+                    "type": "string",
+                    "description": "The tag applied to dashboards created by this agent. Defaults to perfsonar-psconfig."
+                },
+
                 "grafana-datasource-create": {
                     "type": "boolean",
                     "description": "Indicates whether we should automatically create datasources in Grafana from a default or use the existing datasource specified by grafana-datasource-name"
@@ -330,7 +335,7 @@ class Schema(object):
                         },
                         "configure-archives": { 
                             "type": "boolean",
-                            "description": "If enabled will use archives specified in remote psconfig file. Defaults to True."
+                            "description": "If enabled will use archives specified in remote psconfig file. Default is True."
                         },
                         "transform": { 
                             "$ref": "#/pSConfig/JQTransformSpecification",
