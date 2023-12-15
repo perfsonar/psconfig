@@ -190,9 +190,6 @@ class Agent(BaseAgent):
         # Iterate through tasks
         jinja_vars = {}
         for task_name in psconfig.task_names():
-            print(task_name)
-            print("-------------------")
-
             #find task
             task = psconfig.task(task_name)
             if not task or task.disabled(): continue
@@ -207,7 +204,7 @@ class Agent(BaseAgent):
             tg.start()
             tg.next()
             if tg.expanded_test is None:
-                print("WARN: Task {} does not have a valid test definition".format(task_name))
+                self.logger.warn(self.logf.format("Task {} does not have a valid test definition. Skipping.".format(task_name)))
                 continue
             expanded_test = Test(data=tg.expanded_test)
             #get archives with template vars filled-in
@@ -258,13 +255,11 @@ class Agent(BaseAgent):
             # Build the rows and columns from the pSConfig data
             group = psconfig.group(task.group_ref())
             if not group:
-                #TODO: LOGGING
-                print("Invalid group name {}. Check for typos in your pSConfig template file.".format(task.group_ref()))
+                self.logger.warn(self.logf.format("Invalid group name {}. Check for typos in your pSConfig template file. Skipping task {}.".format(task.group_ref(), task_name)))
                 continue
             #TODO: Support single dimension?
             if group.dimension_count() != 2:
-                #TODO: LOGGING
-                print("WARN: Only support groups with 2 dimensions")
+                self.logger.warn(self.logf.format("Only support groups with 2 dimensions. Skipping task {}.".format(task_name)))
                 continue
 
             ##
@@ -300,8 +295,7 @@ class Agent(BaseAgent):
                 # Init variables
                 #build a display config specific version of template variables
                 mdc_var_obj = var_obj.copy()
-                print("mdc_name={}".format(mdc_name))
-                
+
                 ##
                 # Determine the Grafana datasource
                 if mdc.datasource_selector() == 'auto':
@@ -311,7 +305,7 @@ class Agent(BaseAgent):
                     #use the manally defined datasource in the agent config
                     mdc_var_obj["grafana_datasource"] = self.grafana_datasource
                 else:
-                    print("'datasource_selector' is not auto and no grafana_datasource_name is defined for display {}. Skipping.".format(mdc_name))
+                    self.logger.warn(self.logf.format("'datasource_selector' is not auto and no grafana_datasource_name is defined for display {}. Skipping.".format(mdc_name)))
                     continue
                 
                 #make sure datasource was actually set 
@@ -347,7 +341,6 @@ class Agent(BaseAgent):
 
         ##
         # Apply jinja template
-        print("jinja_vars={}".format(jinja_vars))
         for jv in jinja_vars.values():
             #Remove from list we will use to delete old dashboards
             if self.managed_dashboards_by_uid.get(jv["grafana_uuid"]):
