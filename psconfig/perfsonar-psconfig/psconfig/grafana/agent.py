@@ -142,6 +142,8 @@ class Agent(BaseAgent):
         ##
         # Build map of existing grafana datasource organized by name
         self.grafana_datasource_by_name = self._gf_list_datasources_by_name()
+        # Also init a map where we will track data sources we create/update this round so we only do so once per run
+        self.grafana_datasource_updated_this_run = {}
 
         ##
         # Lookup if folder exists and create if not
@@ -396,6 +398,8 @@ class Agent(BaseAgent):
                 r = requests.get(url, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
             elif method == "post":
                 r = requests.post(url, json=data, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
+            elif method == "put":
+                r = requests.put(url, json=data, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
             else:
                 return None, "Invalid method specified."
             r.raise_for_status()
@@ -481,17 +485,39 @@ class Agent(BaseAgent):
             self.logger.error(self.logf.format("Something went wrong with datasource for {}. Unable to find uid.".format(ds_url)))
         
         return {}
+    
+    def _gf_update_datasource(self, ds_url, ds_settings, ds_name):
+        ds_body = ds_settings.copy()
+        ds_body["url"] = ds_url
+        ds_body["name"] = ds_name
+        ds_body["uid"] = self.grafana_datasource_by_name.get(ds_name, {}).get("uid", None)
+        ds_body["type"] = self.grafana_datasource_by_name.get(ds_name, {}).get("type", None)
+        r, msg = self._gf_http(f'/api/datasources/uid/{ds_body["uid"]}', "update_datasource", method="put", data=ds_body)
+        if msg:
+            self.logger.error(self.logf.format("Unable to update datasource for {}: {}".format(ds_url, msg)))
+            return {}
+        uid = r.json().get("datasource", {}).get("uid", None)
+        ds_type = r.json().get("datasource", {}).get("type", None)
+        if uid and ds_type:
+            self.grafana_datasource_by_name[ds_body["name"]] = {
+                "type": ds_type,
+                "uid": uid
+            }
+            return self.grafana_datasource_by_name[ds_body["name"]]
+        else:
+            self.logger.error(self.logf.format("Something went wrong with datasource for {}. Unable to find uid.".format(ds_url)))
+        
+        return {}
 
     def _select_gf_datasource(self, archives):
         for archive in archives:
             url = None
-            type = None
             settings = {}
-            #a couple variables for readability
+            # a couple variables for readability
             meta_url = archive.psconfig_meta_param(self.PSCONFIG_KEY_GF_DS_URL)
             data_url = archive.archiver_data_param("_url")
             if meta_url:
-                # use the meta parameters set in psconfig. only URL required.
+                # use the meta parameters set in psconfig. only URL required, settings optional.
                 url = meta_url
                 settings = archive.psconfig_meta_param(self.PSCONFIG_KEY_GF_DS_SETTINGS)
             elif archive.archiver("http") and data_url and data_url.endswith("/logstash"):
@@ -506,14 +532,24 @@ class Agent(BaseAgent):
                 settings = self.grafana_datasource_settings
 
             ds_name = self._build_ds_name(url)
-            if self.grafana_datasource_by_name.get(ds_name, None):
-                return self.grafana_datasource_by_name[ds_name]
+            ds = None
+            if self.grafana_datasource_by_name.get(ds_name, None) and self.grafana_datasource_updated_this_run.get(ds_name, False):
+                #if datasource existsed and we created or updated this run, then use info we alreadt have
+                ds = self.grafana_datasource_by_name[ds_name]
+            elif self.grafana_datasource_create and self.grafana_datasource_by_name.get(ds_name, None):
+                # if exists but we have not created or updated this run, then update now
+                ds = self._gf_update_datasource(url, settings, ds_name)
             elif self.grafana_datasource_create:
-                return self._gf_create_datasource(url, settings)
-        
+                # if does not exist, then create
+                ds = self._gf_create_datasource(url, settings)
+            # If we have a data source, then we can stop searching
+            if ds:
+                self.grafana_datasource_updated_this_run[ds_name] = True
+                return ds
+
         #if no matches, then return 
         self.logger.error(self.logf.format("Unable to find a suitable archive to use as Grafana datasource"))
-        return
+        return {}
 
     def _gf_find_folder(self, name):
         r, msg = self._gf_http("/api/folders", "list_folders")
