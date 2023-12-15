@@ -13,6 +13,9 @@ class Config(BaseAgentNode):
         '''Returns the JSON schema for this config'''
         return Schema().psconfig_grafana_json_schema()
 
+    def grafana_dashboard_template(self, val=None):
+        return self._field('grafana-dashboard-template', val)
+
     def grafana_url(self, val=None):
         return self._field_url('grafana-url', val)
 

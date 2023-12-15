@@ -31,7 +31,7 @@ Description: pSConfig pScheduler Agent
 Package: perfsonar-psconfig-grafana
 Architecture: all
 Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig,
- python3-pyinotify, perfsonar-common
+ python3-pyinotify, python3-jinja2, perfsonar-common
 Description: pSConfig Grafana Agent
  The pSConfig Grafana Agent downloads a centralized JSON file
  describing the tests to run, and uses it to generate Grafana dashboards.

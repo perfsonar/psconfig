@@ -32,7 +32,8 @@ setup(
                       'pyjq',
                       'isodate'
                       'python-dateutil==2.8.2',
-                      'pyinotify'],
+                      'pyinotify',
+                      "jinja2"],
     include_package_data=True,
     package_data={},
 

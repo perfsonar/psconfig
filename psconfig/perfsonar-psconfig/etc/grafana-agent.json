@@ -1,5 +1,6 @@
 {
     "remotes": [],
+    "grafana-dashboard-template": "/usr/lib/perfsonar/psconfig/templates/grafana.json.j2",
     "task-group-default": "All perfSONAR Measurements",
     "displays": {
         "packet_loss": {

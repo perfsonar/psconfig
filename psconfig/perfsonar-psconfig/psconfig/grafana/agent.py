@@ -5,12 +5,15 @@ from .config_connect import ConfigConnect
 from ..base_agent import BaseAgent
 from ..client.psconfig.archive import Archive
 from ..client.psconfig.test import Test
+import json
 import uuid
+import os
 import requests
 from requests.auth import HTTPBasicAuth
 import logging
 from urllib.parse import urlparse
 from ..utilities.logging_utils import LoggingUtils
+from jinja2 import Environment, FileSystemLoader
 
 class Agent(BaseAgent):
     '''Agent that loads config and submits to Grafana'''
@@ -20,9 +23,10 @@ class Agent(BaseAgent):
     UUID_NAMESPACE_PS=uuid.UUID(hex='8caa5877-053a-42ae-9fc7-2681c3d02511')
     PSCONFIG_KEY_GF_DS_URL = "grafana-datasource-url"
     PSCONFIG_KEY_GF_DS_SETTINGS = "grafana-datasource-settings"
+    DEFAULT_GRAFANA_FOLDER = "perfSONAR pSConfig"
     DEFAULT_GRAFANA_DS_NAME_FORMAT = "pSConfig pScheduler - {}"
     DEFAULT_GRAFANA_URL_FORMAT = "https://{}/opensearch"
-    DEFAULT_GRAFANA_SETTINGS = {
+    DEFAULT_GRAFANA_DS_SETTINGS = {
         "type": "grafana-opensearch-datasource", 
         "url": "https://34.171.24.112/opensearch", 
         "user": "", 
@@ -61,6 +65,15 @@ class Agent(BaseAgent):
 
         ## Set defaults
         
+        ##
+        # Check for template file and exit if not specified
+        if not agent_conf.grafana_dashboard_template():
+            self.logger.error(self.logf.format("No grafana-dashboard-template specified. Unable to build dashboards without template."))
+            return False
+        #Load jinja template
+        j2_environment = Environment(loader=FileSystemLoader(os.path.dirname(agent_conf.grafana_dashboard_template())))            
+        self.grafana_dashboard_template = j2_environment.get_template(os.path.basename(agent_conf.grafana_dashboard_template()))
+    
         #  Set cache directory per agent. Will not work to share since agents may
         #  have different permissions
         if not agent_conf.cache_directory():
@@ -80,15 +93,13 @@ class Agent(BaseAgent):
                     else:
                         self.task_groups_by_name[tg_val].append(tg_key)
 
-        # Setting related to Grafana
-        if agent_conf.grafana_url() and not (agent_conf.grafana_token() or (agent_conf.grafana_user() and agent_conf.grafana_password())):
-            default = "https://localhost/grafana"
-            self.logger.warn(self.logf.format("No grafana-token or grafana-user/grafana-password specified. Unless your grafana instance does not require authentication, then your attempts to create dashboards may fail ".format(default)))
-
+        # Settings related to Grafana
         if not agent_conf.grafana_url():
             default = "https://localhost/grafana"
             self.logger.debug(self.logf.format("No grafana-url specified. Defaulting to {}".format(default)))
             agent_conf.grafana_url(default)
+        if not (agent_conf.grafana_token() or (agent_conf.grafana_user() and agent_conf.grafana_password())):
+            self.logger.warn(self.logf.format("No grafana-token or grafana-user/grafana-password specified. Unless your grafana instance does not require authentication, then your attempts to create dashboards may fail ".format(default)))
         self.grafana_url = agent_conf.grafana_url()
         self.grafana_token = agent_conf.grafana_token()
         self.grafana_user = agent_conf.grafana_user()
@@ -101,7 +112,7 @@ class Agent(BaseAgent):
             return False
 
         if not agent_conf.grafana_folder():
-            default = "General"
+            default = self.DEFAULT_GRAFANA_FOLDER
             self.logger.debug(self.logf.format("No grafana-folder specified. Defaulting to {}".format(default)))
             agent_conf.grafana_folder(default)
         self.grafana_folder = agent_conf.grafana_folder()
@@ -115,11 +126,12 @@ class Agent(BaseAgent):
         self.grafana_datasource_url_format = agent_conf.grafana_datasource_url_format()
         
         if not agent_conf.grafana_datasource_settings():
-            agent_conf.grafana_datasource_settings(self.DEFAULT_GRAFANA_SETTINGS)
+            agent_conf.grafana_datasource_settings(self.DEFAULT_GRAFANA_DS_SETTINGS)
         self.grafana_datasource_settings = agent_conf.grafana_datasource_settings()
         
         self.grafana_datasource_create = agent_conf.grafana_datasource_create()
         self.grafana_datasource_name = agent_conf.grafana_datasource_name()
+        
         #Lookup if grafana datasource exists
         if self.grafana_datasource_name:
             self.grafana_datasource = self._gf_find_datasource(self.grafana_datasource_name)
@@ -131,7 +143,16 @@ class Agent(BaseAgent):
         # Build map of existing grafana datasource organized by name
         self.grafana_datasource_by_name = self._gf_list_datasources_by_name()
 
-        
+        ##
+        # Lookup if folder exists and create if not
+        self.folder_uid = self._gf_find_folder(self.grafana_folder)
+        #If did not find, then create
+        if not self.folder_uid:
+            self.folder_uid = self._gf_create_folder(self.grafana_folder)
+            #if create failed, then return false
+            if not self.folder_uid:
+                return False
+
         return True
     
     def _run_handle_psconfig(self, psconfig, agent_conf, remote=None):
@@ -289,7 +310,7 @@ class Agent(BaseAgent):
                 
                 ##
                 # Apply display-specific settings 
-                display_fields = [ "stat_field", "stat_type", "stat_meta", "row_field", "col_field", "value_field", "value_text", "unit", "matrix_url", "matrix_url_var1", "matrix_url_var2" ]
+                display_fields = [ "stat_field", "stat_type", "stat_meta", "row_field", "col_field", "value_field", "value_text", "unit", "matrix_url", "matrix_url_var1", "matrix_url_var2", "thresholds" ]
                 for display_field in display_fields:
                     if mdc.data.get(display_field, None):
                         mdc_var_obj[display_field] = mdc.data[display_field]
@@ -318,7 +339,11 @@ class Agent(BaseAgent):
         # Apply jinja template
         print("jinja_vars={}".format(jinja_vars))
         for jv in jinja_vars.values():
-            pass
+            rendered_content = self.grafana_dashboard_template.render(jv)
+            print(f'----- START TEMPLATE {jv} -----')
+            print(rendered_content)
+            print(f'----- END TEMPLATE {jv} -----')
+            self._gf_create_dashboard(rendered_content, self.folder_uid)
 
         #TODO:Delete old data sources
         #TODO:Delete old dashboards
@@ -489,6 +514,35 @@ class Agent(BaseAgent):
         #if no matches, then return 
         self.logger.error(self.logf.format("Unable to find a suitable archive to use as Grafana datasource"))
         return
+
+    def _gf_find_folder(self, name):
+        r, msg = self._gf_http("/api/folders", "list_folders")
+        if msg:
+            self.logger.warn(self.logf.format("Unable to list grafana folders: {}".format(msg)))
+        else:
+            for folder in r.json():
+                if name == folder.get("title", None):
+                    return folder.get("uid", None)
+            
+        return
+
+    def _gf_create_folder(self, name):
+        r, msg = self._gf_http("/api/folders", "create_folder", method="post", data={"title": name})
+        if msg:
+            self.logger.warn(self.logf.format("Unable to create grafana folder: {}".format(msg)))
+            return 
+        
+        return r.json().get("uid", None)
+
+    def _gf_create_dashboard(self, dash, folder_uid):
+        data = {
+            "dashboard": json.loads(dash),
+            "overwrite": True,
+            "folderUid": folder_uid
+        }
+        r, msg = self._gf_http("/api/dashboards/db", "create_dashboard", method="post", data=data)
+        if msg:
+            self.logger.error(self.logf.format("Unable to create grafana dashboard: {}".format(msg)))
 
     def _run_end(self, agent_conf):
         pass

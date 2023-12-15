@@ -66,6 +66,7 @@ describing the tests to run, and uses it to generate appropriate pScheduler task
 Summary:		pSConfig pScheduler Agent
 Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
+Requires:       python3-jinja2
 Requires:       perfsonar-common
 %{?systemd_requires: %systemd_requires}
 BuildRequires: systemd

@@ -13,7 +13,7 @@ class Schema(object):
             "description": "Schema for pSConfig Grafana agent configuration file. This is the file that tells the agent what pSConfig files to download and controls basic behaviors of agent script.",
             "type": "object",
             "additionalProperties": False,
-            "required": [ "displays" ],
+            "required": [ "displays", "grafana-dashboard-template" ],
             "properties": {
             
                 "remotes": {
@@ -70,6 +70,11 @@ class Schema(object):
                 "cache-expires": {
                     "$ref": "#/pSConfig/Duration",
                     "description": "ISO8601 indicating how long to cache templates. Default is 1 day (P1D)."
+                },
+
+                "grafana-dashboard-template": {
+                    "type": "string",
+                    "description": "The file path to a Jinja2 template on the local system that will be used to build dashboards."
                 },
 
                 "grafana-url": {
