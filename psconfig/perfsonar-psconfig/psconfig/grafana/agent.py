@@ -1,19 +1,19 @@
 '''Agent that loads config and submits to Grafana
 '''
-from ..client.psconfig.parsers.task_generator import TaskGenerator
+import json
+import logging
+import os
+import uuid
+import requests
 from .config_connect import ConfigConnect
+from ..client.psconfig.parsers.task_generator import TaskGenerator
 from ..base_agent import BaseAgent
 from ..client.psconfig.archive import Archive
 from ..client.psconfig.test import Test
-import json
-import uuid
-import os
-import requests
-from requests.auth import HTTPBasicAuth
-import logging
-from urllib.parse import urlparse
 from ..utilities.logging_utils import LoggingUtils
 from jinja2 import Environment, FileSystemLoader
+from requests.auth import HTTPBasicAuth
+from urllib.parse import urlparse
 
 class Agent(BaseAgent):
     '''Agent that loads config and submits to Grafana'''
@@ -74,7 +74,8 @@ class Agent(BaseAgent):
         #Load jinja template
         j2_environment = Environment(loader=FileSystemLoader(os.path.dirname(agent_conf.grafana_dashboard_template())))            
         self.grafana_dashboard_template = j2_environment.get_template(os.path.basename(agent_conf.grafana_dashboard_template()))
-    
+
+        ##
         #  Set cache directory per agent. Will not work to share since agents may
         #  have different permissions
         if not agent_conf.cache_directory():
@@ -82,7 +83,8 @@ class Agent(BaseAgent):
             self.logger.debug(self.logf.format("No cache-dir specified. Defaulting to {}".format(default)))
             agent_conf.cache_directory(default)
 
-        # Setting related to task groups
+        ##
+        # Settings related to task groups
         self.task_group_default = agent_conf.task_group_default()
         # Build mapping of task name to task groups
         self.task_groups_by_name = {}
@@ -94,6 +96,7 @@ class Agent(BaseAgent):
                     else:
                         self.task_groups_by_name[tg_val].append(tg_key)
 
+        ##
         # Settings related to Grafana
         if not agent_conf.grafana_url():
             default = "https://localhost/grafana"
@@ -321,7 +324,7 @@ class Agent(BaseAgent):
 
                 # Check if we need a reverse copy of display variables for disjoint
                 rev_var_obj = {}
-                if sorted(mdc_var_obj[d_keys[0]]) != sorted(mdc_var_obj[d_keys[1]]):
+                if not group.data.get("unidirectional", False) and sorted(mdc_var_obj[d_keys[0]]) != sorted(mdc_var_obj[d_keys[1]]):
                     rev_var_obj = mdc_var_obj.copy()
                     rev_var_obj["reverse"] = True
                    
@@ -349,6 +352,11 @@ class Agent(BaseAgent):
             self._gf_create_dashboard(rendered_content, self.folder_uid)
 
     def _eval_display(self, disp_name, disp_config, matching_display_config, displays_by_prio):
+        '''
+        Evaluates a display configuration. If a priority is set, 
+        the only adds to list if it has highest priority in priority 
+        group. Otherwise just adds it to the match list.
+        '''
         if disp_config.priority() is not None:
             if disp_config.priority().level() > displays_by_prio.get(disp_config.priority().group(), {}).get("level", -1):
                 displays_by_prio[disp_config.priority().group()] = {
@@ -359,10 +367,12 @@ class Agent(BaseAgent):
             matching_display_config[disp_name] = disp_config
 
     def _gf_build_header(self):
+        '''
+        Builds an HTTP header for submitting to Grafana API.
+        '''
         header = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": "Bearer {}".format(self.grafana_token)
         }
         if self.grafana_token:
             header["Authorization"] = "Bearer {}".format(self.grafana_token)
@@ -370,6 +380,9 @@ class Agent(BaseAgent):
         return header
 
     def _gf_build_auth(self):
+        '''
+        Builds an Auth object for python requests if user/pass set for Grafana
+        '''
         auth = None
         if self.grafana_user and self.grafana_password:
             auth = HTTPBasicAuth(self.grafana_user, self.grafana_password)
@@ -377,9 +390,15 @@ class Agent(BaseAgent):
         return auth
     
     def _gf_build_url(self, path):
+        '''
+        Builds a URL for the Grafana API
+        '''
         return "{}{}".format(self.grafana_url.strip().rstrip('/'), path)
 
     def _gf_http(self, url_path, action, method="get", data={}):
+        '''
+        General function for sending HTTP requests to Grafana and handling errors
+        '''
         url = self._gf_build_url(url_path)
         local_context = {}
         local_context["grafana_url"] = url
@@ -428,12 +447,17 @@ class Agent(BaseAgent):
     ##
     # Tests grafana request and returns error message if a problem occurs
     def _gf_test_connection(self):
-
+        '''
+        Tests connection to Grafana by reaching out to the organization API
+        '''
         r, msg = self._gf_http('/api/org', "grafana_test")
 
         return msg
 
     def _gf_find_datasource(self, name):
+        '''
+        Finds a datasource by name by querying grafana API and searching list
+        '''
         r, msg = self._gf_http(f'/api/datasources/name/{name}', "find_datasource")
         if msg or not r:
             return
@@ -445,6 +469,11 @@ class Agent(BaseAgent):
         return { "type": type, "uid": uid}
 
     def _gf_list_datasources_by_name(self):
+        '''
+        Retrieves list of datasources from Grafana API and organizes 
+        into dictionary where key is the datasource name and value is 
+        an object with datasource type and uid
+        '''
         r, msg = self._gf_http("/api/datasources", "list_datasources")
         if msg or not r:
             return {}
@@ -462,6 +491,11 @@ class Agent(BaseAgent):
         return ds_by_name
 
     def _gf_list_dashboards_by_tag(self, tag):
+        '''
+        Retrieves list of dashbaords from Grafana API with a given tag
+        and maps into dictionary where key is the dashboard UID and value
+        is a boolean. This is used to track what dashboards we need to delete.
+        '''
         r, msg = self._gf_http(f'/api/search?type=dash-db&tag={tag}', "search_dashboards_by_tag")
         if msg or not r:
             return {}
@@ -476,9 +510,16 @@ class Agent(BaseAgent):
         return dash_by_uid
 
     def _build_ds_name(self, ds_url):
+        '''
+        Formats the name of a datasource given the database URL. Format is 
+        based on config.
+        '''
         return  self.grafana_datasource_name_format.format(ds_url)
 
     def _gf_create_datasource(self, ds_url, ds_settings):
+        '''
+        Creates a datasource using the Grafana API
+        '''
         ds_body = ds_settings.copy()
         ds_body["url"] = ds_url
         ds_body["name"] = self._build_ds_name(ds_url)
@@ -500,6 +541,9 @@ class Agent(BaseAgent):
         return {}
     
     def _gf_update_datasource(self, ds_url, ds_settings, ds_name):
+        '''
+        Updates an existing datasource using Grafana API
+        '''
         ds_body = ds_settings.copy()
         ds_body["url"] = ds_url
         ds_body["name"] = ds_name
@@ -523,6 +567,11 @@ class Agent(BaseAgent):
         return {}
 
     def _select_gf_datasource(self, archives):
+        '''
+        Selects a grafana datasource based on a list of archives from pSConfig. 
+        We only know how to configure datasource from archives that looks like 
+        a standard perfSONAR logstash instance
+        '''
         for archive in archives:
             url = None
             settings = {}
@@ -565,6 +614,9 @@ class Agent(BaseAgent):
         return {}
 
     def _gf_find_folder(self, name):
+        '''
+        Find folder with a given name using Grafana API
+        '''
         r, msg = self._gf_http("/api/folders", "list_folders")
         if msg:
             self.logger.warn(self.logf.format("Unable to list grafana folders: {}".format(msg)))
@@ -576,6 +628,9 @@ class Agent(BaseAgent):
         return
 
     def _gf_create_folder(self, name):
+        '''
+        Creates a folder using Grafana API
+        '''
         r, msg = self._gf_http("/api/folders", "create_folder", method="post", data={"title": name})
         if msg:
             self.logger.warn(self.logf.format("Unable to create grafana folder: {}".format(msg)))
@@ -584,6 +639,9 @@ class Agent(BaseAgent):
         return r.json().get("uid", None)
 
     def _gf_create_dashboard(self, dash, folder_uid):
+        '''
+        Creates a dashboard using Grafana API
+        '''
         data = {
             "dashboard": json.loads(dash),
             "overwrite": True,
@@ -594,11 +652,17 @@ class Agent(BaseAgent):
             self.logger.error(self.logf.format("Unable to create grafana dashboard: {}".format(msg)))
 
     def _gf_delete_dashboard(self, dash_uid):
+        '''
+        Deletes a dashboard using Grafana API
+        '''
         r, msg = self._gf_http(f'/api/dashboards/uid/{dash_uid}', "delete_dashboard", method="delete")
         if msg:
             self.logger.error(self.logf.format("Unable to delete grafana dashboard {}: {}".format(dash_uid, msg)))
 
     def _run_end(self, agent_conf):
+        '''
+        Runs when done processing all pSConfig files
+        '''
         ##
         # Delete old dashboards
         for dash_uid in self.managed_dashboards_by_uid.keys():
