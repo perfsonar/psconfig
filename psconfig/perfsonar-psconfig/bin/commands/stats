@@ -3,21 +3,48 @@
 import argparse
 import sys
 
-from psconfig.utilities.cli import CLIUtil
+from psconfig.utilities.cli import PSCONFIG_CLI_AGENTS, CLIUtil
 from psconfig.utilities.metrics import PSConfigMetricCalculator
 
 #Parse command-line arguments
 parser = argparse.ArgumentParser(
-                    prog='pscheduler-stats',
+                    prog='stats',
                     description='Get statistics about the pSConfig pScheduler agent by parsing logs'
                     )
+parser.add_argument('agent', action='store', choices=[ a['name'].lower() for a in PSCONFIG_CLI_AGENTS ] + ['?'], help='The name of the agent for which you want statistics. ' +
+    'If a ? is given then a list of installed agents will be displayed. Note: ? is a shell wildcard so you may need to escape it with \?.')
 parser.add_argument('--logdir', '-d', dest='logdir', action='store', default='/var/log/perfsonar', help='Directory containing log files to parse')
 parser.add_argument('--format', '-f', dest='format', action='store', default='text', choices=["text", "json", "prometheus"], help='Output format to use.')
 args = parser.parse_args()
 
-#Init CLI utility
+##
+# Init CLI utility
 cli = CLIUtil()
-calculator = PSConfigMetricCalculator("pscheduler", logdir=args.logdir)
+
+##
+# Determine agents on this machine or allow all if given a filename
+# Also find the matching agent
+valid_agents = []
+agent = None
+for cli_agent in PSCONFIG_CLI_AGENTS:
+    valid_agents.append(cli_agent['name'].lower())
+    if cli_agent['name'].lower() == args.agent.lower():
+        agent = cli_agent
+
+##
+# Check if agent is set
+if args.agent == '?':
+    #list agents if given ?
+    for valid_agent in valid_agents:
+        cli.print_msg(valid_agent)
+    sys.exit(0)
+elif agent is None:
+    #if we get here then user gave a valid agent, but not installed on system
+    cli.print_error("Agent {} is not installed on this system. Install the agent or specify --file.".format(args.agent))
+    sys.exit(1)
+
+#init calculator
+calculator = PSConfigMetricCalculator(args.agent.lower(), logdir=args.logdir)
 
 #find run info
 metrics = calculator.run_metrics()

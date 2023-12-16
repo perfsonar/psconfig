@@ -189,7 +189,6 @@ systemctl restart httpd &>/dev/null || :
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %{_unitdir}/psconfig-pscheduler-agent.service
-%attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-stats
 %attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-tasks
 
 %files grafana
@@ -211,6 +210,7 @@ systemctl restart httpd &>/dev/null || :
 %attr(0755, perfsonar, perfsonar) %{command_base}/agents
 %attr(0755, perfsonar, perfsonar) %{command_base}/agentctl
 %attr(0755, perfsonar, perfsonar) %{command_base}/remote
+%attr(0755, perfsonar, perfsonar) %{command_base}/stats
 %attr(0755, perfsonar, perfsonar) %{command_base}/validate
 %{_bindir}/psconfig
 
