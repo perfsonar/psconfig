@@ -144,6 +144,7 @@ class Agent(BaseAgent):
         self.grafana_datasource_name = agent_conf.grafana_datasource_name()
         
         #Lookup if grafana datasource exists
+        self.grafana_datasource = None
         if self.grafana_datasource_name:
             self.grafana_datasource = self._gf_find_datasource(self.grafana_datasource_name)
             if not self.grafana_datasource:
