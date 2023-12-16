@@ -12,8 +12,6 @@
 # defining macros needed by SELinux
 # SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
 %global selinuxtype targeted
-# default boolean value needs to be changed to enable http proxy
-%global selinuxbooleans httpd_can_network_connect=1
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.1.0
@@ -55,6 +53,8 @@ Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
 Requires:       perfsonar-common
 %{?systemd_requires: %systemd_requires}
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
 BuildRequires: systemd
 BuildArch:		noarch
 
@@ -69,6 +69,8 @@ Requires:       python3-inotify
 Requires:       python3-jinja2
 Requires:       perfsonar-common
 %{?systemd_requires: %systemd_requires}
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
 BuildRequires: systemd
 BuildArch:		noarch
 
@@ -128,6 +130,7 @@ chown perfsonar:perfsonar %{psconfig_datadir}/template_cache
 %systemd_post psconfig-pscheduler-agent.service
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-pscheduler-agent.service
+    %selinux_set_booleans -s %{selinuxtype} nis_enabled=1
 fi
 
 %post grafana
@@ -138,6 +141,7 @@ chown perfsonar:perfsonar %{psconfig_datadir}/grafana_template_cache
 %systemd_post psconfig-grafana-agent.service
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-grafana-agent.service
+    %selinux_set_booleans -s %{selinuxtype} nis_enabled=1
 fi
 
 %post utils
@@ -159,7 +163,7 @@ chmod 755 %{publish_web_dir}
 #enable httpd on fresh install
 if [ "$1" = "1" ]; then
     #set SELinux booleans to allow httpd proxy to work
-    %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
+    %selinux_set_booleans -s %{selinuxtype} httpd_can_network_connect=1
     systemctl enable httpd
 fi
 #reload httpd
