@@ -52,6 +52,7 @@ Summary:		pSConfig pScheduler Agent
 Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
 Requires:       perfsonar-common
+Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
@@ -68,6 +69,7 @@ Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
 Requires:       python3-jinja2
 Requires:       perfsonar-common
+Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
