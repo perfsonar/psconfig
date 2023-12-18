@@ -24,10 +24,7 @@ class ApiConnect(BaseConnect):
         return [Config(use_force_bidirectional=True)]
     
     def needs_translation(self, json_obj):
-        '''Indicates needs translation unless there is an addresses field or includes'''
-        # optimization that looks for simple required field
-        # proper way would be to validate, but expensive to do for just the MeshConfig
-        if not (json_obj.get('addresses') or json_obj.get('includes')):
-            return True
+        '''returns False
+        previous behaviour - Indicates needs translation unless there is an addresses field or includes'''
         
         return False
