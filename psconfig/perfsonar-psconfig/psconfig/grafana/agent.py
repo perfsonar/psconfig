@@ -156,6 +156,8 @@ class Agent(BaseAgent):
         self.grafana_datasource_by_name = self._gf_list_datasources_by_name()
         # Also init a map where we will track data sources we create/update this round so we only do so once per run
         self.grafana_datasource_updated_this_run = {}
+        #Also init a map where we can track matrix_url dashboards created
+        self.grafana_matrix_url_dash_created = {}
 
         ##
         # Lookup if folder exists and create if not
@@ -309,10 +311,11 @@ class Agent(BaseAgent):
                 # Determine the Grafana datasource
                 if mdc.datasource_selector() == 'auto':
                     # create the data source or find existing based on pSConfig template
-                    mdc_var_obj["grafana_datasource"] = self._select_gf_datasource(expanded_archives)
+                    mdc_var_obj["grafana_datasource_name"], mdc_var_obj["grafana_datasource"] = self._select_gf_datasource(expanded_archives)
                 elif mdc.datasource_selector() == 'manual' and self.grafana_datasource:
                     #use the manally defined datasource in the agent config
                     mdc_var_obj["grafana_datasource"] = self.grafana_datasource
+                    mdc_var_obj["grafana_datasource_name"] = self.grafana_datasource_name
                 else:
                     self.logger.warn(self.logf.format("'datasource_selector' is not auto and no grafana_datasource_name is defined for display {}. Skipping.".format(mdc_name)))
                     continue
@@ -321,9 +324,12 @@ class Agent(BaseAgent):
                 if not mdc_var_obj["grafana_datasource"]:
                     continue
                 
+                #build linked dashboard if needed
+                mdc_var_obj["matrix_url"] = self._build_matrix_url(mdc, mdc_var_obj)
+
                 ##
                 # Apply display-specific settings 
-                display_fields = [ "stat_field", "stat_type", "stat_meta", "row_field", "col_field", "value_field", "value_text", "unit", "matrix_url", "matrix_url_var1", "matrix_url_var2", "thresholds" ]
+                display_fields = [ "stat_field", "stat_type", "stat_meta", "row_field", "col_field", "value_field", "value_text", "unit", "matrix_url_var1", "matrix_url_var2", "thresholds" ]
                 for display_field in display_fields:
                     if mdc.data.get(display_field, None):
                         mdc_var_obj[display_field] = mdc.data[display_field]
@@ -613,15 +619,15 @@ class Agent(BaseAgent):
             # If we have a data source, then we can stop searching
             if ds:
                 self.grafana_datasource_updated_this_run[ds_name] = True
-                return ds
+                return ds_name, ds
 
         #if no matches, then fallback to manual if set
         if self.grafana_datasource:
-            return self.grafana_datasource
+            return self.grafana_datasource_name, self.grafana_datasource
         else:
             self.logger.error(self.logf.format("Unable to find a suitable archive to use as Grafana datasource"))
 
-        return {}
+        return None, {}
 
     def _gf_find_folder(self, name):
         '''
@@ -660,6 +666,8 @@ class Agent(BaseAgent):
         r, msg = self._gf_http("/api/dashboards/db", "create_dashboard", method="post", data=data)
         if msg:
             self.logger.error(self.logf.format("Unable to create grafana dashboard: {}".format(msg)))
+        
+        return r.json()
 
     def _gf_delete_dashboard(self, dash_uid):
         '''
@@ -668,6 +676,33 @@ class Agent(BaseAgent):
         r, msg = self._gf_http(f'/api/dashboards/uid/{dash_uid}', "delete_dashboard", method="delete")
         if msg:
             self.logger.error(self.logf.format("Unable to delete grafana dashboard {}: {}".format(dash_uid, msg)))
+
+    def _build_matrix_url(self, mdc, mdc_var_obj):
+
+        #Build dashboard for matrix_url_template if needed
+        if not mdc.matrix_url_template():
+            return
+        
+        #check if already built and return URL
+        matrix_url_dash_key = "{}::{}".format(mdc.matrix_url_template(), mdc_var_obj["grafana_datasource_name"])
+        if self.grafana_matrix_url_dash_created.get(matrix_url_dash_key, None):
+            return self.grafana_matrix_url_dash_created[matrix_url_dash_key]
+        
+        #not built yet, so build
+        j2_environment = Environment(loader=FileSystemLoader(os.path.dirname(mdc.matrix_url_template())))            
+        j2_template = j2_environment.get_template(os.path.basename(mdc.matrix_url_template()))
+        ds_jv_obj = {
+            "grafana_datasource_name": mdc_var_obj["grafana_datasource_name"],
+            "grafana_datasource": mdc_var_obj["grafana_datasource"],
+            "grafana_uuid": str(uuid.uuid5(self.UUID_NAMESPACE_PS, matrix_url_dash_key)),
+            "dashboard_tag": self.grafana_dashboard_tag
+        }
+        rendered_content = j2_template.render(ds_jv_obj)
+        if self.managed_dashboards_by_uid.get(ds_jv_obj["grafana_uuid"]):
+                del self.managed_dashboards_by_uid[ds_jv_obj["grafana_uuid"]]
+        dash_url = self._gf_create_dashboard(rendered_content, self.folder_uid).get("url", None)
+        self.grafana_matrix_url_dash_created[matrix_url_dash_key] = dash_url
+        return dash_url
 
     def _run_end(self, agent_conf):
         '''

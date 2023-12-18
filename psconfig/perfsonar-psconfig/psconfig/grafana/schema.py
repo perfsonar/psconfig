@@ -223,10 +223,9 @@ class Schema(object):
                             "type": "string",
                             "description": "The unit of the stat. See Grafana docs for built-in units."
                         },
-                        "matrix_url": {
+                        "matrix_url_template": {
                             "type": "string",
-                            "format": "uri",
-                            "description": "The url to follow when clicking a box in a matrix"
+                            "description": "Path to a template file to which matrices will link"
                         },
 
                         "matrix_url_var1": {

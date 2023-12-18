@@ -15,9 +15,9 @@
             "value_field": "Max",
             "value_text": "Loss",
             "unit": "percentunit",
-            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
             "matrix_url_var1": "source",
-            "matrix_url_var2": "target",
+            "matrix_url_var2": "dest",
             "thresholds": [
                 {
                     "color": "green",
@@ -45,9 +45,9 @@
             "value_field": "Min",
             "value_text": "RTT",
             "unit": "s",
-            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
             "matrix_url_var1": "source",
-            "matrix_url_var2": "target",
+            "matrix_url_var2": "dest",
             "thresholds": [
                 {
                     "color": "green",
@@ -71,9 +71,9 @@
             "value_field": "Average",
             "value_text": "Throughput",
             "unit": "bps",
-            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
             "matrix_url_var1": "source",
-            "matrix_url_var2": "target",
+            "matrix_url_var2": "dest",
             "thresholds": [
                 {
                     "color": "red",
@@ -106,9 +106,9 @@
             "value_field": "Std Dev",
             "value_text": "Hop Count Standard Deviation",
             "unit": "none",
-            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
             "matrix_url_var1": "source",
-            "matrix_url_var2": "target",
+            "matrix_url_var2": "dest",
             "thresholds": [
                 {
                     "color": "green",
@@ -132,9 +132,9 @@
             "value_field": "Max",
             "value_text": "Time",
             "unit": "s",
-            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
             "matrix_url_var1": "source",
-            "matrix_url_var2": "target",
+            "matrix_url_var2": "dest",
             "thresholds": [
                 {
                     "color": "green",

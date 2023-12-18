@@ -204,10 +204,8 @@ systemctl restart httpd &>/dev/null || :
 %config(noreplace) %{config_base}/grafana-agent.json
 %config(noreplace) %{config_base}/grafana-agent-logger.conf
 %{template_base}/grafana.json.j2
+%{template_base}//endpoints.json.j2
 %{_unitdir}/psconfig-grafana-agent.service
-# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana
-# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-stats
-# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-tasks
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
