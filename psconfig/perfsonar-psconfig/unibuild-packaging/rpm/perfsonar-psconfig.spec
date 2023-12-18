@@ -1,17 +1,9 @@
-###
-# Packages:
-#   - python-perfsonar-psconfig
-#   - perfsonar-psconfig-pscheduler
-#   - perfsonar-psconfig-grafana
-#   - perfsonar-psconfig-publisher (maybe merge with utils?)
-#   - perfsonar-psconfig-utils
-###
-
 %define install_base        /usr/lib/perfsonar/
 %define psconfig_base       %{install_base}/psconfig/
 %define psconfig_bin_base   %{psconfig_base}/bin
 %define psconfig_datadir    /var/lib/perfsonar/psconfig
 %define command_base        %{psconfig_bin_base}/commands
+%define template_base       %{psconfig_base}/templates
 %define config_base         /etc/perfsonar/psconfig
 %define doc_base            /usr/share/doc/perfsonar/psconfig
 %define httpd_config_base   /etc/httpd/conf.d
@@ -20,8 +12,6 @@
 # defining macros needed by SELinux
 # SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
 %global selinuxtype targeted
-# default boolean value needs to be changed to enable http proxy
-%global selinuxbooleans httpd_can_network_connect=1
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.1.0
@@ -63,12 +53,30 @@ Requires:       python-perfsonar-psconfig
 Requires:       python3-inotify
 Requires:       perfsonar-common
 %{?systemd_requires: %systemd_requires}
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
 BuildRequires: systemd
 BuildArch:		noarch
 
 %description pscheduler
 The pSConfig pScheduler Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate appropriate pScheduler tasks.
+
+%package grafana
+Summary:		pSConfig pScheduler Agent
+Requires:       python-perfsonar-psconfig
+Requires:       python3-inotify
+Requires:       python3-jinja2
+Requires:       perfsonar-common
+%{?systemd_requires: %systemd_requires}
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
+BuildRequires: systemd
+BuildArch:		noarch
+
+%description grafana
+The pSConfig Grafana Agent downloads a centralized JSON file
+describing the tests to run, and uses it to generate Grafana dashboards.
 
 %package utils
 Summary:		pSConfig Utilities
@@ -117,14 +125,30 @@ rm -rf %{buildroot}
 %post pscheduler
 mkdir -p %{config_base}/pscheduler.d/
 chown perfsonar:perfsonar %{config_base}/pscheduler.d/
+mkdir -p %{psconfig_datadir}/template_cache
+chown perfsonar:perfsonar %{psconfig_datadir}/template_cache
 %systemd_post psconfig-pscheduler-agent.service
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-pscheduler-agent.service
+    %selinux_set_booleans -s %{selinuxtype} nis_enabled=1
+fi
+
+%post grafana
+mkdir -p %{config_base}/grafana.d/
+chown perfsonar:perfsonar %{config_base}/grafana.d/
+mkdir -p %{psconfig_datadir}/grafana_template_cache
+chown perfsonar:perfsonar %{psconfig_datadir}/grafana_template_cache
+%systemd_post psconfig-grafana-agent.service
+if [ "$1" = "1" ]; then
+    systemctl enable --now psconfig-grafana-agent.service
+    %selinux_set_booleans -s %{selinuxtype} nis_enabled=1
 fi
 
 %post utils
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
+mkdir -p %{psconfig_datadir}
+chown perfsonar:perfsonar %{psconfig_datadir}
 mkdir -p %{config_base}/transforms.d
 chown perfsonar:perfsonar %{config_base}/transforms.d
 mkdir -p %{config_base}/archives.d
@@ -139,7 +163,7 @@ chmod 755 %{publish_web_dir}
 #enable httpd on fresh install
 if [ "$1" = "1" ]; then
     #set SELinux booleans to allow httpd proxy to work
-    %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
+    %selinux_set_booleans -s %{selinuxtype} httpd_can_network_connect=1
     systemctl enable httpd
 fi
 #reload httpd
@@ -148,8 +172,14 @@ systemctl restart httpd &>/dev/null || :
 %preun pscheduler
 %systemd_preun psconfig-pscheduler-agent.service
 
+%preun grafana
+%systemd_preun psconfig-grafana-agent.service
+
 %postun pscheduler
 %systemd_postun_with_restart psconfig-pscheduler-agent.service
+
+%postun grafana
+%systemd_postun_with_restart psconfig-grafana-agent.service
 
 %files -n python-perfsonar-psconfig -f INSTALLED_FILES
 %defattr(-,root,root)
@@ -163,8 +193,19 @@ systemctl restart httpd &>/dev/null || :
 %config(noreplace) %{config_base}/pscheduler-agent.json
 %config(noreplace) %{config_base}/pscheduler-agent-logger.conf
 %{_unitdir}/psconfig-pscheduler-agent.service
-%attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-stats
 %attr(0755, perfsonar, perfsonar) %{command_base}/pscheduler-tasks
+
+%files grafana
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_grafana_agent 
+%config(noreplace) %{config_base}/grafana-agent.json
+%config(noreplace) %{config_base}/grafana-agent-logger.conf
+%{template_base}/grafana.json.j2
+%{_unitdir}/psconfig-grafana-agent.service
+# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana
+# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-stats
+# %attr(0755, perfsonar, perfsonar) %{command_base}/grafana-tasks
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
@@ -173,6 +214,7 @@ systemctl restart httpd &>/dev/null || :
 %attr(0755, perfsonar, perfsonar) %{command_base}/agents
 %attr(0755, perfsonar, perfsonar) %{command_base}/agentctl
 %attr(0755, perfsonar, perfsonar) %{command_base}/remote
+%attr(0755, perfsonar, perfsonar) %{command_base}/stats
 %attr(0755, perfsonar, perfsonar) %{command_base}/validate
 %{_bindir}/psconfig
 

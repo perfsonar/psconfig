@@ -9,6 +9,8 @@ case "$1" in
     configure)
         mkdir -p /var/log/perfsonar
         chown perfsonar:perfsonar /var/log/perfsonar
+        mkdir -p /var/lib/perfsonar/psconfig
+        chown perfsonar:perfsonar /var/lib/perfsonar/psconfig
         mkdir -p /etc/perfsonar/psconfig/transforms.d
         chown perfsonar:perfsonar /etc/perfsonar/psconfig/transforms.d
         mkdir -p /etc/perfsonar/psconfig/archives.d

@@ -1,0 +1,150 @@
+{
+    "remotes": [],
+    "grafana-dashboard-template": "/usr/lib/perfsonar/psconfig/templates/grafana.json.j2",
+    "task-group-default": "All perfSONAR Measurements",
+    "displays": {
+        "packet_loss": {
+            "task_selector":{
+                "test_types": ["latencybg"]
+            },
+            "datasource_selector": "auto",
+            "stat_field": "result.packets.loss",
+            "stat_type": "max",
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Max",
+            "value_text": "Loss",
+            "unit": "percentunit",
+            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_var1": "source",
+            "matrix_url_var2": "target",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "super-light-yellow",
+                    "value": 0.01
+                },
+                {
+                    "color": "red",
+                    "value": 0.1
+                }
+            ]
+        },
+        "rtt_min": {
+            "task_selector":{
+                "test_types": ["rtt"]
+            },
+            "datasource_selector": "auto",
+            "stat_field": "result.rtt.min",
+            "stat_type": "min",
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Min",
+            "value_text": "RTT",
+            "unit": "s",
+            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_var1": "source",
+            "matrix_url_var2": "target",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 1
+                }
+            ]
+        },
+        "throughput_avg": {
+            "task_selector":{
+                "test_types": ["throughput"]
+            },
+            "datasource_selector": "auto",
+            "stat_field": "result.throughput",
+            "stat_type": "avg",
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Average",
+            "value_text": "Throughput",
+            "unit": "bps",
+            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_var1": "source",
+            "matrix_url_var2": "target",
+            "thresholds": [
+                {
+                    "color": "red",
+                    "value": null
+                },
+                {
+                    "color": "super-light-yellow",
+                    "value": 2000000000
+                },
+                {
+                    "color": "green",
+                    "value": 5000000000
+                }
+            ]
+        },
+        "trace_hop_count": {
+            "task_selector":{
+                "test_types": ["trace"]
+            },
+            "datasource_selector": "auto",
+            "stat_field": "result.hop.count",
+            "stat_type": "extended_stats",
+            "stat_meta": {
+                "std_deviation": true,
+                "std_deviation_bounds_lower": false,
+                "std_deviation_bounds_upper": false
+            },
+            "row_field": "meta.source.hostname.keyword",
+            "col_field": "meta.destination.hostname.keyword",
+            "value_field": "Std Dev",
+            "value_text": "Hop Count Standard Deviation",
+            "unit": "none",
+            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_var1": "source",
+            "matrix_url_var2": "target",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 0.001
+                }
+            ]
+        },
+        "dns_result_time": {
+            "task_selector":{
+                "test_types": ["dns"]
+            },
+            "datasource_selector": "auto",
+            "stat_field": "result.time",
+            "stat_type": "max",
+            "row_field": "test.spec.host.keyword",
+            "col_field": "test.spec.query.keyword",
+            "value_field": "Max",
+            "value_text": "Time",
+            "unit": "s",
+            "matrix_url": "/grafana/d/c5ce2fcb-e7f9-4aaf-b16d-0bc008a6e6f9/esnet-endpoint-pair-explorer?orgId=1",
+            "matrix_url_var1": "source",
+            "matrix_url_var2": "target",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 1
+                }
+            ]
+        }
+    }
+}

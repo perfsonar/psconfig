@@ -1,0 +1,13 @@
+[Unit]
+Description=pSConfig Grafana Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/perfsonar/psconfig/bin/psconfig_grafana_agent --config=/etc/perfsonar/psconfig/grafana-agent.json --logger=/etc/perfsonar/psconfig/grafana-agent-logger.conf 
+Restart=always
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
+

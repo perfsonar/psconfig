@@ -1,0 +1,11 @@
+#!/bin/bash
+ # postrm script
+#
+# see: dh_installdeb(1)
+
+set -e
+
+if [ $1 = 'remove' ]; then
+    systemctl disable psconfig-grafana-agent.service  || :
+    systemctl daemon-reload  || :
+fi

@@ -1,0 +1,120 @@
+{
+  "title": "{{ display_task_group }}",
+  "uid": "{{ grafana_uuid }}",
+  "time": {
+    "to": "now",
+    "from": "now-24h"
+  },
+  "version": 1,
+  "schemaVersion": 38,
+  "tags": [
+    "{{ dashboard_tag }}"
+  ],
+  "panels": [
+{% for task in tasks %}  
+    {
+      "id": {{ loop.index }},
+      "title": "{{ task.display_task_name }}{% if task.reverse %} (Reverse){% endif %}",
+      "transparent": true,
+      "type": "esnet-matrix-panel",
+      "pluginVersion": "9.2.2",
+      "datasource": {{ task.grafana_datasource|tojson }},
+      "gridPos": {
+        "h": {{ [24,3 + task.rows|length * 2]|min }},
+        "w": {{ [24,3 + task.cols|length * 2]|min }},
+        "x": 0,
+        "y": 0
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": {{ task.thresholds|tojson }}
+          },
+          "unit": "{{ task.unit }}"
+        },
+        "overrides": []
+      },
+      "options": {
+        "addUrl": true,
+        "cellPadding": 5,
+        "cellSize": 15,
+        "defaultColor": "transparent",
+        "inputList": true,
+        "nullColor": "#E6E6E6",
+        "staticColumns": "{{ task.cols|join(',') }}",
+        "staticRows": "{{ task.rows|join(',') }}",
+        "txtLength": 50,
+        "txtSize": 10,
+        "url": "{{ task.matrix_url }}",
+        "valueField": "{{ task.value_field }}",
+        "valueText": "{{ task.value_text }}",
+{% if task.reverse %}       
+        "sourceField": "{{ task.col_field }}",
+        "targetField": "{{ task.row_field }}",
+        "sourceText": "To",
+        "targetText": "From",
+        "urlVar1": "{{ task.matrix_url_var1 }}",
+        "urlVar2": "{{ task.matrix_url_var2 }}"        
+{% else %}
+        "sourceField": "{{ task.row_field }}",
+        "targetField": "{{ task.col_field }}",
+        "sourceText": "From",
+        "targetText": "To",
+        "urlVar1": "{{ task.matrix_url_var1 }}",
+        "urlVar2": "{{ task.matrix_url_var2 }}"
+{% endif %}   
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "{{ task.row_field }}",
+              "id": "2",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "{{ task.col_field }}",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            }
+          ],
+          "datasource": {{ task.grafana_datasource|tojson }},
+          "metrics": [
+            {
+{% if 'stat_meta' in task %}
+              "meta": {{ task.stat_meta|tojson }},
+{% endif %}
+              "id": "1",
+              "field": "{{ task.stat_field }}",
+              "type": "{{ task.stat_type }}"
+            }
+          ],
+          "query": "reference.display-task-name.keyword: \"{{ task.display_task_name }}\"",
+{% if task.grafana_datasource.type == "grafana-opensearch-datasource" %}"queryType": "lucene",{% endif %}
+          "refId": "A",
+          "timeField": "pscheduler.start_time"
+        }
+      ]
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+  ]
+}
