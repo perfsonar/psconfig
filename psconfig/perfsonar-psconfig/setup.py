@@ -24,6 +24,7 @@ setup(
         'psconfig.client.psconfig.translators',
         'psconfig.client.psconfig.translators.mesh_config',
         'psconfig.pscheduler',
+        'psconfig.grafana',
         'psconfig.utilities'
     ],
     install_requires=['requests',
@@ -31,7 +32,8 @@ setup(
                       'pyjq',
                       'isodate'
                       'python-dateutil==2.8.2',
-                      'pyinotify'],
+                      'pyinotify',
+                      "jinja2"],
     include_package_data=True,
     package_data={},
 

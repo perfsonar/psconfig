@@ -2,6 +2,7 @@
 Provides common utilities for CLI clients
 '''
 import psconfig.pscheduler.config_connect
+import psconfig.grafana.config_connect
 import psconfig.transform_connect
 import sys
 from tqdm import tqdm
@@ -17,6 +18,17 @@ PSCONFIG_CLI_AGENTS = [
             "remotes": 1
         },
         'default_cache_dir': '/var/lib/perfsonar/psconfig/template_cache'
+    },
+    {
+        'name': 'Grafana',
+        'config_file': '/etc/perfsonar/psconfig/grafana-agent.json',
+        'command': '/usr/lib/perfsonar/psconfig/bin/psconfig_grafana_agent',
+        'client_class': psconfig.grafana.config_connect.ConfigConnect,
+        'agentctl_ignore': {
+            "remotes": 1,
+            "displays": 1
+        },
+        'default_cache_dir': '/var/lib/perfsonar/psconfig/grafana_template_cache'
     }
 ]
 

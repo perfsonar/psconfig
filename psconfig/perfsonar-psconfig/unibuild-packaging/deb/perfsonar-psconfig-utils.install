@@ -2,5 +2,6 @@ usr/lib/perfsonar/psconfig/bin/psconfig
 usr/lib/perfsonar/psconfig/bin/commands/agentctl
 usr/lib/perfsonar/psconfig/bin/commands/agents
 usr/lib/perfsonar/psconfig/bin/commands/remote
+usr/lib/perfsonar/psconfig/bin/commands/stats
 usr/lib/perfsonar/psconfig/bin/commands/validate
 usr/bin/psconfig

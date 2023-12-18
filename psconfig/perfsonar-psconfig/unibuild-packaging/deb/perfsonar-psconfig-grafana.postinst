@@ -7,18 +7,19 @@ set -e
 
 case "$1" in
     configure)
-        mkdir -p /etc/perfsonar/psconfig/pscheduler.d/
-        chown perfsonar:perfsonar /etc/perfsonar/psconfig/pscheduler.d/
-        mkdir -p /var/lib/perfsonar/psconfig/template_cache
-        chown perfsonar:perfsonar /var/lib/perfsonar/psconfig/template_cache
+
+        mkdir -p /etc/perfsonar/psconfig/grafana.d/
+        chown perfsonar:perfsonar /etc/perfsonar/psconfig/grafana.d/
+        mkdir -p /var/lib/perfsonar/psconfig/grafana_template_cache
+        chown perfsonar:perfsonar /var/lib/perfsonar/psconfig/grafana_template_cache
         # check if installation or update, where version is a parameter
         if [ -z "$2" ]; then
 
             #Enable service on new install
             systemctl daemon-reload  || :
-            systemctl enable psconfig-pscheduler-agent.service  || :
+            systemctl enable psconfig-grafana-agent.service  || :
         fi
-        systemctl start psconfig-pscheduler-agent.service  || :
+        systemctl start psconfig-grafana-agent.service  || :
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
