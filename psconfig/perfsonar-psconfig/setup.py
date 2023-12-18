@@ -32,7 +32,7 @@ setup(
                       'pyjq',
                       'isodate'
                       'python-dateutil==2.8.2',
-                      'pyinotify'
+                      'pyinotify',
                       'dnspython==2.2.1',
                       "jinja2"],
 
