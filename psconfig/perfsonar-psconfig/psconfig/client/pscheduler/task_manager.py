@@ -194,8 +194,9 @@ class TaskManager(object):
             tmp_created_by['address'] = local_address
         for cp in self.created_by:
             tmp_created_by[cp] = self.created_by[cp]
+        tmp_created_by['agent-hostname'] = self.hostname
         
-        new_task.reference_param(self.reference_label, {'created-by': tmp_created_by, 'agent-hostname': self.hostname})
+        new_task.reference_param(self.reference_label, {'created-by': tmp_created_by})
 
         #determine if we need new task and create
         need_new_task, new_task_start = self._need_new_task(new_task)

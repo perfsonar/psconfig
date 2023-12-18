@@ -11,7 +11,7 @@ class ApiFilters(object):
         self.timeout = kwargs.get('timeout', 60)
         self.ca_certificate_file = kwargs.get('ca_certificate_file', None)
         self.ca_certificate_path = kwargs.get('ca_certificate_path', None)
-        self.verify_hostname = kwargs.get('verify_hostname', True) 
+        self.verify_hostname = kwargs.get('verify_hostname', False) 
 
     def test_type(self, val: str = None) -> Union[str, None]:
         if val is not None:
