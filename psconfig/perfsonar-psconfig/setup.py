@@ -33,7 +33,7 @@ setup(
                       'isodate'
                       'python-dateutil==2.8.2',
                       'pyinotify'
-                      'dnspython==2.2.1'],
+                      'dnspython==2.2.1',
                       "jinja2"],
 
     include_package_data=True,
