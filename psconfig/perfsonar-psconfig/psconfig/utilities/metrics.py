@@ -54,13 +54,14 @@ class PSConfigRunMetrics:
         s += "# HELP perfsonar_psconfig_{0}_agent_end_time Number of seconds since 1970 of psconfig-{0}-agent end time\n".format(self.agent_name)
         s += "# TYPE perfsonar_psconfig_{0}_agent_end_time gauge\n".format(self.agent_name)
         s += 'perfsonar_psconfig_{}_agent_end_time{{guid="{}"}} {}\n'.format(self.agent_name, self.guid, self._to_ts(self.end))
-        s += "# HELP perfsonar_psconfig_{0}_tasks Number of tasks configured by pSConfig in {0}\n".format(self.agent_name)
-        s += "# TYPE perfsonar_psconfig_{0}_tasks gauge\n".format(self.agent_name)
-        for src, src_obj in self.by_src.items():
-            s += 'perfsonar_psconfig_{}_tasks{{guid="{}",src="{}"}} {}\n'.format(self.agent_name, self.guid, src, src_obj["total"])
-            for url, url_count in src_obj.get("by_url", {}).items():
-                s += 'perfsonar_psconfig_{}_tasks{{guid="{}",src="{}",url="{}"}} {}\n'.format(self.agent_name, self.guid, src, url, url_count)
-    
+        if self.by_src:
+            s += "# HELP perfsonar_psconfig_{0}_tasks Number of tasks configured by pSConfig in {0}\n".format(self.agent_name)
+            s += "# TYPE perfsonar_psconfig_{0}_tasks gauge\n".format(self.agent_name)
+            for src, src_obj in self.by_src.items():
+                s += 'perfsonar_psconfig_{}_tasks{{guid="{}",src="{}"}} {}\n'.format(self.agent_name, self.guid, src, src_obj["total"])
+                for url, url_count in src_obj.get("by_url", {}).items():
+                    s += 'perfsonar_psconfig_{}_tasks{{guid="{}",src="{}",url="{}"}} {}\n'.format(self.agent_name, self.guid, src, url, url_count)
+        
         return s
 
     def __str__(self) -> str:
