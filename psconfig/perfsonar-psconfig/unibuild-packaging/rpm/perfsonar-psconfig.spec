@@ -39,6 +39,7 @@ Requires:       python-pyjq >= 2.2.0
 Requires:       python3-netifaces
 Requires:       python-isodate
 Requires:       python-dns
+Requires:       python3-tqdm
 Requires:       python-file-read-backwards
 BuildRequires:  python3
 BuildRequires:  python3-setuptools
