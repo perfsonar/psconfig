@@ -348,6 +348,7 @@ class Agent(BaseAgent):
                             "display_task_group": dtg, 
                             "grafana_uuid": str(uuid.uuid5(self.UUID_NAMESPACE_PS, dtg)),
                             "dashboard_tag": self.grafana_dashboard_tag,
+                            "grafana_folder_uid": self.folder_uid,
                             "tasks": []
                         }
                     jinja_vars[dtg]['tasks'].append(mdc_var_obj)
@@ -695,6 +696,7 @@ class Agent(BaseAgent):
             "grafana_datasource_name": mdc_var_obj["grafana_datasource_name"],
             "grafana_datasource": mdc_var_obj["grafana_datasource"],
             "grafana_uuid": str(uuid.uuid5(self.UUID_NAMESPACE_PS, matrix_url_dash_key)),
+            "grafana_folder_uid": self.folder_uid,
             "dashboard_tag": self.grafana_dashboard_tag
         }
         rendered_content = j2_template.render(ds_jv_obj)
