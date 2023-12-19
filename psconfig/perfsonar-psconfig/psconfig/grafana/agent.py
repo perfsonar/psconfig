@@ -703,7 +703,9 @@ class Agent(BaseAgent):
         if self.managed_dashboards_by_uid.get(ds_jv_obj["grafana_uuid"]):
                 del self.managed_dashboards_by_uid[ds_jv_obj["grafana_uuid"]]
         dash_url = self._gf_create_dashboard(rendered_content, self.folder_uid).get("url", None)
-        self.grafana_matrix_url_dash_created[matrix_url_dash_key] = dash_url
+        if dash_url:
+            dash_url += "?"
+            self.grafana_matrix_url_dash_created[matrix_url_dash_key] = dash_url
         return dash_url
 
     def _run_end(self, agent_conf):
