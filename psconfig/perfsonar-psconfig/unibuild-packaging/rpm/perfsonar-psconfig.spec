@@ -81,6 +81,23 @@ BuildArch:		noarch
 The pSConfig Grafana Agent downloads a centralized JSON file
 describing the tests to run, and uses it to generate Grafana dashboards.
 
+%package hostmetrics
+Summary:		pSConfig Host Metrics Agent
+Requires:       python3-inotify
+Requires:       perfsonar-common
+Requires:       python3-jinja2
+Requires:       perfsonar-psconfig-utils = %{version}-%{release}
+%{?systemd_requires: %systemd_requires}
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
+BuildRequires: systemd
+BuildArch:		noarch
+
+%description hostmetrics
+The pSConfig Host Metrucs Agent downloads a centralized JSON file
+describing the tests to run, and uses it to generate a configuration
+for gather metrics about the perfSONAR hosts 
+
 %package utils
 Summary:		pSConfig Utilities
 Requires:       python-perfsonar-psconfig
@@ -147,6 +164,16 @@ if [ "$1" = "1" ]; then
     %selinux_set_booleans -s %{selinuxtype} nis_enabled=1
 fi
 
+%post hostmetrics
+mkdir -p %{config_base}/hostmetrics.d/
+chown perfsonar:perfsonar %{config_base}/hostmetrics.d/
+mkdir -p %{psconfig_datadir}/hostmetrics_template_cache
+chown perfsonar:perfsonar %{psconfig_datadir}/hostmetrics_template_cache
+%systemd_post psconfig-hostmetrics-agent.service
+if [ "$1" = "1" ]; then
+    systemctl enable --now psconfig-hostmetrics-agent.service
+fi
+
 %post utils
 mkdir -p /var/log/perfsonar
 chown perfsonar:perfsonar /var/log/perfsonar
@@ -178,6 +205,9 @@ systemctl restart httpd &>/dev/null || :
 %preun grafana
 %systemd_preun psconfig-grafana-agent.service
 
+%preun hostmetrics
+%systemd_preun psconfig-hostmetrics-agent.service
+
 %postun pscheduler
 %systemd_postun_with_restart psconfig-pscheduler-agent.service
 
@@ -205,8 +235,17 @@ systemctl restart httpd &>/dev/null || :
 %config(noreplace) %{config_base}/grafana-agent.json
 %config(noreplace) %{config_base}/grafana-agent-logger.conf
 %{template_base}/grafana.json.j2
-%{template_base}//endpoints.json.j2
+%{template_base}/endpoints.json.j2
 %{_unitdir}/psconfig-grafana-agent.service
+
+%files hostmetrics
+%defattr(0644,perfsonar,perfsonar,0755)
+%license LICENSE
+%attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_hostmetrics_agent 
+%config(noreplace) %{config_base}/hostmetrics-agent.json
+%config(noreplace) %{config_base}/hostmetrics-agent-logger.conf
+%{template_base}/prometheus-logstash-input.conf.j2
+%{_unitdir}/psconfig-hostmetrics-agent.service
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)

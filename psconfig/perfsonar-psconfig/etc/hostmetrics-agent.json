@@ -1,0 +1,6 @@
+{
+    "remotes": [],
+    "restart-service": "logstash",
+    "template-file": "/usr/lib/perfsonar/psconfig/templates/prometheus-logstash-input.conf.j2",
+    "output-file": "/usr/lib/perfsonar/logstash/prometheus_pipeline/01-input-psconfig_prometheus.conf"
+}

@@ -36,6 +36,15 @@ Description: pSConfig Grafana Agent
  The pSConfig Grafana Agent downloads a centralized JSON file
  describing the tests to run, and uses it to generate Grafana dashboards.
 
+Package: perfsonar-psconfig-hostmetrics
+Architecture: all
+Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig,
+ python3-pyinotify, python3-jinja2, perfsonar-common, perfsonar-psconfig-utils
+Description: pSConfig Host Metrics Agent
+ The pSConfig Host Metrucs Agent downloads a centralized JSON file
+ describing the tests to run, and uses it to generate a configuration
+ for gather metrics about the perfSONAR hosts 
+
 Package: perfsonar-psconfig-utils
 Architecture: all
 Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig, python3-tqdm

@@ -1,0 +1,5 @@
+usr/lib/perfsonar/psconfig/bin/psconfig_hostmetrics_agent 
+usr/lib/perfsonar/psconfig/templates/prometheus-logstash-input.conf.j2
+etc/perfsonar/psconfig/hostmetrics-agent.json
+etc/perfsonar/psconfig/hostmetrics-agent-logger.conf
+systemd/psconfig-hostmetrics-agent.service lib/systemd/system/

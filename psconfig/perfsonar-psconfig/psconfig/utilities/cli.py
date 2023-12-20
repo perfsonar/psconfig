@@ -3,6 +3,7 @@ Provides common utilities for CLI clients
 '''
 import psconfig.pscheduler.config_connect
 import psconfig.grafana.config_connect
+import psconfig.hostmetrics.config_connect
 import psconfig.transform_connect
 import sys
 from tqdm import tqdm
@@ -29,6 +30,16 @@ PSCONFIG_CLI_AGENTS = [
             "displays": 1
         },
         'default_cache_dir': '/var/lib/perfsonar/psconfig/grafana_template_cache'
+    },
+    {
+        'name': 'HostMetrics',
+        'config_file': '/etc/perfsonar/psconfig/hostmetrics-agent.json',
+        'command': '/usr/lib/perfsonar/psconfig/bin/psconfig_hostmetrics_agent',
+        'client_class': psconfig.hostmetrics.config_connect.ConfigConnect,
+        'agentctl_ignore': {
+            "remotes": 1
+        },
+        'default_cache_dir': '/var/lib/perfsonar/psconfig/hostmetrics_template_cache'
     }
 ]
 

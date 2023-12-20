@@ -1,0 +1,35 @@
+#!/bin/bash
+# postinst script
+#
+# see: dh_installdeb(1)
+
+set -e
+
+case "$1" in
+    configure)
+
+        mkdir -p /etc/perfsonar/psconfig/hostmetrics.d/
+        chown perfsonar:perfsonar /etc/perfsonar/psconfig/hostmetrics.d/
+        mkdir -p /var/lib/perfsonar/psconfig/hostmetrics_template_cache
+        chown perfsonar:perfsonar /var/lib/perfsonar/psconfig/hostmetrics_template_cache
+        # check if installation or update, where version is a parameter
+        if [ -z "$2" ]; then
+
+            #Enable service on new install
+            systemctl daemon-reload  || :
+            systemctl enable psconfig-hostmetrics-agent.service  || :
+        fi
+        systemctl start psconfig-hostmetrics-agent.service  || :
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+exit 0

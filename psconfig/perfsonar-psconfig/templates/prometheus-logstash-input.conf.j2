@@ -1,0 +1,37 @@
+input {
+    http_poller {
+        schedule => {
+            every => "10s"
+        }
+        urls => {
+{% for addr, addr_obj in addresses|dictsort %}  
+            "{{ addr }}" => "{{ addr_obj["node_exporter_url"] }}"
+{% endfor %}
+        }
+        codec => plain
+        ssl_verification_mode => "none"
+        request_timeout => 30
+        metadata_target => "[http_poller_metadata]"
+        add_field => {
+            "[type]" => "node"
+        }
+    }
+
+    http_poller {
+        schedule => {
+            every => "30s"
+        }
+        urls => {
+{% for addr, addr_obj in addresses|dictsort %}  
+            "{{ addr }}" => "{{ addr_obj["pshost_exporter_url"] }}"
+{% endfor %}
+        }
+        codec => plain
+        ssl_verification_mode => "none"
+        request_timeout => 30
+        metadata_target => "[http_poller_metadata]"
+        add_field => {
+            "[type]" => "perfsonar_host"
+        }
+    }
+}
