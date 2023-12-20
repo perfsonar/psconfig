@@ -90,7 +90,7 @@ if not args.DISABLE_INOTIFY:
 
     ##
 # Start main program loop
-logger.info(logf.format('Starting pSConfig pScheduler agent'))
+logger.info(logf.format('Starting pSConfig Grafana agent'))
 
 while(1):
     ###########
