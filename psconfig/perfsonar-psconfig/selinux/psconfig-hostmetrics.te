@@ -4,7 +4,9 @@ require {
         type init_t;
         type lib_t;
         class dir add_name;
+        class file create;
 }
 
 #============= init_t ==============
 allow init_t lib_t:dir add_name;
+allow init_t lib_t:file create;
