@@ -90,6 +90,8 @@ Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
+Requires:       policycoreutils, libselinux-utils
+BuildRequires:  selinux-policy-devel
 BuildRequires: systemd
 BuildArch:		noarch
 
@@ -132,12 +134,15 @@ Environment for publishing pSConfig template files in standard way
 
 %build
 make
+make -f /usr/share/selinux/devel/Makefile -C selinux psconfig-hostmetrics.pp
 
 %install
 rm -rf %{buildroot}
 make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir} BINPATH=%{buildroot}/%{_bindir} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base}
 mkdir -p %{buildroot}/%{_unitdir}/
 install -m 644 systemd/* %{buildroot}/%{_unitdir}/
+mkdir -p %{buildroot}/usr/share/selinux/packages/
+mv selinux/*.pp %{buildroot}/usr/share/selinux/packages/
 
 %clean
 rm -rf %{buildroot}
@@ -165,6 +170,11 @@ if [ "$1" = "1" ]; then
 fi
 
 %post hostmetrics
+#selinux
+semodule -n -i /usr/share/selinux/packages/psconfig-hostmetrics.pp
+if /usr/sbin/selinuxenabled; then
+    /usr/sbin/load_policy
+fi
 mkdir -p %{config_base}/hostmetrics.d/
 chown perfsonar:perfsonar %{config_base}/hostmetrics.d/
 mkdir -p %{psconfig_datadir}/hostmetrics_template_cache
@@ -214,6 +224,15 @@ systemctl restart httpd &>/dev/null || :
 %postun grafana
 %systemd_postun_with_restart psconfig-grafana-agent.service
 
+%postun hostmetrics
+%systemd_postun_with_restart psconfig-hostmetrics-agent.service
+if [ $1 -eq 0 ]; then
+    semodule -n -r psconfig-hostmetrics
+    if /usr/sbin/selinuxenabled; then
+       /usr/sbin/load_policy
+    fi
+fi
+
 %files -n python-perfsonar-psconfig -f INSTALLED_FILES
 %defattr(-,root,root)
 %license LICENSE
@@ -244,6 +263,7 @@ systemctl restart httpd &>/dev/null || :
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_hostmetrics_agent 
 %config(noreplace) %{config_base}/hostmetrics-agent.json
 %config(noreplace) %{config_base}/hostmetrics-agent-logger.conf
+%attr(0644,root,root) /usr/share/selinux/packages/psconfig-hostmetrics.pp
 %{template_base}/prometheus-logstash-input.conf.j2
 %{_unitdir}/psconfig-hostmetrics-agent.service
 
