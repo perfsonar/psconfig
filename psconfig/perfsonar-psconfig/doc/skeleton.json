@@ -91,16 +91,16 @@
             "test": "example_test_throughput",
             "schedule": "example_schedule_PT4H",
             "archives": [ "example_http_archive" ],
-            "_meta": {
-                "display-name": "Example Throughput Tests"
+            "reference": {
+                "display-task-name": "Example Throughput Tests"
             }
         },
         "example_task_latencybg": {
             "group": "example_group_mesh",
             "test": "example_test_latencybg",
             "archives": [ "example_http_archive" ],
-            "_meta": {
-                "display-name": "Example Loss Tests"
+            "reference": {
+                "display-task-name": "Example Loss Tests"
             }
         },
         "example_task_trace": {
@@ -108,8 +108,8 @@
             "test": "example_test_trace",
             "schedule": "example_schedule_PT10M",
             "archives": [ "example_http_archive" ],
-            "_meta": {
-                "display-name": "Example Traceroute Tests"
+            "reference": {
+                "display-task-name": "Example Traceroute Tests"
             }
         }
     }
