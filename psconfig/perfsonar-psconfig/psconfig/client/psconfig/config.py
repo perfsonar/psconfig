@@ -207,7 +207,7 @@ class Config(BaseMetaNode):
         except Exception as e:
             return [e]
         
-    def _label_check(self, addr_obj, addr_label_name):
+    def _ref_check_label(self, addr_obj, addr_label_name):
 
         if not addr_obj.label(addr_label_name):
 
@@ -232,7 +232,7 @@ class Config(BaseMetaNode):
                 errors.append("Group {} references an address object {} that does not exist.".format(group_name, addr_name))
                 return
             addr_label_name = addr_sel.label()
-            if addr_label_name and not self._label_check(addr_obj, addr_label_name):
+            if addr_label_name and not self._ref_check_label(addr_obj, addr_label_name):
                 errors.append("Group {} references a label {} for address object {} that does not exist.".format(group_name, addr_label_name, addr_name))
         except Exception:
             try:
