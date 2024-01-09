@@ -17,7 +17,7 @@ class Address(BaseLabelledAddress):
 
     def add_tag(self, val):
         '''Adds a tag to the list'''
-        return self._add_list_item('tags', val)
+        self._add_list_item('tags', val)
     
     def remote_addresses(self, val=None):
         '''Gets/sets remote-addresses as a dictionary of RemoteAddress objects'''

@@ -18,7 +18,7 @@ class Config(BaseAgentNode):
     
     def match_addresses(self, val=None):
         '''Sets/gets list of addresses (as strings) for which the agent is responsible for creating tests'''
-        self._field_host_list('match-addresses', val)
+        return self._field_host_list('match-addresses', val)
     
     def match_address(self, index, val=None):
         '''Sets/gets an addresses (as string) at the given index'''

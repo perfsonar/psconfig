@@ -21,7 +21,7 @@ class BaseTemplate():
         self.error = ''
 
         #convert to string so we get copy and can do replace
-        obj_str = json.dumps(obj)  ###########check the obj to str conversion.
+        obj_str = json.dumps(obj)
 
         #handle quotes
         quote = ""
@@ -43,7 +43,7 @@ class BaseTemplate():
 
         #do the substitutions
         for template_var in template_var_map:
-            #replace with expanded values  ###############verify function
+            #replace with expanded values
             if quote:
                 template_var_str = "{}".format(template_var_map[template_var]) #make sure value is string
                 obj_str = re.sub(r''+re.escape(quote)+r'{%\s+'+re.escape(template_var)+r'\s+%\}'+re.escape(quote), template_var_str, obj_str)

@@ -7,17 +7,6 @@ from ...pscheduler.task import Task
 from ...pscheduler.api_connect import ApiConnect
 import re
 import json
-'''
-
-my $logger;
-if(Log::Log4perl->initialized()) {
-    #this is intended to be a lib reliant on someone else initializing env
-    #detect if they did but quietly move on if not
-    #anything using $logger will need to check if defined
-    $logger = get_logger(__PACKAGE__);
-}
-
-'''
 
 class TaskGenerator(object):
 

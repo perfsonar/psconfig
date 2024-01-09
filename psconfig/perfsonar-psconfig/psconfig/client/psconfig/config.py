@@ -34,7 +34,7 @@ class Config(BaseMetaNode):
     
     def remove_address(self, field):
         '''Remove address at specified field'''
-        return self._remove_map_item('addresses', field)
+        self._remove_map_item('addresses', field)
     
     def address_classes(self, val=None):
         '''Gets/sets addresses-classes as dictionary'''
@@ -206,6 +206,23 @@ class Config(BaseMetaNode):
             return [e]
         except Exception as e:
             return [e]
+        
+    def _ref_check_label(self, addr_obj, addr_label_name):
+
+        if not addr_obj.label(addr_label_name):
+
+            for remote_name in addr_obj.remote_address_names():
+                remote  = addr_obj.remote_address(remote_name)
+                label = remote.label(addr_label_name)
+                if label:
+                    #label found in remote obj
+                    return True
+            
+            #label not found in addr obj and remote obj
+            return False
+
+        #label found in addr obj
+        return True
 
     def _ref_check_addr_select(self, addr_sel, group_name, psconfig, errors):
         try:
@@ -215,7 +232,7 @@ class Config(BaseMetaNode):
                 errors.append("Group {} references an address object {} that does not exist.".format(group_name, addr_name))
                 return
             addr_label_name = addr_sel.label()
-            if addr_label_name and not addr_obj.label(addr_label_name):
+            if addr_label_name and not self._ref_check_label(addr_obj, addr_label_name):
                 errors.append("Group {} references a label {} for address object {} that does not exist.".format(group_name, addr_label_name, addr_name))
         except Exception:
             try:
@@ -255,7 +272,7 @@ class Config(BaseMetaNode):
                 
                 #check remote labels
                 for label_name in remote.label_names():
-                    label = address.label(label_name)
+                    label = remote.label(label_name)
                     if label and label.context_refs():
                         for context_ref in label.context_refs():
                             if not self.context(context_ref):

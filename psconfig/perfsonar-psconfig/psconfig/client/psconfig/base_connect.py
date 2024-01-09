@@ -9,15 +9,6 @@ import json
 from urllib.parse import urlparse
 import logging
 
-'''
-my $logger;
-if(Log::Log4perl->initialized()) {
-    #this is intended to be a lib reliant on someone else initializing env
-    #detect if they did but quietly move on if not
-    #anything using $logger will need to check if defined
-    $logger = get_logger(__PACKAGE__);
-}
-'''
 class BaseConnect(object):
 
     def __init__(self, **kwargs):

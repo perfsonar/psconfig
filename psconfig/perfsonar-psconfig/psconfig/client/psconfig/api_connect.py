@@ -13,7 +13,7 @@ class ApiConnect(BaseConnect):
 
     def config_obj(self):
         '''
-        client.psconfig.Config object
+        Return a client.psconfig.Config object
         '''
         return PSConfig()
     
@@ -22,3 +22,9 @@ class ApiConnect(BaseConnect):
         Returns a list of possible translators
         '''
         return [Config(use_force_bidirectional=True)]
+    
+    def needs_translation(self, json_obj):
+        '''returns False
+        previous behaviour - Indicates needs translation unless there is an addresses field or includes'''
+        
+        return False

@@ -90,7 +90,7 @@ class Utils(object):
             prepped = req.prepare()
             try:
                 resp = s.send(prepped,\
-                    verify=kwargs.get('ca_certificate_file', False),
+                    verify=kwargs.get('ca_certificate_file', kwargs.get('verify_hostname', False)),
                     timeout=timeout,
                     allow_redirects=kwargs.get('allow_redirects', True)
                     )
