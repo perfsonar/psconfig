@@ -4,17 +4,23 @@ perfsonar-psconfig (5.1.0~a1.0-1) perfsonar-5.1-snapshot; urgency=low
 
  -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 20 Nov 2023 22:30:04 +0200
 
+perfsonar-psconfig (5.0.8-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 05 Feb 2024 12:32:33 -0500
+
+perfsonar-psconfig (5.0.7-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 08 Dec 2023 15:19:39 -0500
+
 perfsonar-psconfig (5.0.6-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
  -- perfSONAR developers <debian@perfsonar.net>  Fri, 10 Nov 2023 15:22:11 -0500
-
-perfsonar-psconfig (5.0.5-2) perfsonar-5.0; urgency=low
-
-  * New upstream version.
-
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 02 Oct 2023 16:51:24 +0200
 
 perfsonar-psconfig (5.0.4-2) perfsonar-5.0; urgency=low
 
