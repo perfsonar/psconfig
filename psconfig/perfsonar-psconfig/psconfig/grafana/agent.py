@@ -680,6 +680,10 @@ class Agent(BaseAgent):
 
     def _build_matrix_url(self, mdc, mdc_var_obj):
 
+        #check for static matrix url
+        if mdc.matrix_url():
+            return mdc.matrix_url()
+
         #Build dashboard for matrix_url_template if needed
         if not mdc.matrix_url_template():
             return

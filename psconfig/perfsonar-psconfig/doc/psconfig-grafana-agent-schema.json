@@ -215,6 +215,11 @@
                     "type": "string",
                     "description": "The unit of the stat. See Grafana docs for built-in units."
                 },
+                "matrix_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "A static URL to which matrices will link. This URL must link to a dashboard created outside pSConfig. See matrix_url_template if need dynamic creation of linked dashboard."
+                },
                 "matrix_url_template": {
                     "type": "string",
                     "description": "Path to a template file to which matrices will link"

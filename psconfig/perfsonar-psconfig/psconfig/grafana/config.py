@@ -102,6 +102,9 @@ class Display(BaseNode):
     def unit(self, val=None):
         return self._field('unit', val)
 
+    def matrix_url(self, val=None):
+        return self._field_url('matrix_url', val)
+
     def matrix_url_template(self, val=None):
         return self._field('matrix_url_template', val)
 
