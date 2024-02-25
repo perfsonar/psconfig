@@ -32,7 +32,17 @@ class Archive(BaseMetaNode):
         '''Gets/sets ttl'''
 
         return self._field_duration('ttl', val)
-    
+
+    def label(self, val=None):
+        '''Gets/sets label'''
+
+        return self._field('label', val)
+
+    def schema(self, val=None):
+        '''Gets/sets schema'''
+
+        return self._field_cardinal('schema', val)
+
     def validate(self):
         '''Validates archive against JSON schema. Returns list of errors. Will be empty list if no
             errors.'''

@@ -364,7 +364,9 @@ class Schema(object):
                         "data": { "$ref": "#/pSConfig/AnyJSON" },
                         "transform": { "$ref": "#/pSConfig/ArchiveJQTransformSpecification" },
                         "ttl": { "$ref": "#/pSConfig/Duration" },
-                        "_meta": { "$ref": "#/pSConfig/AnyJSON" }
+                        "_meta": { "$ref": "#/pSConfig/AnyJSON" },
+                        "label": { "type": "string" },
+                        "schema": { "$ref": "#/pSConfig/Cardinal" }
                     },
                     "additionalProperties": False,
                     "required": [ "archiver", "data"]
