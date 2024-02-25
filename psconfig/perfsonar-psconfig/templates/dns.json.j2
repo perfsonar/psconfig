@@ -1,0 +1,412 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {{ grafana_datasource|tojson }},
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1000,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div>\n<text style=\"font-size:20pt;\">\n<img \nsrc=\"/grafana/public/img/perfsonar-logo-white-full.svg\" \nstyle=\"background:rgb(17, 18, 23); width:200px; \"/> \n</text>\n<a class=\"simple-button\" href=\"/grafana/dashboards/f/{{ grafana_folder_uid }}\" style=\"float: right;\">Dashboards</a>\n</div>\n\n\n<style>\n  /* custom stuff */\n  a.buttons, button.buttons {\n    text-decoration: none;\n    background-color: #1b6522;\n    border: 3px solid white; \n    border-radius: 3px;\n    color: white !important;  \n    font-weight: bold; \n    text-align: right; \n    padding: 10px; \n    width: auto;\n    display: inline-block;\n  }\n  a.simple-button {\n    text-decoration: none;\n    background-color: black;\n    border: 3px solid #1b6522; \n    border-radius: 3px;\n    color: white; \n    font-weight: bold; \n    text-align: right; \n    padding: 10px; \n    width: auto;\n    margin: 0 5px 0 5px;\n  }\n  a.simple-button:hover {\n    color: #1b6522;\n  }\n  h1.title,h2.title,h3.title,div.title {\n    color: #6D6E71; \n    font-weight:bold;\n  }\n  p.description {\n    color: #6D6E71;\n  }\n  a.link {\n    color: #1b6522;\n  }\n\n  /* ----grafana stuff---- */\n  button.css-82ooe6-button, button.css-1pq88ji-button {\n    background-color: rgba(78, 193, 224,0.7);\n    color: white;\n  }\n  button.css-82ooe6-button:hover, button.css-1pq88ji-button:hover {\n    background-color: #1b6522;\n  }\n  button.dashboard-row__title {\n    color: #6D6E71;\n  }\n  /* +add button */\n  button.css-r8pbcf-button-add-panel-button-add-panel-button-text,\n  button.css-1bvfhzx-button-add-panel-button-add-panel-button-text {\n    color: #1b6522;\n    border: 1px solid #1b6522;\n    }\n\n\n  /* ----light mode---- */\n  button.css-14424at {\n    color: #6D6E71; \n  }\n  button.css-14424at:hover {\n    color: #1b6522; \n  }\n    /* data links */\n  div.css-1d09i7b {\n    color: rgb(36, 41, 46);\n  }\n  div.css-1d09i7b:hover {\n    color: #1b6522;\n  }\n\n  /* ----dark mode---- */\n  div.css-1h2bvkc {\n    color: rgb(204, 204, 220);\n  }\n  div.css-1h2bvkc:hover {\n    color: #6d6e71;\n  }\n  button.css-1n3c59t {\n    color: #1b6522;\n  }\n  button.css-1n3c59t:hover {\n    color: #6D6E71;\n  }\n\n  /* data links */\n  div.css-1ijov7j {\n    color: rgb(204, 204, 220);\n  }\n  div.css-1ijov7j:hover {\n    color: #1b6522;\n  }\n  \n</style>",
+        "mode": "html"
+      },
+      "pluginVersion": "10.3.3",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 4,
+      "panels": [],
+      "repeat": "dns_query",
+      "repeatDirection": "h",
+      "title": "$dns_query",
+      "type": "row"
+    },
+    {
+      "datasource": {{ grafana_datasource|tojson }},
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 34,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 7,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "test.spec.record.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {{ grafana_datasource|tojson }},
+          "metrics": [
+            {
+              "field": "result.time",
+              "id": "1",
+              "type": "max"
+            }
+          ],
+          "query": "test.type.keyword: dns AND test.spec.nameserver.keyword: $dns_nameserver AND test.spec.host.keyword: $dns_host",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "\"$dns_query\" DNS Max Request Time From $dns_host to Namesever $dns_nameserver by Record Type",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {{ grafana_datasource|tojson }},
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Nameserver"
+          }
+        ]
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [],
+          "datasource": {{ grafana_datasource|tojson }},
+          "metrics": [
+            {
+              "id": "1",
+              "settings": {
+                "limit": "500"
+              },
+              "type": "logs"
+            }
+          ],
+          "query": "test.type.keyword: dns AND test.spec.host.keyword: $dns_host AND test.spec.nameserver.keyword: $dns_nameserver",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "title": "\"$dns_query\" Unique Results From $dns_host to Nameserver $dns_nameserver",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "byVariable": false,
+            "include": {
+              "pattern": "(test.spec.record)|(result.record)|(pscheduler.start_time)"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "result.record": 1,
+              "test.spec.nameserver": 0
+            },
+            "renameByName": {
+              "pscheduler.start_time": "Time",
+              "result.record": "Result",
+              "test.spec.nameserver": "Nameserver",
+              "test.spec.record": "Record Type"
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Nameserver": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Record Type": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Result": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "Time": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "pscheduler.start_time": {
+                "aggregations": []
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "Record Type": 0,
+              "Result": 1,
+              "Time (lastNotNull)": 2
+            },
+            "renameByName": {
+              "Time (lastNotNull)": "Last Seen"
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": "*",
+        "current": {},
+        "datasource": {{ grafana_datasource|tojson }},
+        "definition": "{\"find\":\"terms\", \"field\":\"test.spec.host.keyword\", \"query\": \"test.type.keyword: dns AND test.spec.query.keyword: $dns_query\", \"size\": 10000000}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Host",
+        "multi": false,
+        "name": "dns_host",
+        "options": [],
+        "query": "{\"find\":\"terms\", \"field\":\"test.spec.host.keyword\", \"query\": \"test.type.keyword: dns AND test.spec.query.keyword: $dns_query\", \"size\": 10000000}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": "*",
+        "current": {},
+        "datasource": {{ grafana_datasource|tojson }},
+        "definition": "{\"find\":\"terms\", \"field\":\"test.spec.nameserver.keyword\", \"query\": \"test.type.keyword: dns AND test.spec.host.keyword: $dns_host\", \"size\": 10000000}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Name Server",
+        "multi": false,
+        "name": "dns_nameserver",
+        "options": [],
+        "query": "{\"find\":\"terms\", \"field\":\"test.spec.nameserver.keyword\", \"query\": \"test.type.keyword: dns AND test.spec.host.keyword: $dns_host\", \"size\": 10000000}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {{ grafana_datasource|tojson }},
+        "definition": "{\"find\":\"terms\", \"field\":\"test.spec.query.keyword\", \"query\": \"test.type.keyword: dns\", \"size\": 10000000}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Query",
+        "multi": true,
+        "name": "dns_query",
+        "options": [],
+        "query": "{\"find\":\"terms\", \"field\":\"test.spec.query.keyword\", \"query\": \"test.type.keyword: dns\", \"size\": 10000000}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Andy DNS",
+  "uid": "e6cb1e2a-6ebd-495d-a402-7392fddf2506",
+  "version": 10,
+  "weekStart": ""
+}

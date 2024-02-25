@@ -128,13 +128,13 @@
             "stat_field": "result.time",
             "stat_type": "max",
             "row_field": "test.spec.host.keyword",
-            "col_field": "test.spec.query.keyword",
+            "col_field": "test.spec.nameserver.keyword",
             "value_field": "Max",
             "value_text": "Time",
             "unit": "s",
-            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
-            "matrix_url_var1": "source",
-            "matrix_url_var2": "dest",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/dns.json.j2",
+            "matrix_url_var1": "dns_host",
+            "matrix_url_var2": "dns_nameserver",
             "thresholds": [
                 {
                     "color": "green",
