@@ -42,7 +42,8 @@ class Agent(BaseAgent):
             "pplEnabled": True, 
             "timeField": "pscheduler.start_time", 
             "tlsAuth": False, 
-            "tlsSkipVerify": True, 
+            "tlsSkipVerify": True,
+            "version": "AUTO"
         }, 
         "readOnly": False
     }
@@ -413,8 +414,14 @@ class Agent(BaseAgent):
         General function for sending HTTP requests to Grafana and handling errors
         '''
         url = self._gf_build_url(url_path)
+        return self._http(url, action, method, data, headers=self.grafana_header, auth=self.grafana_auth, log_prefix="grafana_")
+
+    def _http(self, url, action, method="get", data={}, headers={}, auth=None, log_prefix=""):
+        '''
+        General function for sending HTTP requests and handling errors
+        '''
         local_context = {}
-        local_context["grafana_url"] = url
+        local_context["{}url".format(log_prefix)] = url
         local_context["action"] = "{}.start".format(action)
         if data:
             local_context["data"] = data
@@ -424,13 +431,13 @@ class Agent(BaseAgent):
         try:
             r = None
             if method == "get":
-                r = requests.get(url, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
+                r = requests.get(url, headers=headers, auth=auth, verify=False)
             elif method == "post":
-                r = requests.post(url, json=data, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
+                r = requests.post(url, json=data, headers=headers, auth=auth, verify=False)
             elif method == "put":
-                r = requests.put(url, json=data, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
+                r = requests.put(url, json=data, headers=headers, auth=auth, verify=False)
             elif method == "delete":
-                r = requests.delete(url, headers=self.grafana_header, auth=self.grafana_auth, verify=False)
+                r = requests.delete(url, headers=headers, auth=auth, verify=False)
             else:
                 return None, "Invalid method specified."
             r.raise_for_status()
@@ -529,6 +536,33 @@ class Agent(BaseAgent):
         '''
         return  self.grafana_datasource_name_format.format(ds_url)
 
+    def _ds_version(self, ds_body):
+        '''
+        Determine version of database for datasource. Required for Opensearch.
+        '''
+        #Detect database version if set to AUTO
+        if ds_body.get("jsonData", {}).get("version","").upper() != "AUTO":
+            #nothing to do
+            return
+
+        #clear out AUTO in case something fails
+        ds_body["jsonData"]["version"] = None
+        if ds_body["type"] != "grafana-opensearch-datasource":
+            #only know how to get version for opensearch
+            self.logger.error(self.logf.format("Datasource version set to AUTO but setting version not supported for datasource type {}. Manually change jsonData.version in config with {}".format(ds_body["type"], self.PSCONFIG_KEY_GF_DS_SETTINGS)))
+            return
+
+        #fetch version
+        r, msg = self._http(ds_body["url"], "ds_version", log_prefix="ds_")
+        if msg:
+            #return if error making request
+            return
+
+        #parse version
+        ds_body["jsonData"]["version"] = r.json().get("version", {}).get("number", None)
+        if ds_body["jsonData"]["version"] is None:
+            self.logger.error(self.logf.format("Unable to detect version for {} of type {}. Manually set version in config with {}".format(ds_body["url"], ds_body["type"], self.PSCONFIG_KEY_GF_DS_SETTINGS)))
+
     def _gf_create_datasource(self, ds_url, ds_settings):
         '''
         Creates a datasource using the Grafana API
@@ -536,6 +570,7 @@ class Agent(BaseAgent):
         ds_body = ds_settings.copy()
         ds_body["url"] = ds_url
         ds_body["name"] = self._build_ds_name(ds_url)
+        self._ds_version(ds_body)
         r, msg = self._gf_http("/api/datasources", "create_datasource", method="post", data=ds_body)
         if msg:
             self.logger.error(self.logf.format("Unable to create datasource for {}: {}".format(ds_url, msg)))
@@ -562,6 +597,7 @@ class Agent(BaseAgent):
         ds_body["name"] = ds_name
         ds_body["uid"] = self.grafana_datasource_by_name.get(ds_name, {}).get("uid", None)
         ds_body["type"] = self.grafana_datasource_by_name.get(ds_name, {}).get("type", None)
+        self._ds_version(ds_body)
         r, msg = self._gf_http(f'/api/datasources/uid/{ds_body["uid"]}', "update_datasource", method="put", data=ds_body)
         if msg:
             self.logger.error(self.logf.format("Unable to update datasource for {}: {}".format(ds_url, msg)))
