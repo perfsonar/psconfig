@@ -255,6 +255,7 @@ fi
 %config(noreplace) %{config_base}/grafana-agent-logger.conf
 %{template_base}/grafana.json.j2
 %{template_base}/endpoints.json.j2
+%{template_base}/dns.json.j2
 %{_unitdir}/psconfig-grafana-agent.service
 
 %files hostmetrics
