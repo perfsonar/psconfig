@@ -3,8 +3,10 @@ Description=pSConfig Host Metrics Agent
 After=network.target
 
 [Service]
-Type=simple
+Type=exec
 ExecStart=/usr/lib/perfsonar/psconfig/bin/psconfig_hostmetrics_agent --config=/etc/perfsonar/psconfig/hostmetrics-agent.json --logger=/etc/perfsonar/psconfig/hostmetrics-agent-logger.conf 
+User=perfsonar
+Group=perfsonar
 Restart=always
 RestartSec=30s
 

@@ -3,8 +3,10 @@ Description=pSConfig PScheduler Agent
 After=network.target pscheduler-scheduler.service pscheduler-archiver.service pscheduler-ticker.service pscheduler-runner.service
 
 [Service]
-Type=simple
+Type=exec
 ExecStart=/usr/lib/perfsonar/psconfig/bin/psconfig_pscheduler_agent --config=/etc/perfsonar/psconfig/pscheduler-agent.json --logger=/etc/perfsonar/psconfig/pscheduler-agent-logger.conf 
+User=perfsonar
+Group=perfsonar
 Restart=always
 RestartSec=30s
 
