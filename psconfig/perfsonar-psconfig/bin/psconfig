@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# pscheduler - Front-end CLI program for pScheduler
+# psconfig - Front-end CLI program for pSConfig
 #
 
 WHOAMI=$(basename $0)

@@ -44,12 +44,12 @@ class BaseTemplate():
         #do the substitutions
         for template_var in template_var_map:
             #replace with expanded values
+            template_var_str = "{}".format(template_var_map[template_var]) #make sure value is string
             if quote:
-                template_var_str = "{}".format(template_var_map[template_var]) #make sure value is string
                 obj_str = re.sub(r''+re.escape(quote)+r'{%\s+'+re.escape(template_var)+r'\s+%\}'+re.escape(quote), template_var_str, obj_str)
                 #remove start/end quotes for next substitution
-                template_var_map[template_var] = re.sub(r'^'+re.escape(quote), "", template_var_str)
-                template_var_map[template_var] = re.sub(re.escape(quote)+r'$', "", template_var_str)
+                template_var_str = re.sub(r'^'+re.escape(quote), "", template_var_str)
+                template_var_str = re.sub(re.escape(quote)+r'$', "", template_var_str)
 
             #replace embedded variables
             obj_str = re.sub(r'{%\s+' + re.escape(template_var) +  r'\s+%\}', template_var_str, obj_str)
