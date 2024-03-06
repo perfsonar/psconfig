@@ -143,7 +143,7 @@ class Agent(BaseAgent):
             }))
             # Restart service
             if agent_conf.restart_service():
-                restart_result = subprocess.run(["systemctl", "restart", agent_conf.restart_service()])
+                restart_result = subprocess.run(["sudo", "systemctl", "restart", agent_conf.restart_service()])
                 if restart_result.returncode == 0:
                     self.logger.debug(self.logf.format("Service {} restarted".format(agent_conf.restart_service())))
                 else:

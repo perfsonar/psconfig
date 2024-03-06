@@ -138,7 +138,7 @@ make -f /usr/share/selinux/devel/Makefile -C selinux psconfig-hostmetrics.pp
 
 %install
 rm -rf %{buildroot}
-make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir} BINPATH=%{buildroot}/%{_bindir} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base}
+make install PYTHON-ROOTPATH=%{buildroot} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} PERFSONAR-ROOTPATH=%{buildroot}/%{psconfig_base} PERFSONAR-DATAPATH=%{buildroot}/%{psconfig_datadir} BINPATH=%{buildroot}/%{_bindir} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SUDOERSDPATH=%{buildroot}/etc/sudoers.d
 mkdir -p %{buildroot}/%{_unitdir}/
 install -m 644 systemd/* %{buildroot}/%{_unitdir}/
 mkdir -p %{buildroot}/usr/share/selinux/packages/
@@ -267,6 +267,7 @@ fi
 %attr(0644,root,root) /usr/share/selinux/packages/psconfig-hostmetrics.pp
 %{template_base}/prometheus-logstash-input.conf.j2
 %{_unitdir}/psconfig-hostmetrics-agent.service
+/etc/sudoers.d/psconfig-hostmetrics
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)
