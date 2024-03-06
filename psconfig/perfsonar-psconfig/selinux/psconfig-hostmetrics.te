@@ -2,12 +2,14 @@ module psconfig-hostmetrics 1.0;
 
 require {
         type init_t;
+        type sudo_exec_t;
         type lib_t;
         class dir add_name;
-        class file { create write };
+        class file { create write execute };
 }
 
 #============= init_t ==============
 allow init_t lib_t:dir add_name;
 allow init_t lib_t:file create;
 allow init_t lib_t:file write;
+allow init_t sudo_exec_t:file execute;
