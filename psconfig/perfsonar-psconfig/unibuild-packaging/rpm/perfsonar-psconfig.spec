@@ -265,9 +265,9 @@ fi
 %config(noreplace) %{config_base}/hostmetrics-agent.json
 %config(noreplace) %{config_base}/hostmetrics-agent-logger.conf
 %attr(0644,root,root) /usr/share/selinux/packages/psconfig-hostmetrics.pp
+%attr(0644,root,root) /etc/sudoers.d/psconfig-hostmetrics
 %{template_base}/prometheus-logstash-input.conf.j2
 %{_unitdir}/psconfig-hostmetrics-agent.service
-/etc/sudoers.d/psconfig-hostmetrics
 
 %files utils
 %defattr(0644,perfsonar,perfsonar,0755)

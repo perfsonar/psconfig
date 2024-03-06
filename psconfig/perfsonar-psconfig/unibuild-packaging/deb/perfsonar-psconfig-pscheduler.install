@@ -2,5 +2,4 @@ usr/lib/perfsonar/psconfig/bin/psconfig_pscheduler_agent
 usr/lib/perfsonar/psconfig/bin/commands/pscheduler-tasks
 etc/perfsonar/psconfig/pscheduler-agent.json
 etc/perfsonar/psconfig/pscheduler-agent-logger.conf
-etc/sudoers.d/psconfig-hostmetrics
 systemd/psconfig-pscheduler-agent.service lib/systemd/system/

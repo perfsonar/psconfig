@@ -12,6 +12,7 @@ case "$1" in
         chown perfsonar:perfsonar /etc/perfsonar/psconfig/hostmetrics.d/
         mkdir -p /var/lib/perfsonar/psconfig/hostmetrics_template_cache
         chown perfsonar:perfsonar /var/lib/perfsonar/psconfig/hostmetrics_template_cache
+        chown root:root /etc/sudoers.d/psconfig-hostmetrics
         # check if installation or update, where version is a parameter
         if [ -z "$2" ]; then
 
