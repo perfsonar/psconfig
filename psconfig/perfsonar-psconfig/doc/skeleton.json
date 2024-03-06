@@ -93,7 +93,7 @@
             "archives": [ "example_http_archive" ],
             "reference": {
                 "display-task-name": "Example Throughput Tests",
-                "display-task-group": "Example Tests"
+                "display-task-group": [ "Example Tests" ]
             }
         },
         "example_task_latencybg": {
@@ -102,7 +102,7 @@
             "archives": [ "example_http_archive" ],
             "reference": {
                 "display-task-name": "Example Loss Tests",
-                "display-task-group": "Example Tests"
+                "display-task-group": [ "Example Tests" ]
             }
         },
         "example_task_trace": {
@@ -112,7 +112,7 @@
             "archives": [ "example_http_archive" ],
             "reference": {
                 "display-task-name": "Example Traceroute Tests",
-                "display-task-group": "Example Tests"
+                "display-task-group": [ "Example Tests" ]
             }
         }
     }
