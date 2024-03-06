@@ -5,12 +5,12 @@ require {
         type sudo_exec_t;
         type lib_t;
         class dir add_name;
-        class file { create write execute open read };
+        class file { create write execute execute_no_trans open read };
 }
 
 #============= init_t ==============
 allow init_t lib_t:dir add_name;
 allow init_t lib_t:file create;
 allow init_t lib_t:file write;
-allow init_t sudo_exec_t:file execute;
-allow init_t sudo_exec_t:file { open read };
+allow init_t sudo_exec_t:file { execute open read };
+allow init_t sudo_exec_t:file execute_no_trans;
