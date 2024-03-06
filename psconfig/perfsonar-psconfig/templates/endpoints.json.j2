@@ -121,7 +121,7 @@
       },
       "targets": [
         {
-          "alias": "{{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "{{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -135,7 +135,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -146,7 +146,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -196,13 +196,13 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:throughput AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:throughput AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "{{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "{{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -216,7 +216,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -227,7 +227,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -278,7 +278,7 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:throughput AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:throughput AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -366,7 +366,7 @@
       },
       "targets": [
         {
-          "alias": "{{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "{{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -380,7 +380,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -391,7 +391,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -441,13 +441,13 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:throughput AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:throughput AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "{{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "{{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -461,7 +461,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -472,7 +472,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -523,7 +523,7 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:throughput AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:throughput AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -611,7 +611,7 @@
       },
       "targets": [
         {
-          "alias": "95th percentile - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "95th percentile - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -625,7 +625,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -636,7 +636,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -686,13 +686,13 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Median - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Median - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -706,7 +706,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -717,7 +717,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -768,13 +768,13 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Min - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Min - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -788,7 +788,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -799,7 +799,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -850,7 +850,7 @@
               "type": "min"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -938,7 +938,7 @@
       },
       "targets": [
         {
-          "alias": "95th percentile - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "95th percentile - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -952,7 +952,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -963,7 +963,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1013,13 +1013,13 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Median - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Median - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1033,7 +1033,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1044,7 +1044,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1095,13 +1095,13 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Min - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Min - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1115,7 +1115,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1126,7 +1126,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1177,7 +1177,7 @@
               "type": "min"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -1265,7 +1265,7 @@
       },
       "targets": [
         {
-          "alias": "Max - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Max - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1279,7 +1279,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1290,7 +1290,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1340,7 +1340,7 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -1430,7 +1430,7 @@
       "targets": [
         {
         
-          "alias": "Max - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Max - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1444,7 +1444,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1455,7 +1455,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1505,7 +1505,7 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -1593,7 +1593,7 @@
       },
       "targets": [
         {
-          "alias": "Standard Deviation - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Standard Deviation - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1607,7 +1607,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1618,7 +1618,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1668,13 +1668,13 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Variance - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Variance - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1688,7 +1688,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1699,7 +1699,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1750,13 +1750,13 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Interquartile Range - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Interquartile Range - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1770,7 +1770,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1781,7 +1781,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -1856,7 +1856,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -1944,7 +1944,7 @@
       },
       "targets": [
         {
-          "alias": "Standard Deviation - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Standard Deviation - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -1958,7 +1958,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -1969,7 +1969,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2019,13 +2019,13 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Variance - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Variance - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -2039,7 +2039,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -2050,7 +2050,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2101,13 +2101,13 @@
               "type": "avg"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Interquartile Range - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Interquartile Range - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -2121,7 +2121,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -2132,7 +2132,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2207,7 +2207,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -2295,7 +2295,7 @@
       },
       "targets": [
         {
-          "alias": "Max - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Max - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -2309,7 +2309,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -2320,7 +2320,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2370,13 +2370,13 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:trace AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:trace AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
         },
         {
-          "alias": "Max - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "alias": "Max - {{ '{{term test.spec.source.keyword}} -> {{term test.spec.dest.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
           "bucketAggs": [
             {
               "field": "pscheduler.test_checksum.keyword",
@@ -2390,7 +2390,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -2401,7 +2401,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2452,7 +2452,7 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:trace AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:trace AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -2558,7 +2558,7 @@
           "alias": "",
           "bucketAggs": [
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -2569,7 +2569,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2610,7 +2610,7 @@
               "type": "count"
             }
           ],
-          "query": "test.type.keyword:trace AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "test.type.keyword:trace AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -2628,9 +2628,9 @@
             "indexByName": {},
             "renameByName": {
               "Max": "",
-              "meta.destination.hostname.keyword": "Destination",
+              "test.spec.dest.keyword": "Destination",
               "meta.ip_version": "",
-              "meta.source.hostname.keyword": "Source",
+              "test.spec.source.keyword": "Source",
               "pscheduler.tool.keyword": "Tool",
               "result.hop.ip_str.keyword": "Hops"
             }
@@ -2737,7 +2737,7 @@
           "alias": "",
           "bucketAggs": [
             {
-              "field": "meta.source.hostname.keyword",
+              "field": "test.spec.source.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": "1",
@@ -2748,7 +2748,7 @@
               "type": "terms"
             },
             {
-              "field": "meta.destination.hostname.keyword",
+              "field": "test.spec.dest.keyword",
               "id": "5",
               "settings": {
                 "min_doc_count": "1",
@@ -2789,7 +2789,7 @@
               "type": "count"
             }
           ],
-          "query": "test.type.keyword:trace AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "test.type.keyword:trace AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -2807,9 +2807,9 @@
             "indexByName": {},
             "renameByName": {
               "Max": "",
-              "meta.destination.hostname.keyword": "Destination",
+              "test.spec.dest.keyword": "Destination",
               "meta.ip_version": "",
-              "meta.source.hostname.keyword": "Source",
+              "test.spec.source.keyword": "Source",
               "pscheduler.tool.keyword": "Tool",
               "result.hop.ip_str.keyword": "Hops"
             }
@@ -2938,7 +2938,7 @@
                   "type": "raw_data"
                 }
               ],
-              "query": "(meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+              "query": "(test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
               "queryType": "lucene",
               "refId": "A",
               "timeField": "pscheduler.start_time"
@@ -2969,14 +2969,14 @@
                   "host": 10,
                   "id": 11,
                   "meta.destination.geo.as": 12,
-                  "meta.destination.hostname": 4,
+                  "test.spec.dest": 4,
                   "meta.destination.ip": 5,
                   "meta.ip_version": 13,
                   "meta.observer.geo.as": 14,
                   "meta.observer.hostname": 15,
                   "meta.observer.ip": 16,
                   "meta.source.geo.as": 17,
-                  "meta.source.hostname": 2,
+                  "test.spec.source": 2,
                   "meta.source.ip": 3,
                   "pscheduler.added": 18,
                   "pscheduler.duration": 19,
@@ -3054,9 +3054,9 @@
                 },
                 "renameByName": {
                   "Max": "",
-                  "meta.destination.hostname.keyword": "Destination",
+                  "test.spec.dest.keyword": "Destination",
                   "meta.ip_version": "",
-                  "meta.source.hostname.keyword": "Source",
+                  "test.spec.source.keyword": "Source",
                   "pscheduler.tool.keyword": "Tool",
                   "result.hop.ip_str.keyword": "Hops"
                 }
@@ -3175,7 +3175,7 @@
                   "type": "raw_data"
                 }
               ],
-              "query": "(meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+              "query": "(test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
               "queryType": "lucene",
               "refId": "A",
               "timeField": "pscheduler.start_time"
@@ -3199,9 +3199,9 @@
                 "indexByName": {},
                 "renameByName": {
                   "Max": "",
-                  "meta.destination.hostname.keyword": "Destination",
+                  "test.spec.dest.keyword": "Destination",
                   "meta.ip_version": "",
-                  "meta.source.hostname.keyword": "Source",
+                  "test.spec.source.keyword": "Source",
                   "pscheduler.tool.keyword": "Tool",
                   "result.hop.ip_str.keyword": "Hops"
                 }
@@ -3274,14 +3274,14 @@
     "list": [
       {
         "datasource": {{ grafana_datasource|tojson }},
-        "definition": "{\"find\":\"terms\", \"field\":\"meta.source.hostname.keyword\", \"size\": 10000000}",
+        "definition": "{\"find\":\"terms\", \"field\":\"test.spec.source.keyword\", \"size\": 10000000}",
         "hide": 0,
         "includeAll": false,
         "label": "Source Host",
         "multi": false,
         "name": "source",
         "options": [],
-        "query": "{\"find\":\"terms\", \"field\":\"meta.source.hostname.keyword\", \"size\": 10000000}",
+        "query": "{\"find\":\"terms\", \"field\":\"test.spec.source.keyword\", \"size\": 10000000}",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -3290,14 +3290,14 @@
       },
       {
         "datasource":  {{ grafana_datasource|tojson }},
-        "definition": "{\"find\":\"terms\", \"field\":\"meta.destination.hostname.keyword\", \"query\": \"meta.source.hostname.keyword: $source\", \"size\": 10000000}",
+        "definition": "{\"find\":\"terms\", \"field\":\"test.spec.dest.keyword\", \"query\": \"test.spec.source.keyword: $source\", \"size\": 10000000}",
         "hide": 0,
         "includeAll": false,
         "label": "Destination Host",
         "multi": false,
         "name": "dest",
         "options": [],
-        "query": "{\"find\":\"terms\", \"field\":\"meta.destination.hostname.keyword\", \"query\": \"meta.source.hostname.keyword: $source\", \"size\": 10000000}",
+        "query": "{\"find\":\"terms\", \"field\":\"test.spec.dest.keyword\", \"query\": \"test.spec.source.keyword: $source\", \"size\": 10000000}",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -3308,14 +3308,14 @@
         "allValue": "",
         "current": {},
         "datasource": {{ grafana_datasource|tojson }},
-        "definition": "{\"find\": \"terms\", \"field\":\"reference.display-set-source.keyword\", \"query\":\"meta.source.hostname.keyword:$source\", \"size\": 10000000}",
+        "definition": "{\"find\": \"terms\", \"field\":\"reference.display-set-source.keyword\", \"query\":\"test.spec.source.keyword:$source\", \"size\": 10000000}",
         "hide": 2,
         "includeAll": true,
         "label": "Source Host",
         "multi": true,
         "name": "source_ref",
         "options": [],
-        "query": "{\"find\": \"terms\", \"field\":\"reference.display-set-source.keyword\", \"query\":\"meta.source.hostname.keyword:$source\", \"size\": 10000000}",
+        "query": "{\"find\": \"terms\", \"field\":\"reference.display-set-source.keyword\", \"query\":\"test.spec.source.keyword:$source\", \"size\": 10000000}",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -3326,14 +3326,14 @@
         "allValue": "",
         "current": {},
         "datasource": {{ grafana_datasource|tojson }},
-        "definition": "{\"find\": \"terms\", \"field\":\"reference.display-set-dest.keyword\",  \"query\":\"meta.destination.hostname.keyword:$dest\", \"size\": 10000000}",
+        "definition": "{\"find\": \"terms\", \"field\":\"reference.display-set-dest.keyword\",  \"query\":\"test.spec.dest.keyword:$dest\", \"size\": 10000000}",
         "hide": 2,
         "includeAll": true,
         "label": "Destination Host",
         "multi": true,
         "name": "dest_ref",
         "options": [],
-        "query": "{\"find\": \"terms\", \"field\":\"reference.display-set-dest.keyword\",  \"query\":\"meta.destination.hostname.keyword:$dest\", \"size\": 10000000}",
+        "query": "{\"find\": \"terms\", \"field\":\"reference.display-set-dest.keyword\",  \"query\":\"test.spec.dest.keyword:$dest\", \"size\": 10000000}",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
