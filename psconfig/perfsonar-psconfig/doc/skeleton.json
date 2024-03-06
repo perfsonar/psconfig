@@ -92,7 +92,8 @@
             "schedule": "example_schedule_PT4H",
             "archives": [ "example_http_archive" ],
             "reference": {
-                "display-task-name": "Example Throughput Tests"
+                "display-task-name": "Example Throughput Tests",
+                "display-task-group": "Example Tests"
             }
         },
         "example_task_latencybg": {
@@ -100,7 +101,8 @@
             "test": "example_test_latencybg",
             "archives": [ "example_http_archive" ],
             "reference": {
-                "display-task-name": "Example Loss Tests"
+                "display-task-name": "Example Loss Tests",
+                "display-task-group": "Example Tests"
             }
         },
         "example_task_trace": {
@@ -109,7 +111,8 @@
             "schedule": "example_schedule_PT10M",
             "archives": [ "example_http_archive" ],
             "reference": {
-                "display-task-name": "Example Traceroute Tests"
+                "display-task-name": "Example Traceroute Tests",
+                "display-task-group": "Example Tests"
             }
         }
     }
