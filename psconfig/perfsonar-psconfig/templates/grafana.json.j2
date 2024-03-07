@@ -69,7 +69,7 @@
         "defaultColor": "transparent",
         "inputList": true,
         "nullColor": "#E6E6E6",
-{% if task.get(static_fields, True) %}
+{% if task.static_fields %}
         "staticColumns": "{{ task.cols|join(',') }}",
         "staticRows": "{{ task.rows|join(',') }}",
 {% endif %}  

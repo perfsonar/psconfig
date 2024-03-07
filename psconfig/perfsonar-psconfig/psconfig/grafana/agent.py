@@ -328,9 +328,12 @@ class Agent(BaseAgent):
                 #build linked dashboard if needed
                 mdc_var_obj["matrix_url"] = self._build_matrix_url(mdc, mdc_var_obj)
 
+                #determine if we need static fields
+                mdc_var_obj["static_fields"] = mdc.static_fields()
+
                 ##
                 # Apply display-specific settings 
-                display_fields = [ "stat_field", "stat_type", "stat_meta", "static_fields", "row_field", "col_field", "value_field", "value_text", "unit", "matrix_url_var1", "matrix_url_var2", "thresholds" ]
+                display_fields = [ "stat_field", "stat_type", "stat_meta", "row_field", "col_field", "value_field", "value_text", "unit", "matrix_url_var1", "matrix_url_var2", "thresholds" ]
                 for display_field in display_fields:
                     if mdc.data.get(display_field, None):
                         mdc_var_obj[display_field] = mdc.data[display_field]
