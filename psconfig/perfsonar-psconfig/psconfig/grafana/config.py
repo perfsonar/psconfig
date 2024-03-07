@@ -30,6 +30,9 @@ class Config(BaseAgentNode):
     
     def grafana_folder(self, val=None):
         return self._field('grafana-folder', val)
+    
+    def grafana_home_dashboard_uid(self, val=None):
+        return self._field('grafana-home-dashboard-uid', val)
 
     def grafana_dashboard_tag(self, val=None):
         return self._field('grafana-dashboard-tag', val)

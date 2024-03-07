@@ -103,6 +103,11 @@ class Schema(object):
                     "description": "The folder in Grafana to store dashboards."
                 },
 
+                "grafana-home-dashboard-uid": {
+                    "type": "string",
+                    "description": "The UID of the default homepage that Grafana displays."
+                },
+
                 "grafana-dashboard-tag": {
                     "type": "string",
                     "description": "The tag applied to dashboards created by this agent. Defaults to perfsonar-psconfig."

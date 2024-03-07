@@ -1,6 +1,7 @@
 {
     "remotes": [],
     "grafana-dashboard-template": "/usr/lib/perfsonar/psconfig/templates/grafana.json.j2",
+    "grafana-home-dashboard-uid": "ff439cb3-6042-43b5-a999-674681d80395",
     "task-group-default": "All perfSONAR Measurements",
     "displays": {
         "packet_loss": {

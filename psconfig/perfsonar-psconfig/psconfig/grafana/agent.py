@@ -170,6 +170,11 @@ class Agent(BaseAgent):
             if not self.folder_uid:
                 return False
 
+        ##
+        # Set home dashboard
+        if agent_conf.grafana_home_dashboard_uid():
+            self._gf_set_home_dashboard(agent_conf.grafana_home_dashboard_uid())
+
         return True
     
     def _run_handle_psconfig(self, psconfig, agent_conf, remote=None):
@@ -439,6 +444,8 @@ class Agent(BaseAgent):
                 r = requests.post(url, json=data, headers=headers, auth=auth, verify=False)
             elif method == "put":
                 r = requests.put(url, json=data, headers=headers, auth=auth, verify=False)
+            elif method == "patch":
+                r = requests.patch(url, json=data, headers=headers, auth=auth, verify=False)
             elif method == "delete":
                 r = requests.delete(url, headers=headers, auth=auth, verify=False)
             else:
@@ -693,6 +700,17 @@ class Agent(BaseAgent):
             return 
         
         return r.json().get("uid", None)
+
+    def _gf_set_home_dashboard(self, uid):
+        '''
+        Sets home dashboard using Grafana API
+        '''
+        r, msg = self._gf_http("/api/org/preferences", "set_home_dashboard", method="patch", data={"homeDashboardUID": uid})
+        if msg:
+            self.logger.warn(self.logf.format("Unable to set home dashboard: {}".format(msg)))
+            return
+
+        return r.json()
 
     def _gf_create_dashboard(self, dash, folder_uid):
         '''
