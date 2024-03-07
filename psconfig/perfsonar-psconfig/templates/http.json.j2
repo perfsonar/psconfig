@@ -1,0 +1,245 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {{ grafana_datasource|tojson }},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {{ grafana_datasource|tojson }},
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div> \n<text style=\"font-size:20pt;\"> \n<img  \nsrc=\"/grafana/public/img/perfsonar-logo-white-full.svg\"  \nstyle=\"background:rgb(17, 18, 23); width:200px; \"/>  \n</text> \n<a class=\"simple-button\" href=\"/grafana/dashboards/f/{{ grafana_folder_uid }}\" style=\"float: right;\">Dashboards</a> \n</div> \n \n \n<style> \n  /* custom stuff */ \n  a.buttons, button.buttons { \n    text-decoration: none; \n    background-color: #1b6522; \n    border: 3px solid white;  \n    border-radius: 3px; \n    color: white !important;   \n    font-weight: bold;  \n    text-align: right;  \n    padding: 10px;  \n    width: auto; \n    display: inline-block; \n  } \n  a.simple-button { \n    text-decoration: none; \n    background-color: black; \n    border: 3px solid #1b6522;  \n    border-radius: 3px; \n    color: white;  \n    font-weight: bold;  \n    text-align: right;  \n    padding: 10px;  \n    width: auto; \n    margin: 0 5px 0 5px; \n  } \n  a.simple-button:hover { \n    color: #1b6522; \n  } \n  h1.title,h2.title,h3.title,div.title { \n    color: #6D6E71;  \n    font-weight:bold; \n  } \n  p.description { \n    color: #6D6E71; \n  } \n  a.link { \n    color: #1b6522; \n  } \n \n  /* ----grafana stuff---- */ \n  button.css-82ooe6-button, button.css-1pq88ji-button { \n    background-color: rgba(78, 193, 224,0.7); \n    color: white; \n  } \n  button.css-82ooe6-button:hover, button.css-1pq88ji-button:hover { \n    background-color: #1b6522; \n  } \n  button.dashboard-row__title { \n    color: #6D6E71; \n  } \n  /* +add button */ \n  button.css-r8pbcf-button-add-panel-button-add-panel-button-text, \n  button.css-1bvfhzx-button-add-panel-button-add-panel-button-text { \n    color: #1b6522; \n    border: 1px solid #1b6522; \n    } \n \n \n  /* ----light mode---- */ \n  button.css-14424at { \n    color: #6D6E71;  \n  } \n  button.css-14424at:hover { \n    color: #1b6522;  \n  } \n    /* data links */ \n  div.css-1d09i7b { \n    color: rgb(36, 41, 46); \n  } \n  div.css-1d09i7b:hover { \n    color: #1b6522; \n  } \n \n  /* ----dark mode---- */ \n  div.css-1h2bvkc { \n    color: rgb(204, 204, 220); \n  } \n  div.css-1h2bvkc:hover { \n    color: #6d6e71; \n  } \n  button.css-1n3c59t { \n    color: #1b6522; \n  } \n  button.css-1n3c59t:hover { \n    color: #6D6E71; \n  } \n \n  /* data links */ \n  div.css-1ijov7j { \n    color: rgb(204, 204, 220); \n  } \n  div.css-1ijov7j:hover { \n    color: #1b6522; \n  } \n   \n</style>\n",
+        "mode": "html"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {{ grafana_datasource|tojson }},
+          "format": "table",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "",
+          "queryType": "lucene",
+          "refId": "A",
+          "timeField": "pscheduler.start_time"
+        }
+      ],
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": {{ grafana_datasource|tojson }},
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max result.time"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Max Time"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource": {{ grafana_datasource|tojson }},
+          "format": "table",
+          "metrics": [
+            {
+              "field": "result.time",
+              "id": "1",
+              "type": "max"
+            }
+          ],
+          "query": "test.type.keyword: http AND test.spec.host.keyword: $http_host AND test.spec.url.keyword: $http_url",
+          "queryType": "lucene",
+          "refId": "A",
+          "timeField": "pscheduler.start_time"
+        }
+      ],
+      "title": "HTTP Request Time",
+      "transparent": true,
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "definition": "{\"find\": \"terms\", \"field\": \"test.spec.host.keyword\", \"query\": \"test.type.keyword: http\", \"size\": 10000000}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Host",
+        "multi": false,
+        "name": "http_host",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"test.spec.host.keyword\", \"query\": \"test.type.keyword: http\", \"size\": 10000000}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "definition": "{\"find\": \"terms\", \"field\": \"test.spec.url.keyword\", \"query\": \"test.type.keyword: http\", \"size\": 10000000}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "URL",
+        "multi": false,
+        "name": "http_url",
+        "options": [],
+        "query": "{\"find\": \"terms\", \"field\": \"test.spec.url.keyword\", \"query\": \"test.type.keyword: http\", \"size\": 10000000}",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "perfSONAR HTTP Explorer",
+  "uid": "bdex4qmni8m4gc",
+  "version": 3,
+  "weekStart": ""
+}
