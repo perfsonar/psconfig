@@ -67,11 +67,13 @@
         "cellPadding": 5,
         "cellSize": 15,
         "defaultColor": "transparent",
-        "inputList": true,
         "nullColor": "#E6E6E6",
 {% if task.static_fields %}
+        "inputList": true,
         "staticColumns": "{{ task.cols|join(',') }}",
         "staticRows": "{{ task.rows|join(',') }}",
+{% else %}
+        "inputList": false,
 {% endif %}  
         "txtLength": 50,
         "txtSize": 10,
