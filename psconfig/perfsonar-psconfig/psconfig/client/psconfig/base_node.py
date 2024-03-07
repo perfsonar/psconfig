@@ -426,7 +426,7 @@ class BaseNode(object):
     
     def _field_bool_default_true(self, field, val=None):
         #if not setting the value and the existing field value is None, default to true
-        if (not val) and (not self.data.get(field)):
+        if val is None and self.data.get(field, None) is None:
             return True
         #otherwise, do the normal boolean operation
         return self._field_bool(field, val)
