@@ -256,6 +256,7 @@ fi
 %{template_base}/grafana.json.j2
 %{template_base}/endpoints.json.j2
 %{template_base}/dns.json.j2
+%{template_base}/http.json.j2
 %{_unitdir}/psconfig-grafana-agent.service
 
 %files hostmetrics

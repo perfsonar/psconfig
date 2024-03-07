@@ -145,6 +145,32 @@
                     "value": 1
                 }
             ]
+        },
+        "http_result_time": {
+            "task_selector":{
+                "test_types": ["http"]
+            },
+            "datasource_selector": "auto",
+            "stat_field": "result.time",
+            "stat_type": "max",
+            "row_field": "test.spec.host.keyword",
+            "col_field": "test.spec.url.keyword",
+            "value_field": "Max",
+            "value_text": "Time",
+            "unit": "s",
+            "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/http.json.j2",
+            "matrix_url_var1": "http_host",
+            "matrix_url_var2": "http_url",
+            "thresholds": [
+                {
+                    "color": "green",
+                    "value": null
+                },
+                {
+                    "color": "red",
+                    "value": 1
+                }
+            ]
         }
     }
 }
