@@ -87,6 +87,9 @@ class Display(BaseNode):
     def stat_meta(self, val=None):
         return self._field_map('stat_meta', val)
 
+    def static_fields(self, val=None):
+        return self._field_bool_default_true('static_fields', val)
+
     def row_field(self, val=None):
         return self._field('row_field', val)
 

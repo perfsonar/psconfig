@@ -69,8 +69,10 @@
         "defaultColor": "transparent",
         "inputList": true,
         "nullColor": "#E6E6E6",
+{% if task.get(static_fields, True) %}
         "staticColumns": "{{ task.cols|join(',') }}",
         "staticRows": "{{ task.rows|join(',') }}",
+{% endif %}  
         "txtLength": 50,
         "txtSize": 10,
         "url": "{{ task.matrix_url }}",

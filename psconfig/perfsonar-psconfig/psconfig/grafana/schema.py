@@ -203,6 +203,10 @@ class Schema(object):
                             "type": "object",
                             "description": "Additional information needed for certain types of stats"
                         },
+                        "static_fields": {
+                            "type": "boolean",
+                            "description": "Boolean indicating that task will have static rows and columns"
+                        },
                         "row_field": {
                             "type": "string",
                             "description": "The name of the field to use for the rows"

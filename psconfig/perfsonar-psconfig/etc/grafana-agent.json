@@ -153,6 +153,7 @@
             "datasource_selector": "auto",
             "stat_field": "result.time",
             "stat_type": "max",
+            "static_fields": false,
             "row_field": "test.spec.host.keyword",
             "col_field": "test.spec.url.keyword",
             "value_field": "Max",
