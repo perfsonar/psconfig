@@ -249,7 +249,7 @@ class Agent(BaseAgent):
 
             # make sure we have at least one matching display
             if not matching_display_config:
-                self.logger.warn(self.logf.format("No display config for task {} of type {}. Skipping.".format(task_name, test_type)))
+                self.logger.warn(self.logf.format("No display config for task {}. Skipping.".format(task_name)))
                 continue
             
             ##
