@@ -65,7 +65,7 @@ parser.add_argument('--bind', '-B', dest='bind', action='store', help='Local add
 parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
 parser.add_argument('--pscheduler-server', dest='pscheduler_server', action='store', help='Address of pScheduler server to contact to validate test and archiver specs in ' +
     'use by tasks. If not specified, the script will check if pScheduler is running ' +
-    'on 127.0.0.1. If it is not, then it will silently skip the pScheduler validation.'
+    'on localhost. If it is not, then it will silently skip the pScheduler validation.'
 )
 parser.add_argument('--deep', dest='deep', action='store_true', help='Perform deep validation where every task has its template variables expanded ' +
     'and is validated against pscheduler. This is much more  thorough but can take a ' +
