@@ -13,6 +13,28 @@
 # SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
 %global selinuxtype targeted
 
+#
+# Python
+#
+
+# This is the version we like.
+%define _python_version_major 3
+
+%if 0%{?el7}
+%error EL7 is no longer supported.  Try something newer.
+%endif
+
+%if 0%{?el8}%{?ol8}
+# EL8 standardized on just the major version, as did EPEL.
+%define _python python%{_python_version_major}
+
+%else
+
+# EL9+ has everyting as just plain python
+%define _python python
+
+%endif
+
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 0.a1.0
@@ -30,28 +52,28 @@ BuildArch:		noarch
 %description
 The perfSONAR pSConfig tool for configuring tests and UI
 
-%package -n python-perfsonar-psconfig
+%package -n %{_python}-perfsonar-psconfig
 Summary:		perfSONAR pSConfig Python Libraries
-Requires:       python3
-Requires:       python-requests
-Requires:       python-jsonschema >= 3.0
-Requires:       python-pyjq >= 2.2.0
-Requires:       python3-netifaces
-Requires:       python-isodate
-Requires:       python-dns
-Requires:       python3-tqdm
-Requires:       python-file-read-backwards
-BuildRequires:  python3
-BuildRequires:  python3-setuptools
+Requires:       %{_python}
+Requires:       %{_python}-requests
+Requires:       %{_python}-jsonschema >= 3.0
+Requires:       %{_python}-pyjq >= 2.2.0
+Requires:       %{_python}-netifaces
+Requires:       %{_python}-isodate
+Requires:       %{_python}-dns
+Requires:       %{_python}-tqdm
+Requires:       %{_python}-file-read-backwards
+BuildRequires:  %{_python}
+BuildRequires:  %{_python}-setuptools
 BuildArch:		noarch
 
-%description -n python-perfsonar-psconfig
+%description -n %{_python}-perfsonar-psconfig
 The perfSONAR pSConfig python libraries
 
 %package pscheduler
 Summary:		pSConfig pScheduler Agent
-Requires:       python-perfsonar-psconfig
-Requires:       python3-inotify
+Requires:       %{_python}-perfsonar-psconfig
+Requires:       %{_python}-inotify
 Requires:       perfsonar-common
 Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
@@ -66,9 +88,9 @@ describing the tests to run, and uses it to generate appropriate pScheduler task
 
 %package grafana
 Summary:		pSConfig pScheduler Agent
-Requires:       python-perfsonar-psconfig
-Requires:       python3-inotify
-Requires:       python3-jinja2
+Requires:       %{_python}-perfsonar-psconfig
+Requires:       %{_python}-inotify
+Requires:       %{_python}-jinja2
 Requires:       perfsonar-common
 Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
@@ -83,9 +105,9 @@ describing the tests to run, and uses it to generate Grafana dashboards.
 
 %package hostmetrics
 Summary:		pSConfig Host Metrics Agent
-Requires:       python3-inotify
+Requires:       %{_python}-inotify
 Requires:       perfsonar-common
-Requires:       python3-jinja2
+Requires:       %{_python}-jinja2
 Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
 Requires:       selinux-policy-%{selinuxtype}
@@ -102,8 +124,8 @@ for gather metrics about the perfSONAR hosts
 
 %package utils
 Summary:		pSConfig Utilities
-Requires:       python-perfsonar-psconfig
-Requires:       python3-tqdm
+Requires:       %{_python}-perfsonar-psconfig
+Requires:       %{_python}-tqdm
 BuildArch:		noarch
 
 %description utils
@@ -233,7 +255,7 @@ if [ $1 -eq 0 ]; then
     fi
 fi
 
-%files -n python-perfsonar-psconfig -f INSTALLED_FILES
+%files -n %{_python}-perfsonar-psconfig -f INSTALLED_FILES
 %defattr(-,root,root)
 %license LICENSE
 
