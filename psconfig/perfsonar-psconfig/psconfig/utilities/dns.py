@@ -118,11 +118,11 @@ def reverse_dns_multi(addresses, timeout=60):
         else:
             #dns reverse lookup
             try:
-                resolver_result = res.resolve_address(address)
+                resolver_result = res.query(dns.reversename.from_address(address), 'PTR')
                 if resolver_result:
                     results[address] = results.get(address, [])
                     for result in resolver_result:
-                        results[address].append(result.to_text())
+                        results[address].append(str(result).rstrip('.'))
             except Exception as e:
                 #can not resolve #####add logging
                 pass

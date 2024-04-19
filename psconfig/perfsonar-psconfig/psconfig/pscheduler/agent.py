@@ -101,9 +101,9 @@ class Agent(BaseAgent):
                 self.logger.error(self.logf.format("Unable to detect any match addresses. This may signify a problem with your /etc/hosts or DNS configuration. You can also try setting the match_addresses property directly.", {"match_addresses" : match_addresses}))
                 return
             
-            self.logger.debug(self.logf.format("Auto-detected match addresses", {"match_addresses" : match_addresses}))
+            self.logger.info(self.logf.format("Auto-detected match addresses", {"match_addresses" : match_addresses}))
         else:
-            self.logger.debug(self.logf.format("Loaded match addresses from config file", {"match_addresses" : match_addresses}))
+            self.logger.info(self.logf.format("Loaded match addresses from config file", {"match_addresses" : match_addresses}))
         
         self.match_addresses = match_addresses
 

@@ -560,17 +560,16 @@ class BaseAgent(object):
             try:
                 ip_type_addr = ip_address(ip)
                 if not ((isinstance(ip_type_addr, IPv4Address) and ip_type_addr.is_loopback) or (isinstance(ip_type_addr, IPv6Address) and ip_type_addr in IPv6Network("::1/128"))): ####simplify
-                    all_addresses.append(ip)
+                    all_addresses.append(ip_type_addr)
             except:
                 pass
-        
         for address in all_addresses:
-            if (not address) or ret_addresses.get(address):
+            if (not address) or ret_addresses.get(str(address)):
                 continue
-            ret_addresses[address] = True
+            ret_addresses[str(address)] = True
 
             if isinstance(address, IPv4Address) or isinstance(address, IPv6Address):
-                hostnames = reverse_dns(address)
+                hostnames = reverse_dns(str(address))
                 all_addresses += hostnames
             else: #######not checking if address is hostname since dns resolution exceptions are handled
                 addresses = resolve_address(address)
