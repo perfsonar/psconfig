@@ -142,7 +142,6 @@ Requires(post): httpd
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
 BuildRequires:  selinux-policy-devel
-%{?selinux_requires}
 
 %description publisher
 Environment for publishing pSConfig template files in standard way
