@@ -71,33 +71,31 @@ def resolve_address_multi(addresses, timeout=60):
     for address in addresses:
         #try /etc/hosts first
         ip_hosts, host_ips = read_etc_hosts()
-
         if address in host_ips:
             results[address] = results.get(address, [])
             results[address] += host_ips[address]
-        
-        else:
-            #v4 lookup
-            try:
-                v4_result = res.resolve(address, 'A')
-                if v4_result:
-                    results[address] = results.get(address, [])
-                    for result in v4_result:
-                        results[address].append(result.to_text())
-            except Exception as e:
-                #can not resolve #####add logging
-                pass
+    
+        #v4 lookup
+        try:
+            v4_result = res.resolve(address, 'A')
+            if v4_result:
+                results[address] = results.get(address, [])
+                for result in v4_result:
+                    results[address].append(result.to_text())
+        except Exception as e:
+            #can not resolve #####add logging
+            pass
 
-            #v6 lookup
-            try:
-                v6_result = res.resolve(address, 'AAAA')
-                if v6_result:
-                    results[address] = results.get(address, [])
-                    for result in v6_result:
-                        results[address].append(result.to_text())
-            except Exception as e:
-                #can not resolve #####add logging
-                pass
+        #v6 lookup
+        try:
+            v6_result = res.resolve(address, 'AAAA')
+            if v6_result:
+                results[address] = results.get(address, [])
+                for result in v6_result:
+                    results[address].append(result.to_text())
+        except Exception as e:
+            #can not resolve #####add logging
+            pass
 
     return results
 
@@ -114,18 +112,17 @@ def reverse_dns_multi(addresses, timeout=60):
         if address in ip_hosts:
             results[address] = results.get(address, [])
             results[address] += ip_hosts[address]
-
-        else:
-            #dns reverse lookup
-            try:
-                resolver_result = res.query(dns.reversename.from_address(address), 'PTR')
-                if resolver_result:
-                    results[address] = results.get(address, [])
-                    for result in resolver_result:
-                        results[address].append(str(result).rstrip('.'))
-            except Exception as e:
-                #can not resolve #####add logging
-                pass
+        
+        #dns reverse lookup
+        try:
+            resolver_result = res.query(dns.reversename.from_address(address), 'PTR')
+            if resolver_result:
+                results[address] = results.get(address, [])
+                for result in resolver_result:
+                    results[address].append(str(result).rstrip('.'))
+        except Exception as e:
+            #can not resolve #####add logging
+            pass
     return results
     
 
