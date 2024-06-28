@@ -718,7 +718,9 @@ class BaseNode(object):
         return False
     
     def _has_field(self, parent, field):
-        return parent.get(field)
+        if parent.get(field) is None:
+            return False
+        return True
 
     def _init_field(self, parent, field):
         if not self._has_field(parent, field):

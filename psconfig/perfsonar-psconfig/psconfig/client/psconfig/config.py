@@ -252,7 +252,7 @@ class Config(BaseMetaNode):
             host_ref = address.host_ref()
             context_refs = address.context_refs()
             #check host ref
-            if host_ref and not self.host(host_ref):
+            if host_ref and self.host(host_ref) is None:
                 ref_errors.append("Address {} references a host object {} that does not exist.".format(addr_name, host_ref))
             
             #check context refs
