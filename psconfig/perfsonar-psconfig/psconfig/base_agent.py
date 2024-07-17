@@ -256,7 +256,7 @@ class BaseAgent(object):
 
         for transform_file in transform_files:
             log_ctx = {"transform_file" : transform_file}
-            self.logger.debug(self.logf.format("Loading transform file {}".format(archive_file), log_ctx))
+            self.logger.debug(self.logf.format("Loading transform file {}".format(transform_file), log_ctx))
 
             transform_client = TransformConnect(url=transform_file)
             transform = transform_client.get_config()
