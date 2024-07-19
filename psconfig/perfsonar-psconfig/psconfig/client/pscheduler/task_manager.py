@@ -3,6 +3,7 @@ A client tracking and maintaining pscheduler tasks across multiple servers
 '''
 
 import os
+import isodate
 import json
 import time
 import uuid
@@ -10,7 +11,6 @@ from ...utilities.iso8601 import duration_to_seconds
 from .api_filters import ApiFilters
 from .api_connect import ApiConnect
 import datetime
-from dateutil.parser import isoparse
 from ...utilities.logging_utils import LoggingUtils
 import logging
 
@@ -533,9 +533,7 @@ class TaskManager(object):
             return
 
         #ensure no microseconds for strptime to work
-        dt = isoparse(iso_str)
-        return dt.timestamp()
-        
+        return isodate.parse_datetime(iso_str).timestamp()
 
     def _ts_to_iso(self, ts):
         if not ts:
