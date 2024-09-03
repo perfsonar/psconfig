@@ -389,10 +389,8 @@ class TaskManager(object):
                 if ((not old_task['task'].detail_exclusive()) #not exclusive
                     and old_task['task'].detail_multiresult() #is multi-result
                     and (old_task_start_ts + 15*60) < int(time.time()) #started at least 15 min ago
-                    and (
-                        (old_task['task'].detail_runs_started() is not None and  (old_task['task'].detail_runs_started()== 0)) #have at no runs started (v1.1 and later)
-                        or (old_task['task'].detail_runs_started() is not None and (old_task['task'].detail_runs() <= 2)) #have less than two runs (not 1 because count bugged) (pre-v1.1)
-                        )):
+                    and (old_task['task'].detail_runs_started() is not None and (old_task['task'].detail_runs_started()== 0)) #no runs started
+                   ):
 
                         #if background-multi, one or less runs and start time is 15 minutes (arbitrary)
                         # in the past the start time is immediately. Fixes special cases where bgm
