@@ -259,9 +259,13 @@ elif len(args.values) > 0:
     cli.print_msg("Successfully set {} in {}".format(args.prop, config_file))
 elif args.unset:
     #unset an option
-    del agent_conf.data[args.prop]
-    _save_and_validate(agent_conf, config_client, cli)
-    cli.print_msg("Successfully unset {} in {}".format(args.prop, config_file))
+    try:
+        del agent_conf.data[args.prop]
+        _save_and_validate(agent_conf, config_client, cli)
+        cli.print_msg("Successfully unset {} in {}".format(args.prop, config_file))
+    except KeyError:
+        cli.print_msg("{} was not set in {}. No action performed".format(args.prop, config_file))
+    
 else:
     # print current value of property
     _print_prop(args.prop, agent_conf.data.get(args.prop, None), cli)
