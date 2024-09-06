@@ -146,7 +146,7 @@ class BaseAgent(object):
             check_interval = None
 
             try:
-                check_interval = duration_to_seconds(agent_conf.check_interval()) 
+                check_interval = int(duration_to_seconds(agent_conf.check_interval()))
             except Exception as e:
                 self.logger.error(self.logf.format("Error parsing check-interval. Defaulting to " + str(self.check_interval_seconds) + " seconds: {}".format(e)))
                 pass

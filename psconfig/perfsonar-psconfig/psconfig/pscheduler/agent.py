@@ -57,7 +57,7 @@ class Agent(BaseAgent):
             task_min_ttl_seconds = None
 
             try:
-                task_min_ttl_seconds = duration_to_seconds(agent_conf.task_min_ttl())
+                task_min_ttl_seconds = int(duration_to_seconds(agent_conf.task_min_ttl()))
             except Exception as e:
                 self.logger.error(self.logf.format("Error parsing task-min-ttl. Defaulting to " + str(self.task_min_ttl_seconds) + " seconds: {}".format(e)))
             
