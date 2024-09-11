@@ -53,7 +53,7 @@ class ApiConnect(object):
             return
 
         if not response.ok: 
-            self.error = build_err_msg(http_resonse=response)
+            self.error = build_err_msg(http_response=response)
             return
         
         response_json = response.json() 
