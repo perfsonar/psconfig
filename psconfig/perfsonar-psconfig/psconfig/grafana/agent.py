@@ -318,6 +318,13 @@ class Agent(BaseAgent):
                 if mdc.datasource_selector() == 'auto':
                     # create the data source or find existing based on pSConfig template
                     mdc_var_obj["grafana_datasource_name"], mdc_var_obj["grafana_datasource"] = self._select_gf_datasource(expanded_archives)
+                elif mdc.datasource_selector() == 'manual' and mdc.datasource_name():
+                    #use the manally defined datasource in the display config
+                    mdc_var_obj["grafana_datasource_name"] = mdc.datasource_name()
+                    mdc_var_obj["grafana_datasource"] = self.grafana_datasource_by_name.get(mdc.datasource_name(), None)
+                    if not mdc_var_obj["grafana_datasource"]:
+                        self.logger.warn(self.logf.format("'datasource_selector' is not auto and grafana_datasource_name '{}' does not exist on Grafana server. Skipping.".format(mdc.datasource_name())))
+                        continue
                 elif mdc.datasource_selector() == 'manual' and self.grafana_datasource:
                     #use the manally defined datasource in the agent config
                     mdc_var_obj["grafana_datasource"] = self.grafana_datasource

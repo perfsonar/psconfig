@@ -184,6 +184,10 @@
                     "enum": [ "auto", "manual" ],
                     "description": "Define how to determine the data source to use. 'auto' means it will try to detrmine an archive based on pSConfig template and will fallback to the default defined by grafana-datasource-name. 'manual' means it will just use grafana-datasource-name. "
                 },
+                "datasource_name": {
+                    "type": "string",
+                    "description": "If datasource_selector is manual, then the name of the data source to use. If datasource_selector is auto then this is ignored. If datasource_selector is manual and this is not set, then the global grafana-datasource-name will be used."
+                },
                 "priority": {
                     "$ref": "#/pSConfig/Priority",
                     "description": "Priority of display."

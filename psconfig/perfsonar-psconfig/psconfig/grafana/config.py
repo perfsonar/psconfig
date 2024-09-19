@@ -126,6 +126,9 @@ class Display(BaseNode):
     def datasource_selector(self, val=None):
         return self._field_enum('datasource_selector', val, [ "auto", "manual" ])
 
+    def datasource_name(self, val=None):
+        return self._field('datasource_name', val)
+
     def priority(self, val=None):
         return self._field_class('priority', Priority, val)
 
