@@ -27,11 +27,8 @@ def read_etc_hosts():
                             break
                         else:
                             ip_hosts[line_entry[0]] = ip_hosts.get(line_entry[0], []) + [entry]
-                    for host in line_entry[1:]:
-                        if host.startswith('#'): # Comment encountered
-                            break
-                        else:
-                            host_ips[host] = host_ips.get(host, []) + [line_entry[0]]
+                            host_ips[entry] = host_ips.get(entry, []) + [line_entry[0]]
+                            
     except FileNotFoundError:
         pass
     
