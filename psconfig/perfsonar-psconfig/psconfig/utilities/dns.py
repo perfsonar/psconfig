@@ -6,6 +6,11 @@ be explicitly imported to use them.'''
 import socket
 import dns.resolver
 from ipaddress import ip_address
+import logging
+from .logging_utils import LoggingUtils
+
+logger = logging.getLogger(__name__)
+logf = LoggingUtils()
 
 def read_etc_hosts():
     ip_hosts = {}
@@ -13,13 +18,19 @@ def read_etc_hosts():
     try:
         with open('/etc/hosts', 'r') as file:
             for line in file:
-                entry = line.split()
-                if not entry or len(entry) < 2:
-                    continue
-                ip_hosts[entry[0]] = entry[1:]
-                for host in entry[1:]:
-                    host_ips[host] = host_ips.get(host, []) + [entry[0]]
+                if not line.startswith('#'): # Ignore comments
+                    line_entry = line.split()
+                    if not line_entry or len(line_entry) < 2:
+                        continue
+                    for host_entry in line_entry[1:]:
+                        if host_entry.startswith('#'): # Comment encountered
+                            break
+                        else:
+                            ip_hosts[line_entry[0]] = ip_hosts.get(line_entry[0], []) + [host_entry]
+                            host_ips[host_entry] = host_ips.get(host_entry, []) + [line_entry[0]]
+                            
     except FileNotFoundError:
+        logger.info(logf.format("/etc/hosts file not found. Skipping."))
         pass
     
     return ip_hosts, host_ips
@@ -83,7 +94,8 @@ def resolve_address_multi(addresses, timeout=60):
                 for result in v4_result:
                     results[address].append(result.to_text())
         except Exception as e:
-            #can not resolve #####add logging
+            #can not resolve
+            logger.info(logf.format("v4 lookup failed. Cannot resolve address {}. Error Message - {}".format(address, e)))
             pass
 
         #v6 lookup
@@ -94,7 +106,8 @@ def resolve_address_multi(addresses, timeout=60):
                 for result in v6_result:
                     results[address].append(result.to_text())
         except Exception as e:
-            #can not resolve #####add logging
+            #can not resolve
+            logger.info(logf.format("v6 lookup failed. Cannot resolve address {}. Error Message - {}".format(address, e)))
             pass
 
     return results
@@ -121,7 +134,8 @@ def reverse_dns_multi(addresses, timeout=60):
                 for result in resolver_result:
                     results[address].append(str(result).rstrip('.'))
         except Exception as e:
-            #can not resolve #####add logging
+            #can not resolve
+            logger.info(logf.format("dns reverse lookup failed for {}. Error Message - {}".format(address, e)))
             pass
     return results
     
