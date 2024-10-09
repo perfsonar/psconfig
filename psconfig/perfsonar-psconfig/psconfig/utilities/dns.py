@@ -7,7 +7,7 @@ import socket
 import dns.resolver
 from ipaddress import ip_address
 import logging
-from logging_utils import LoggingUtils
+from .logging_utils import LoggingUtils
 
 logger = logging.getLogger(__name__)
 logf = LoggingUtils()
