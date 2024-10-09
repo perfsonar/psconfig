@@ -22,14 +22,15 @@ def read_etc_hosts():
                     line_entry = line.split()
                     if not line_entry or len(line_entry) < 2:
                         continue
-                    for entry in line_entry[1:]:
-                        if entry.startswith('#'): # Comment encountered
+                    for host_entry in line_entry[1:]:
+                        if host_entry.startswith('#'): # Comment encountered
                             break
                         else:
-                            ip_hosts[line_entry[0]] = ip_hosts.get(line_entry[0], []) + [entry]
-                            host_ips[entry] = host_ips.get(entry, []) + [line_entry[0]]
+                            ip_hosts[line_entry[0]] = ip_hosts.get(line_entry[0], []) + [host_entry]
+                            host_ips[host_entry] = host_ips.get(host_entry, []) + [line_entry[0]]
                             
     except FileNotFoundError:
+        logger.info(logf.format("/etc/hosts file not found. Skipping."))
         pass
     
     return ip_hosts, host_ips
