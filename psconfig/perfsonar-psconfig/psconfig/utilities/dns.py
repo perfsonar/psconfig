@@ -13,13 +13,20 @@ def read_etc_hosts():
     try:
         with open('/etc/hosts', 'r') as file:
             for line in file:
-                if not line.startswith('#'): #Ignore comments
-                    entry = line.split()
-                    if not entry or len(entry) < 2:
+                if not line.startswith('#'): # Ignore comments
+                    line_entry = line.split()
+                    if not line_entry or len(line_entry) < 2:
                         continue
-                    ip_hosts[entry[0]] = ip_hosts.get(entry[0], []) + entry[1:]
-                    for host in entry[1:]:
-                        host_ips[host] = host_ips.get(host, []) + [entry[0]]
+                    for entry in line_entry[1:]:
+                        if entry.startswith('#'): # Comment encountered
+                            break
+                        else:
+                            ip_hosts[line_entry[0]] = ip_hosts.get(line_entry[0], []) + [entry]
+                    for host in line_entry[1:]:
+                        if host.startswith('#'): # Comment encountered
+                            break
+                        else:
+                            host_ips[host] = host_ips.get(host, []) + [line_entry[0]]
     except FileNotFoundError:
         pass
     
