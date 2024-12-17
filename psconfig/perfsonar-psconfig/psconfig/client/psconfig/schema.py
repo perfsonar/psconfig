@@ -366,6 +366,7 @@ class Schema(object):
                         "ttl": { "$ref": "#/pSConfig/Duration" },
                         "_meta": { "$ref": "#/pSConfig/AnyJSON" },
                         "label": { "type": "string" },
+                        "runs": { "type": "string" },
                         "schema": { "$ref": "#/pSConfig/Cardinal" }
                     },
                     "additionalProperties": False,
