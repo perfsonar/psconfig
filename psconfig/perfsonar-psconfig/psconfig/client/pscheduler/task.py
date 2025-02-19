@@ -375,7 +375,7 @@ class Task(BaseNode):
     def post_task(self):
         
         if self.schema() is None:
-            if self.priority() is None:
+            if self.priority() is not None:
                 #priority introduced in v3
                 self.schema(3)
             elif self.contexts(): 
