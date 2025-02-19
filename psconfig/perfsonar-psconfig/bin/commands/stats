@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import os
 
 from psconfig.utilities.cli import PSCONFIG_CLI_AGENTS, CLIUtil
 from psconfig.utilities.metrics import PSConfigMetricCalculator
@@ -27,6 +28,9 @@ cli = CLIUtil()
 valid_agents = []
 agent = None
 for cli_agent in PSCONFIG_CLI_AGENTS:
+    # check if agent is present
+    if not os.path.isfile(cli_agent['command']):
+        continue
     valid_agents.append(cli_agent['name'].lower())
     if cli_agent['name'].lower() == args.agent.lower():
         agent = cli_agent
