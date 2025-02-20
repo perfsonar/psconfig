@@ -41,7 +41,7 @@
         },
         "content": "<div>\n<text style=\"font-size:20pt;\">\n<img \nsrc=\"/grafana/public/img/perfsonar-logo-white-full.svg\" \nstyle=\"background:rgb(17, 18, 23); width:200px; \"/> \n</text>\n<a class=\"simple-button\" href=\"/grafana/dashboards/f/{{ grafana_folder_uid }}\" style=\"float: right;\">Dashboards</a>\n</div>\n\n\n<style>\n  /* custom stuff */\n  a.buttons, button.buttons {\n    text-decoration: none;\n    background-color: #1b6522;\n    border: 3px solid white; \n    border-radius: 3px;\n    color: white !important;  \n    font-weight: bold; \n    text-align: right; \n    padding: 10px; \n    width: auto;\n    display: inline-block;\n  }\n  a.simple-button {\n    text-decoration: none;\n    background-color: black;\n    border: 3px solid #1b6522; \n    border-radius: 3px;\n    color: white; \n    font-weight: bold; \n    text-align: right; \n    padding: 10px; \n    width: auto;\n    margin: 0 5px 0 5px;\n  }\n  a.simple-button:hover {\n    color: #1b6522;\n  }\n  h1.title,h2.title,h3.title,div.title {\n    color: #6D6E71; \n    font-weight:bold;\n  }\n  p.description {\n    color: #6D6E71;\n  }\n  a.link {\n    color: #1b6522;\n  }\n\n  /* ----grafana stuff---- */\n  button.css-82ooe6-button, button.css-1pq88ji-button {\n    background-color: rgba(78, 193, 224,0.7);\n    color: white;\n  }\n  button.css-82ooe6-button:hover, button.css-1pq88ji-button:hover {\n    background-color: #1b6522;\n  }\n  button.dashboard-row__title {\n    color: #6D6E71;\n  }\n  /* +add button */\n  button.css-r8pbcf-button-add-panel-button-add-panel-button-text,\n  button.css-1bvfhzx-button-add-panel-button-add-panel-button-text {\n    color: #1b6522;\n    border: 1px solid #1b6522;\n    }\n\n\n  /* ----light mode---- */\n  button.css-14424at {\n    color: #6D6E71; \n  }\n  button.css-14424at:hover {\n    color: #1b6522; \n  }\n    /* data links */\n  div.css-1d09i7b {\n    color: rgb(36, 41, 46);\n  }\n  div.css-1d09i7b:hover {\n    color: #1b6522;\n  }\n\n  /* ----dark mode---- */\n  div.css-1h2bvkc {\n    color: rgb(204, 204, 220);\n  }\n  div.css-1h2bvkc:hover {\n    color: #6d6e71;\n  }\n  button.css-1n3c59t {\n    color: #1b6522;\n  }\n  button.css-1n3c59t:hover {\n    color: #6D6E71;\n  }\n\n  /* data links */\n  div.css-1ijov7j {\n    color: rgb(204, 204, 220);\n  }\n  div.css-1ijov7j:hover {\n    color: #1b6522;\n  }\n  \n</style>"
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.2.3",
       "transparent": true
     },
     {
@@ -58,6 +58,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -303,6 +304,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -548,6 +550,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -957,6 +960,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -1365,6 +1369,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -1531,6 +1536,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -1697,6 +1703,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -2114,6 +2121,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -2532,6 +2540,663 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 39
+      },
+      "id": 1001,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "Minimum- {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.test_checksum.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.source.hostname.keyword",
+              "id": "4",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.destination.hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.tool.keyword",
+              "id": "6",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.ip_version",
+              "id": "7",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource":  {{ grafana_datasource|tojson }},
+          "format": "table",
+          "metrics": [
+            {
+              "field": "result.rtt.min",
+              "id": "1",
+              "type": "min"
+            }
+          ],
+          "query": "test.type.keyword:rtt AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "queryType": "lucene",
+          "refId": "A",
+          "timeField": "pscheduler.start_time"
+        },
+        {
+          "alias": "Mean - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.test_checksum.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.source.hostname.keyword",
+              "id": "4",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.destination.hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.tool.keyword",
+              "id": "6",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.ip_version",
+              "id": "7",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource":  {{ grafana_datasource|tojson }},
+          "format": "table",
+          "hide": false,
+          "metrics": [
+            {
+              "field": "result.rtt.mean",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "test.type.keyword:rtt AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "queryType": "lucene",
+          "refId": "B",
+          "timeField": "pscheduler.start_time"
+        },
+        {
+          "alias": "Max - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.test_checksum.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.source.hostname.keyword",
+              "id": "4",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.destination.hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.tool.keyword",
+              "id": "6",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.ip_version",
+              "id": "7",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource":  {{ grafana_datasource|tojson }},
+          "format": "table",
+          "hide": false,
+          "metrics": [
+            {
+              "field": "result.rtt.max",
+              "id": "1",
+              "type": "max"
+            }
+          ],
+          "query": "test.type.keyword:rtt AND (meta.source.hostname.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (meta.destination.hostname.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "queryType": "lucene",
+          "refId": "C",
+          "timeField": "pscheduler.start_time"
+        }
+      ],
+      "title": "RTT",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource":  {{ grafana_datasource|tojson }},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 39
+      },
+      "id": 1002,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "Minimum- {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.test_checksum.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.source.hostname.keyword",
+              "id": "4",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.destination.hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.tool.keyword",
+              "id": "6",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.ip_version",
+              "id": "7",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource":  {{ grafana_datasource|tojson }},
+          "format": "table",
+          "metrics": [
+            {
+              "field": "result.rtt.min",
+              "id": "1",
+              "type": "min"
+            }
+          ],
+          "query": "test.type.keyword:rtt AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "queryType": "lucene",
+          "refId": "A",
+          "timeField": "pscheduler.start_time"
+        },
+        {
+          "alias": "Mean - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.test_checksum.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.source.hostname.keyword",
+              "id": "4",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.destination.hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.tool.keyword",
+              "id": "6",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.ip_version",
+              "id": "7",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource":  {{ grafana_datasource|tojson }},
+          "format": "table",
+          "hide": false,
+          "metrics": [
+            {
+              "field": "result.rtt.mean",
+              "id": "1",
+              "type": "avg"
+            }
+          ],
+          "query": "test.type.keyword:rtt AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "queryType": "lucene",
+          "refId": "B",
+          "timeField": "pscheduler.start_time"
+        },
+        {
+          "alias": "Max - {{ '{{term meta.source.hostname.keyword}} -> {{term meta.destination.hostname.keyword}} ({{term pscheduler.tool.keyword}}) - IPv{{term meta.ip_version}}' }}",
+          "bucketAggs": [
+            {
+              "field": "pscheduler.test_checksum.keyword",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.source.hostname.keyword",
+              "id": "4",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.destination.hostname.keyword",
+              "id": "5",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.tool.keyword",
+              "id": "6",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "meta.ip_version",
+              "id": "7",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
+            {
+              "field": "pscheduler.start_time",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "datasource":  {{ grafana_datasource|tojson }},
+          "format": "table",
+          "hide": false,
+          "metrics": [
+            {
+              "field": "result.rtt.max",
+              "id": "1",
+              "type": "max"
+            }
+          ],
+          "query": "test.type.keyword:rtt AND (meta.source.hostname.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (meta.destination.hostname.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "queryType": "lucene",
+          "refId": "C",
+          "timeField": "pscheduler.start_time"
+        }
+      ],
+      "title": "RTT Reverse",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource":  {{ grafana_datasource|tojson }},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -2579,7 +3244,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 48
       },
       "id": 14,
       "options": {
@@ -2836,7 +3501,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 57
       },
       "id": 15,
       "options": {
@@ -2853,7 +3518,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.2.3",
       "targets": [
         {
           "alias": "",
@@ -3015,7 +3680,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 57
+        "y": 66
       },
       "id": 16,
       "options": {
@@ -3032,7 +3697,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.2.3",
       "targets": [
         {
           "alias": "",
@@ -3126,7 +3791,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 66
+        "y": 75
       },
       "id": 19,
       "panels": [
@@ -3202,7 +3867,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 75
+            "y": 91
           },
           "id": 17,
           "options": {
@@ -3436,7 +4101,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 84
+            "y": 100
           },
           "id": 20,
           "options": {
@@ -3518,7 +4183,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 67
+        "y": 76
       },
       "id": 22,
       "options": {
@@ -3530,7 +4195,7 @@
         "content": "<hr>\n<div style=\"text-align:center\"><a href=\"https://www.perfsonar.net/about/privacy-policy/\">Privacy Policy</a> | <a href=\"http://stats.perfsonar.net/\">Global Node Directory</a> | <a href=\"/toolkit/services/host.cgi?method=get_summary\">Host JSON</a></div>\n<div style=\"padding:10px 10px 10px 10px;text-align:center\"><img style=\"width:30px;\" src=\"public/img/ps_footer_grafana_logo.svg\"/>&nbsp;Powered by Grafana</div>",
         "mode": "html"
       },
-      "pluginVersion": "10.4.3",
+      "pluginVersion": "11.2.3",
       "targets": [
         {
           "alias": "",
