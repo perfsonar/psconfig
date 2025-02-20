@@ -7,6 +7,7 @@ import datetime
 
 from file_read_backwards import FileReadBackwards
 from json import loads, dumps
+import os
 
 class PSConfigRunMetrics:
     guid = None
@@ -99,18 +100,18 @@ class PSConfigMetricCalculator:
     def find_guid(self):
         guid = None
         guid_regex = re.compile('^.*guid=(.+?) msg=Agent completed running$')
-        with FileReadBackwards(self.agent_log_file(), encoding="utf-8") as frb:
-            while True:
-                l = frb.readline()
-                if not l:
-                    break
-                
-                guid_match = guid_regex.match(l)
-                if guid_match:
-                    guid = guid_match.group(1)
-                    break
+        if os.path.isfile(self.agent_log_file()):
+            with FileReadBackwards(self.agent_log_file(), encoding="utf-8") as frb:
+                while True:
+                    l = frb.readline()
+                    if not l:
+                        break
+                    
+                    guid_match = guid_regex.match(l)
+                    if guid_match:
+                        guid = guid_match.group(1)
+                        break
         return guid
-    
 
     def run_metrics(self, guid_match='.+?'):
         stats = PSConfigRunMetrics(self.agent_name)
@@ -118,25 +119,26 @@ class PSConfigMetricCalculator:
         #Get guid, pid start and end info from agent log
         run_end_regex = re.compile(f'^(.+) INFO pid=(.+?) prog=.+? line=.+? guid=({guid_match}) msg=Agent completed running$')
         run_start_regex = None
-        with FileReadBackwards(self.agent_log_file(), encoding="utf-8") as frb:
-            while True:
-                #Check end of file
-                l = frb.readline()
-                if not l:
-                    break
-                
-                #Check end of run (we'll see this first since going backwards through)
-                run_end_match = run_end_regex.match(l)
-                if run_start_regex:
-                    run_start_match = run_start_regex.match(l)
-                    if run_start_match:
-                        stats.start = run_start_match.group(1)
+        if os.path.isfile(self.agent_log_file()):
+            with FileReadBackwards(self.agent_log_file(), encoding="utf-8") as frb:
+                while True:
+                    #Check end of file
+                    l = frb.readline()
+                    if not l:
                         break
-                elif run_end_match:
-                    stats.end = run_end_match.group(1)
-                    stats.pid = run_end_match.group(2)
-                    stats.guid = run_end_match.group(3)
-                    run_start_regex = re.compile(f'^(.+) INFO pid={stats.pid} prog=.+? line=.+? guid={stats.guid} msg=Running agent\.\.\.$')
+                    
+                    #Check end of run (we'll see this first since going backwards through)
+                    run_end_match = run_end_regex.match(l)
+                    if run_start_regex:
+                        run_start_match = run_start_regex.match(l)
+                        if run_start_match:
+                            stats.start = run_start_match.group(1)
+                            break
+                    elif run_end_match:
+                        stats.end = run_end_match.group(1)
+                        stats.pid = run_end_match.group(2)
+                        stats.guid = run_end_match.group(3)
+                        run_start_regex = re.compile(f'^(.+) INFO pid={stats.pid} prog=.+? line=.+? guid={stats.guid} msg=Running agent\.\.\.$')
 
         #Check if we found a guid, return if not
         if stats.guid is None:
@@ -144,58 +146,60 @@ class PSConfigMetricCalculator:
 
         #If we have guid, calculate stats
         run_ctx_regex = re.compile(f"^.+ INFO guid={stats.guid} (.+) task=.+$")
-        with FileReadBackwards(self.tasks_log_file(), encoding="utf-8") as frb:
-            while True:
-                #end if no more lines
-                l = frb.readline()
-                if not l:
-                    break
-                
-                #match run context fields
-                run_ctx_match = run_ctx_regex.match(l)
-                if not run_ctx_match:
-                    #skip if no match
-                    continue
-                
-                # we have a match, let's do some math
-                stats.total += 1
-                
-                #figure out context fields (these vary, hence not in regex)
-                ctx_map = {}
-                for ctx_kv in re.findall(r'(\w+?)=(.+?)( |$)', run_ctx_match.group(1)):
-                    ctx_map[ctx_kv[0]] = ctx_kv[1]
-                
-                #calculate categorical stats
-                if ctx_map.get("config_src", None):
-                    curr_stat = stats.by_src.setdefault(ctx_map["config_src"], {'total': 0, 'by_url': {} })
-                    curr_stat['total'] += 1
-                    if ctx_map.get("config_url", None):
-                        curr_stat['by_url'].setdefault(ctx_map["config_url"], 0)
-                        curr_stat['by_url'][ctx_map["config_url"]] += 1
-                    elif ctx_map.get("config_file", None):
-                        curr_stat['by_url'].setdefault(ctx_map["config_file"], 0)
-                        curr_stat['by_url'][ctx_map["config_file"]] += 1
+        if os.path.isfile(self.tasks_log_file()):
+            with FileReadBackwards(self.tasks_log_file(), encoding="utf-8") as frb:
+                while True:
+                    #end if no more lines
+                    l = frb.readline()
+                    if not l:
+                        break
+                    
+                    #match run context fields
+                    run_ctx_match = run_ctx_regex.match(l)
+                    if not run_ctx_match:
+                        #skip if no match
+                        continue
+                    
+                    # we have a match, let's do some math
+                    stats.total += 1
+                    
+                    #figure out context fields (these vary, hence not in regex)
+                    ctx_map = {}
+                    for ctx_kv in re.findall(r'(\w+?)=(.+?)( |$)', run_ctx_match.group(1)):
+                        ctx_map[ctx_kv[0]] = ctx_kv[1]
+                    
+                    #calculate categorical stats
+                    if ctx_map.get("config_src", None):
+                        curr_stat = stats.by_src.setdefault(ctx_map["config_src"], {'total': 0, 'by_url': {} })
+                        curr_stat['total'] += 1
+                        if ctx_map.get("config_url", None):
+                            curr_stat['by_url'].setdefault(ctx_map["config_url"], 0)
+                            curr_stat['by_url'][ctx_map["config_url"]] += 1
+                        elif ctx_map.get("config_file", None):
+                            curr_stat['by_url'].setdefault(ctx_map["config_file"], 0)
+                            curr_stat['by_url'][ctx_map["config_file"]] += 1
                 
         return stats
 
     def get_tasks(self, guid, print_func=None):
         tasks = []
         task_regex = re.compile(f"^.+ INFO guid={guid} .+ task=(.+)$")
-        with FileReadBackwards(self.tasks_log_file(), encoding="utf-8") as frb:
-            while True:
-                l = frb.readline()
-                if not l:
-                    break
-                
-                task_match = task_regex.match(l)
-                if task_match:
-                    task_json = task_match.group(1)
-                    try:
-                        tasks.append(loads(task_json))
-                    except Exception as e:
-                        if print_func:
-                            print_func("Error parsing task: {}".format(str(e)))
-                elif tasks:
-                    #no use in looking, we reached end of guid
-                    break
+        if os.path.isfile(self.tasks_log_file()):
+            with FileReadBackwards(self.tasks_log_file(), encoding="utf-8") as frb:
+                while True:
+                    l = frb.readline()
+                    if not l:
+                        break
+                    
+                    task_match = task_regex.match(l)
+                    if task_match:
+                        task_json = task_match.group(1)
+                        try:
+                            tasks.append(loads(task_json))
+                        except Exception as e:
+                            if print_func:
+                                print_func("Error parsing task: {}".format(str(e)))
+                    elif tasks:
+                        #no use in looking, we reached end of guid
+                        break
         return tasks
