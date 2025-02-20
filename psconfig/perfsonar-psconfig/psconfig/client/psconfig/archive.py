@@ -38,6 +38,16 @@ class Archive(BaseMetaNode):
 
         return self._field('label', val)
 
+    def runs(self, val=None):
+        '''Gets/sets runs'''
+
+        return self._field_enum('runs', val, ["all", "succeeded", "failed"])
+
+    def uri_host(self, val=None):
+        '''Gets/sets uri-host'''
+
+        return self._field('uri-host', val)
+    
     def schema(self, val=None):
         '''Gets/sets schema'''
 
