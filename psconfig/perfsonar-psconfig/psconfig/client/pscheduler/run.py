@@ -42,8 +42,8 @@ class Run(BaseNode):
     
     def participant_data(self, val=None):
         if val is not None:
-            self.data['participant_data'] = val
-        return self.data.get('participant_data', None)
+            self.data['participant-data'] = val
+        return self.data.get('participant-data', None)
     
     def participant_data_full(self, val=None):
         if val is not None:

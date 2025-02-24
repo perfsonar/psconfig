@@ -38,9 +38,9 @@ class Test(BaseNode):
     
     def scheduling_class(self, val=None):
         if val is not None:
-            self.data['scheduling_class'] = val
+            self.data['scheduling-class'] = val
         
-        return self.data.get('scheduling_class', None)
+        return self.data.get('scheduling-class', None)
     
 
             
