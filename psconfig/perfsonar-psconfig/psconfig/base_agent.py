@@ -297,7 +297,7 @@ class BaseAgent(object):
                 continue
             processed_psconfig_checksum = processed_psconfig.checksum() 
             if (psconfig_checksum_tracker.get(processed_psconfig_checksum)):
-                self.logger.warn(self.logf.format("Checksum matches another psconfig already read, so skipping"))
+                self.logger.warning(self.logf.format("Checksum matches another psconfig already read, so skipping"))
                 continue
             else:
                 psconfig_checksum_tracker[processed_psconfig_checksum] = True
@@ -322,7 +322,7 @@ class BaseAgent(object):
                 continue
             processed_psconfig_checksum = processed_psconfig.checksum()
             if psconfig_checksum_tracker.get(processed_psconfig_checksum): 
-                self.logger.warn(self.logf.format("Checksum matches another psconfig already read, so skipping", log_ctx))
+                self.logger.warning(self.logf.format("Checksum matches another psconfig already read, so skipping", log_ctx))
                 continue
             else:
                 psconfig_checksum_tracker[processed_psconfig_checksum] = True
