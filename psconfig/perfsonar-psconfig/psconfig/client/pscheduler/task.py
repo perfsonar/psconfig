@@ -82,8 +82,8 @@ class Task(BaseNode):
     
     def lead_bind(self, val=None):
         if val is not None:
-            self.data['lead_bind'] = val
-        return self.data.get('lead_bind', None)
+            self.data['lead-bind'] = val
+        return self.data.get('lead-bind', None)
     
     def reference(self, val=None):
         if val is not None:
@@ -664,9 +664,9 @@ class Task(BaseNode):
 
         #set lead bind address if we have map set - only set it if we are local (first participant None) or explicitly call out the address
         if lead and self.lead_bind_map and self.lead_bind_map.get(lead):
-            self.lead_bind = self.lead_bind_map[lead]
+            self.lead_bind(self.lead_bind_map[lead])
         elif self.lead_bind_map and self.lead_bind_map.get('_default'):
-            self.lead_bind = self.lead_bind_map['_default']
+            self.lead_bind(self.lead_bind_map['_default'])
         
         return lead
     

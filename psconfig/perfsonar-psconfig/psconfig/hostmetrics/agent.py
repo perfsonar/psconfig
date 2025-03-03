@@ -147,7 +147,7 @@ class Agent(BaseAgent):
                 if restart_result.returncode == 0:
                     self.logger.debug(self.logf.format("Service {} restarted".format(agent_conf.restart_service())))
                 else:
-                    self.logger.warn(self.logf.format("Service {} restart attempt failed".format(agent_conf.restart_service())))
+                    self.logger.warning(self.logf.format("Service {} restart attempt failed".format(agent_conf.restart_service())))
         else:
             self.logger.debug(self.logf.format("No changes so file not updated.", {
                 "old_file_checksum": old_file_checksum,

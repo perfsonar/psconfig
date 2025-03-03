@@ -104,7 +104,7 @@ class Agent(BaseAgent):
             self.logger.debug(self.logf.format("No grafana-url specified. Defaulting to {}".format(default)))
             agent_conf.grafana_url(default)
         if not (agent_conf.grafana_token() or (agent_conf.grafana_user() and agent_conf.grafana_password())):
-            self.logger.warn(self.logf.format("No grafana-token or grafana-user/grafana-password specified. Unless your grafana instance does not require authentication, then your attempts to create dashboards may fail ".format(default)))
+            self.logger.warning(self.logf.format("No grafana-token or grafana-user/grafana-password specified. Unless your grafana instance does not require authentication, then your attempts to create dashboards may fail ".format(default)))
         self.grafana_url = agent_conf.grafana_url()
         self.grafana_token = agent_conf.grafana_token()
         self.grafana_user = agent_conf.grafana_user()
@@ -216,7 +216,7 @@ class Agent(BaseAgent):
             tg.start()
             tg.next()
             if tg.expanded_test is None:
-                self.logger.warn(self.logf.format("Task {} does not have a valid test definition. Skipping.".format(task_name)))
+                self.logger.warning(self.logf.format("Task {} does not have a valid test definition. Skipping.".format(task_name)))
                 continue
             expanded_test = Test(data=tg.expanded_test)
             #get archives with template vars filled-in
@@ -249,7 +249,7 @@ class Agent(BaseAgent):
 
             # make sure we have at least one matching display
             if not matching_display_config:
-                self.logger.warn(self.logf.format("No display config for task {}. Skipping.".format(task_name)))
+                self.logger.warning(self.logf.format("No display config for task {}. Skipping.".format(task_name)))
                 continue
             
             ##
@@ -272,11 +272,11 @@ class Agent(BaseAgent):
             # Build the rows and columns from the pSConfig data
             group = psconfig.group(task.group_ref())
             if not group:
-                self.logger.warn(self.logf.format("Invalid group name {}. Check for typos in your pSConfig template file. Skipping task {}.".format(task.group_ref(), task_name)))
+                self.logger.warning(self.logf.format("Invalid group name {}. Check for typos in your pSConfig template file. Skipping task {}.".format(task.group_ref(), task_name)))
                 continue
             #TODO: Support single dimension?
             if group.dimension_count() != 2:
-                self.logger.warn(self.logf.format("Only support groups with 2 dimensions. Skipping task {}.".format(task_name)))
+                self.logger.warning(self.logf.format("Only support groups with 2 dimensions. Skipping task {}.".format(task_name)))
                 continue
 
             ##
@@ -323,14 +323,14 @@ class Agent(BaseAgent):
                     mdc_var_obj["grafana_datasource_name"] = mdc.datasource_name()
                     mdc_var_obj["grafana_datasource"] = self.grafana_datasource_by_name.get(mdc.datasource_name(), None)
                     if not mdc_var_obj["grafana_datasource"]:
-                        self.logger.warn(self.logf.format("'datasource_selector' is not auto and grafana_datasource_name '{}' does not exist on Grafana server. Skipping.".format(mdc.datasource_name())))
+                        self.logger.warning(self.logf.format("'datasource_selector' is not auto and grafana_datasource_name '{}' does not exist on Grafana server. Skipping.".format(mdc.datasource_name())))
                         continue
                 elif mdc.datasource_selector() == 'manual' and self.grafana_datasource:
                     #use the manally defined datasource in the agent config
                     mdc_var_obj["grafana_datasource"] = self.grafana_datasource
                     mdc_var_obj["grafana_datasource_name"] = self.grafana_datasource_name
                 else:
-                    self.logger.warn(self.logf.format("'datasource_selector' is not auto and no grafana_datasource_name is defined for display {}. Skipping.".format(mdc_name)))
+                    self.logger.warning(self.logf.format("'datasource_selector' is not auto and no grafana_datasource_name is defined for display {}. Skipping.".format(mdc_name)))
                     continue
                 
                 #make sure datasource was actually set 
@@ -689,7 +689,7 @@ class Agent(BaseAgent):
         '''
         r, msg = self._gf_http("/api/folders", "list_folders")
         if msg:
-            self.logger.warn(self.logf.format("Unable to list grafana folders: {}".format(msg)))
+            self.logger.warning(self.logf.format("Unable to list grafana folders: {}".format(msg)))
         else:
             for folder in r.json():
                 if name == folder.get("title", None):
@@ -703,7 +703,7 @@ class Agent(BaseAgent):
         '''
         r, msg = self._gf_http("/api/folders", "create_folder", method="post", data={"title": name})
         if msg:
-            self.logger.warn(self.logf.format("Unable to create grafana folder: {}".format(msg)))
+            self.logger.warning(self.logf.format("Unable to create grafana folder: {}".format(msg)))
             return 
         
         return r.json().get("uid", None)
@@ -714,7 +714,7 @@ class Agent(BaseAgent):
         '''
         r, msg = self._gf_http("/api/org/preferences", "set_home_dashboard", method="patch", data={"homeDashboardUID": uid})
         if msg:
-            self.logger.warn(self.logf.format("Unable to set home dashboard: {}".format(msg)))
+            self.logger.warning(self.logf.format("Unable to set home dashboard: {}".format(msg)))
             return
 
         return r.json()

@@ -62,7 +62,7 @@ class BaseConnect(object):
             for psconfig2_key in psconfig2.data.get(field).keys():
                 if psconfig1.data[field].get(psconfig2_key, None):
                     if self.logger:
-                        self.logger.warn("PSConfig merge: Skipping {} field's {} because it already exists".format(field, psconfig2_key)) 
+                        self.logger.warning("PSConfig merge: Skipping {} field's {} because it already exists".format(field, psconfig2_key)) 
                 else:
                     psconfig1.data[field][psconfig2_key] = psconfig2.data[field][psconfig2_key]
 

@@ -366,7 +366,17 @@ class Schema(object):
                         "ttl": { "$ref": "#/pSConfig/Duration" },
                         "_meta": { "$ref": "#/pSConfig/AnyJSON" },
                         "label": { "type": "string" },
-                        "schema": { "$ref": "#/pSConfig/Cardinal" }
+                        "runs": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "succeeded",
+                                "failed"
+                            ]
+                        },
+                        "schema": { "$ref": "#/pSConfig/Cardinal" },
+                        "uri-host": { "$ref": "#/pSConfig/URLHostPort" }
+
                     },
                     "additionalProperties": False,
                     "required": [ "archiver", "data"]

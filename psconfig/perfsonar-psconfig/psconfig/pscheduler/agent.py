@@ -212,7 +212,7 @@ class Agent(BaseAgent):
         ##
         #Log results
         for error in task_manager.errors:
-            self.logger.warn(self.logf.format(error))
+            self.logger.warning(self.logf.format(error))
         
         for deleted_task in task_manager.deleted_tasks:
             self.logger.debug(self.logf.format("Deleted task " + str(deleted_task.uuid) + " on server " + str(deleted_task.url)))

@@ -556,7 +556,7 @@ class TaskManager(object):
         
     def log_warn(self, msg, local_context=None):
         if self.logger:
-            self.logger.warn(self.logf.format(msg, local_context))
+            self.logger.warning(self.logf.format(msg, local_context))
         elif self.debug:
             print(msg)
             print('\n')
