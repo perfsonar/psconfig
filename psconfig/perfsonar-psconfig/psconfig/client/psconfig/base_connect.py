@@ -9,6 +9,33 @@ import json
 from urllib.parse import urlparse
 import logging
 
+
+def json_decomment(json_obj, prefix='#', null=False):
+    """
+    Remove any JSON object emember whose name begins with 'prefix'
+    (default '#') and return the result.  If 'null' is True, replace
+    the prefixed items with a null value instead of deleting them.
+    """
+    if type(json_obj) is dict:
+        result = {}
+        for item in json_obj.keys():
+            if item.startswith(prefix):
+                if null:
+                    result[item] = None
+                else:
+                    next
+            else:
+                result[item] = json_decomment(json_obj[item], prefix=prefix, null=null)
+        return result
+    elif type(json_obj) is list:
+        result = []
+        for item in json_obj:
+            result.append(json_decomment(item, prefix=prefix, null=null))
+        return result
+    else:
+        return json_obj
+
+
 class BaseConnect(object):
 
     def __init__(self, **kwargs):
@@ -133,6 +160,8 @@ class BaseConnect(object):
 
         try:
             json_obj = json.loads(raw_config)
+            # remove comments
+            json_obj = json_decomment(json_obj)
         except Exception as e:
             json_error = e
 
