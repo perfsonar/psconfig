@@ -47,7 +47,8 @@ Description: pSConfig Host Metrics Agent
 
 Package: perfsonar-psconfig-utils
 Architecture: all
-Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig, python3-tqdm
+Depends: python3, ${misc:Depends}, perfsonar-common,
+ python3-perfsonar-psconfig, python3-tqdm
 Description: pSConfig Utilities
  This package is the set of common command-line tools used for pSConfig
 
