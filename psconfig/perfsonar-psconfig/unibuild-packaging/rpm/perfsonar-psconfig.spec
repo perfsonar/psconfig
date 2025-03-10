@@ -126,6 +126,7 @@ for gather metrics about the perfSONAR hosts
 Summary:		pSConfig Utilities
 Requires:       %{_python}-perfsonar-psconfig
 Requires:       %{_python}-tqdm
+Requires:       perfsonar-common
 BuildArch:		noarch
 
 %description utils
