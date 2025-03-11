@@ -23,6 +23,7 @@ parser.add_argument('--agent', '-a', dest='agent', action='store', help='Name of
 parser.add_argument('--transform', dest='transform', action='store', help='JSON transform object or a path to a file starting with @ that alters downloaded json')
 parser.add_argument('--bind-address', '-B', dest='bind_address', action='store', help='Local address to bind to when downloading JSON')
 parser.add_argument('--ssl-ca-file', dest='ssl_ca_file', action='store', help='A typical certificate authority (CA) file found on BSD. Used to verify server SSL certificate when using https.')
+parser.add_argument('--no-headers', dest='no_headers', action='store_true', help='Do not print agent header information')
 args = parser.parse_args()
 
 #Init CLI utility
@@ -64,7 +65,8 @@ for agent in PSCONFIG_CLI_AGENTS:
         agent_found = True
 
     #print heading
-    cli.print_msg("=== {} Agent ===".format(agent['name']))
+    if not args.no_headers:
+        cli.print_msg("=== {} Agent ===".format(agent['name']))
 
     #Load config file using appropriate config_connect class
     config_client = agent['client_class']()
