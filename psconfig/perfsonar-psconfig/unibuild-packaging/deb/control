@@ -22,7 +22,7 @@ Description: pSConfig library
 Package: perfsonar-psconfig-pscheduler
 Architecture: all
 Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig,
- python3-pyinotify, perfsonar-common, perfsonar-psconfig-utils
+ python3-pyinotify, perfsonar-psconfig-utils
 Description: pSConfig pScheduler Agent
  The pSConfig pScheduler Agent downloads a centralized JSON file
  describing the tests to run, and uses it to generate appropriate 
@@ -31,7 +31,7 @@ Description: pSConfig pScheduler Agent
 Package: perfsonar-psconfig-grafana
 Architecture: all
 Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig,
- python3-pyinotify, python3-jinja2, perfsonar-common, perfsonar-psconfig-utils
+ python3-pyinotify, python3-jinja2, perfsonar-psconfig-utils
 Description: pSConfig Grafana Agent
  The pSConfig Grafana Agent downloads a centralized JSON file
  describing the tests to run, and uses it to generate Grafana dashboards.
@@ -39,7 +39,7 @@ Description: pSConfig Grafana Agent
 Package: perfsonar-psconfig-hostmetrics
 Architecture: all
 Depends: python3, ${misc:Depends}, python3-perfsonar-psconfig,
- python3-pyinotify, python3-jinja2, perfsonar-common, perfsonar-psconfig-utils
+ python3-pyinotify, python3-jinja2, perfsonar-psconfig-utils
 Description: pSConfig Host Metrics Agent
  The pSConfig Host Metrucs Agent downloads a centralized JSON file
  describing the tests to run, and uses it to generate a configuration
@@ -54,7 +54,7 @@ Description: pSConfig Utilities
 
 Package: perfsonar-psconfig-publisher
 Architecture: all
-Depends: ${misc:Depends}, python3, perfsonar-common,
+Depends: ${misc:Depends}, python3,
  perfsonar-psconfig-utils (= ${binary:Version}), openssl, apache2, apache2-ssl-dev
 Description: pSConfig pScheduler Agent
  Downloads a centralized JSON file describing the tests to run,

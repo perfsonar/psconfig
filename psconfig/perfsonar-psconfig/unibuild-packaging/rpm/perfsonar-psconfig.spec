@@ -74,7 +74,6 @@ The perfSONAR pSConfig python libraries
 Summary:		pSConfig pScheduler Agent
 Requires:       %{_python}-perfsonar-psconfig
 Requires:       %{_python}-inotify
-Requires:       perfsonar-common
 Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
 Requires:       selinux-policy-%{selinuxtype}
@@ -91,7 +90,6 @@ Summary:		pSConfig pScheduler Agent
 Requires:       %{_python}-perfsonar-psconfig
 Requires:       %{_python}-inotify
 Requires:       %{_python}-jinja2
-Requires:       perfsonar-common
 Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
 Requires:       selinux-policy-%{selinuxtype}
@@ -106,7 +104,6 @@ describing the tests to run, and uses it to generate Grafana dashboards.
 %package hostmetrics
 Summary:		pSConfig Host Metrics Agent
 Requires:       %{_python}-inotify
-Requires:       perfsonar-common
 Requires:       %{_python}-jinja2
 Requires:       perfsonar-psconfig-utils = %{version}-%{release}
 %{?systemd_requires: %systemd_requires}
