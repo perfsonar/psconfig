@@ -15,7 +15,8 @@ Architecture: all
 Depends: python3, ${misc:Depends},
  python3-requests, python3-jsonschema (>= 3.0.1~0), python3-tqdm,
  python3-isodate (>= 0.5.0), python3-dnspython, python3-pyjq,
- python3-netifaces, python3-dateutil, python3-file-read-backwards
+ python3-netifaces, python3-dateutil, python3-file-read-backwards,
+ python3-pscheduler
 Description: pSConfig library
  Utility functions for pSConfig
 
