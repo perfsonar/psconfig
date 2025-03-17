@@ -8,6 +8,8 @@ import os
 import json
 from urllib.parse import urlparse
 import logging
+from pscheduler.psjson import json_decomment
+
 
 class BaseConnect(object):
 
@@ -133,6 +135,8 @@ class BaseConnect(object):
 
         try:
             json_obj = json.loads(raw_config)
+            # remove comments
+            json_obj = json_decomment(json_obj)
         except Exception as e:
             json_error = e
 

@@ -63,6 +63,7 @@ Requires:       %{_python}-isodate
 Requires:       %{_python}-dns
 Requires:       %{_python}-tqdm
 Requires:       %{_python}-file-read-backwards
+Requires:       %{_python}-pscheduler
 BuildRequires:  %{_python}
 BuildRequires:  %{_python}-setuptools
 BuildArch:		noarch
