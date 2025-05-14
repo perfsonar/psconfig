@@ -232,7 +232,7 @@ class Agent(BaseAgent):
             matching_display_config = {}
             displays_by_prio = {}
             # First try the name matches. Add unless is had prio
-            for disp_name, disp_config in display_by_task_name.get(task_name, {}):
+            for disp_name, disp_config in display_by_task_name.get(task_name, {}).items():
                 self._eval_display(disp_name, disp_config, matching_display_config, displays_by_prio)
 
             #now try the test type matches
@@ -246,6 +246,11 @@ class Agent(BaseAgent):
                     self.logger.debug(self.logf.format("JQ from display config {} does not match task {}. Skipping.".format(disp_name, task_name)))
                     continue
                 self._eval_display(disp_name, disp_config, matching_display_config, displays_by_prio)
+
+            #now add any display configs from displays_by_prio
+            for disp_group_obj in displays_by_prio.values():
+                for disp_name, disp_config in disp_group_obj.get("config", {}).items():
+                    matching_display_config[disp_name] = disp_config
 
             # make sure we have at least one matching display
             if not matching_display_config:
