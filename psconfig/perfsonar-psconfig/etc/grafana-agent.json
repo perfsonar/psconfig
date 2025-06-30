@@ -104,7 +104,7 @@
             },
             "row_field": "test.spec.source.keyword",
             "col_field": "test.spec.dest.keyword",
-            "value_field": "Std Dev",
+            "value_field": "Extended Stats",
             "value_text": "Hop Count Standard Deviation",
             "unit": "none",
             "matrix_url_template": "/usr/lib/perfsonar/psconfig/templates/endpoints.json.j2",
