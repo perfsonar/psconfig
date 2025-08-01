@@ -1,14 +1,15 @@
 name: psconfig-workflow
 
 on:
+
   workflow_dispatch: 
-    inputs: 
+    inputs:
       BUILD_VARS_JSON:
         description: 'Build var json file'
-        required: true      
+        required: true
 
 jobs:
-       
+  
   prepare-build:
     uses: perfsonar/project/.github/workflows/prepare-build.yml@master
     with:
@@ -37,3 +38,4 @@ jobs:
       BUILD_TYPE: ${{ needs.prepare-build.outputs.BUILD_TYPE }}
       BUILD_BRANCH: ${{ needs.prepare-build.outputs.BUILD_BRANCH }}
       BUILD_VARS_JSON: ${{ needs.prepare-build.outputs.BUILD_VARS_JSON }}
+ 
