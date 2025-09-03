@@ -721,7 +721,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -830,7 +830,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -939,7 +939,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -1131,7 +1131,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -1240,7 +1240,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -1349,7 +1349,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -1516,7 +1516,7 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -1685,7 +1685,7 @@
               "type": "max"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -1877,7 +1877,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -1986,7 +1986,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -2104,7 +2104,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$source OR reference.display-set-source.keyword:$source_ref) AND (test.spec.dest.keyword:$dest OR reference.display-set-dest.keyword:$dest_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
@@ -2296,7 +2296,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "pscheduler.start_time"
@@ -2405,7 +2405,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "B",
           "timeField": "pscheduler.start_time"
@@ -2524,7 +2524,7 @@
               "type": "bucket_script"
             }
           ],
-          "query": "test.type.keyword:latencybg AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
+          "query": "(test.type.keyword:latencybg OR test.type.keyword:latency) AND (test.spec.source.keyword:$dest OR reference.display-set-source.keyword:$dest_ref) AND (test.spec.dest.keyword:$source OR reference.display-set-dest.keyword:$source_ref)",
           "queryType": "lucene",
           "refId": "C",
           "timeField": "pscheduler.start_time"
