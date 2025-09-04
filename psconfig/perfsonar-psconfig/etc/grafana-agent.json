@@ -6,7 +6,7 @@
     "displays": {
         "packet_loss": {
             "task_selector":{
-                "test_types": ["latencybg"]
+                "test_types": ["latencybg", "latency"]
             },
             "datasource_selector": "auto",
             "stat_field": "result.packets.loss",
