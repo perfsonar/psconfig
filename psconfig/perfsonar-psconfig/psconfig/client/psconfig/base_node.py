@@ -691,8 +691,8 @@ class BaseNode(object):
     def _validate_host(self, val=None):
         if val:
             # remove leading and trailing brackets for ipv6
-            val = re.sub('^\[','', val)
-            val = re.sub('\]$','', val)
+            val = re.sub(r'^\[','', val)
+            val = re.sub(r'\]$','', val)
 
             try:
                 if type(ip_address(val)) is IPv6Address or type(ip_address(val)) is IPv4Address:
