@@ -111,7 +111,18 @@ def build_err_msg(http_response):
 def extract_url_uuid(url):
     url = url.strip()
     url = url.strip('"')
-    pattern = re.compile('([0-9a-zA-Z\-]+)$')
+    # pattern = re.compile('([0-9a-zA-Z\-]+)$')
+    # Raw string for a standard UUID v4 pattern:
+    # 8-4-4-4-12 hex digits, with hyphens
+    pattern = re.compile(
+        r'('
+        r'[0-9a-fA-F]{8}-'
+        r'[0-9a-fA-F]{4}-'
+        r'[0-9a-fA-F]{4}-'
+        r'[0-9a-fA-F]{4}-'
+        r'[0-9a-fA-F]{12}'
+        r')$'
+    )
     uuids  = pattern.findall(url)
     if len(uuids) > 0:
         task_uuid = uuids[0]
