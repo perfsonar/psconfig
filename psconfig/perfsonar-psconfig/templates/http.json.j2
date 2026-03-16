@@ -150,8 +150,19 @@
       },
       "targets": [
         {
-          "alias": "",
+          "alias": "Max - IPv{{term test.spec.ip-version}}",
           "bucketAggs": [
+			{
+              "field": "test.spec.ip-version",
+              "id": "3",
+              "settings": {
+                "min_doc_count": "1",
+                "order": "desc",
+                "orderBy": "_term",
+                "size": "0"
+              },
+              "type": "terms"
+            },
             {
               "field": "pscheduler.start_time",
               "id": "2",
