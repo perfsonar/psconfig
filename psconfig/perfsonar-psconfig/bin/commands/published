@@ -11,7 +11,14 @@ parser = argparse.ArgumentParser(
                     description='Lists published JSON documents'
                     )
 parser.add_argument('--directory', '-d', dest='dir', action='store', default='/usr/lib/perfsonar/web-psconfig', help='Output directory where file will be published')
+subparsers = parser.add_subparsers(title='subcommands', dest='subcommand')
+delete_parser = subparsers.add_parser('delete', help='Delete published JSON documents')
+delete_parser.add_argument('files', nargs='*',  action='store', help='Specific files to delete')
+delete_parser.add_argument('--all', action='store_true', help='Delete all published files')
 args = parser.parse_args()
+
+if args.subcommand == 'delete' and (not args.all and not args.files):
+    delete_parser.error("delete requires at least one of --all or a list of files")
 
 #Init CLI utility
 cli = CLIUtil()
@@ -30,10 +37,16 @@ for dir_entry in os.scandir(args.dir):
     if not dir_entry.is_file() or not dir_entry.name.endswith(".json"):
         continue
     empty = False
-    print("\n[{}]".format(dir_entry.name))
-    print("    Local File: {}/{}".format(args.dir.rstrip('/'), dir_entry.name))
-    print("    Web URL: {}/{}".format(base_url, dir_entry.name))
-if empty:
-    cli.print_msg("No files currently published")
-else:
-    cli.print_msg("")
+    if args.subcommand is None:
+        print("\n[{}]".format(dir_entry.name))
+        print("    Local File: {}/{}".format(args.dir.rstrip('/'), dir_entry.name))
+        print("    Web URL: {}/{}".format(base_url, dir_entry.name))
+    elif args.subcommand == 'delete':
+        if args.all or dir_entry.name in args.files:
+            print("Deleting {}".format(dir_entry.path))
+            os.remove(dir_entry.path)
+if args.subcommand is None:
+    if empty:
+        cli.print_msg("No files currently published")
+    else:
+        cli.print_msg("")
