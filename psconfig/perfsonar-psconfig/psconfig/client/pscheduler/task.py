@@ -354,7 +354,7 @@ class Task(BaseNode):
     def add_lead_bind_map(self, target=None, bind=None):
         if target is None or bind is None:
             return
-        self.lead_bind_map['target'] = bind
+        self.lead_bind_map[target] = bind
     
     def add_lead_address_map(self, target=None, addr=None):
         if target is None or addr is None:
