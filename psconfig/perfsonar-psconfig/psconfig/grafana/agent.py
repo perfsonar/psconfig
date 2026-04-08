@@ -317,7 +317,9 @@ class Agent(BaseAgent):
                 # Init variables
                 #build a display config specific version of template variables
                 mdc_var_obj = var_obj.copy()
-
+                raw_json = psconfig.data  
+                psgui_url = raw_json.get("_meta", {}).get("psgui", {}).get("url")
+                mdc_var_obj["psgui_url"] = psgui_url
                 ##
                 # Determine the Grafana datasource
                 if mdc.datasource_selector() == 'auto':
@@ -363,6 +365,7 @@ class Agent(BaseAgent):
                    
                 # Finally, organize the var_objs display task group
                 # add to template variables organized by display task group
+
                 for dtg in display_task_groups:
                     if dtg not in jinja_vars.keys():
                         jinja_vars[dtg] = {
@@ -375,6 +378,7 @@ class Agent(BaseAgent):
                     jinja_vars[dtg]['tasks'].append(mdc_var_obj)
                     if rev_var_obj:
                         jinja_vars[dtg]['tasks'].append(rev_var_obj)
+
 
         ##
         # Apply jinja template
@@ -770,7 +774,8 @@ class Agent(BaseAgent):
             "grafana_datasource": mdc_var_obj["grafana_datasource"],
             "grafana_uuid": str(uuid.uuid5(self.UUID_NAMESPACE_PS, matrix_url_dash_key)),
             "grafana_folder_uid": self.folder_uid,
-            "dashboard_tag": self.grafana_dashboard_tag
+            "dashboard_tag": self.grafana_dashboard_tag,
+            "psgui_url": mdc_var_obj.get("psgui_url")
         }
         rendered_content = j2_template.render(ds_jv_obj)
         if self.managed_dashboards_by_uid.get(ds_jv_obj["grafana_uuid"]):
