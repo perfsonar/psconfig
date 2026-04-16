@@ -427,7 +427,19 @@ class TestTaskDeduplicator(unittest.TestCase):
             dedup.add(MockTaskGenerator())
         self.assertEqual(dedup.total_seen, 5)
         self.assertEqual(dedup.duplicate_count, 4)
+        self.assertEqual(dedup.unique_count, 1)
         self.assertEqual(len(list(dedup.unique_tasks())), 1)
+
+    def test_unique_count_mixed(self):
+        dedup = TaskDeduplicator()
+        # 2 copies of task A, 3 copies of task B -> 2 unique
+        for _ in range(2):
+            dedup.add(MockTaskGenerator(test_type='throughput'))
+        for _ in range(3):
+            dedup.add(MockTaskGenerator(test_type='latency'))
+        self.assertEqual(dedup.total_seen, 5)
+        self.assertEqual(dedup.duplicate_count, 3)
+        self.assertEqual(dedup.unique_count, 2)
 
 
 # ---------------------------------------------------------------------------

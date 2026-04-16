@@ -214,9 +214,10 @@ class Agent(BaseAgent):
         #log dedup stats if any duplicates were removed
         if self.task_deduplicator.duplicate_count > 0:
             self.logger.info(self.logf.format(
-                "Deduplicated {} duplicate task(s) out of {} total expanded task(s)".format(
+                "Deduplicated {} duplicate task(s) out of {} total expanded task(s), {} unique task(s) remaining".format(
                     self.task_deduplicator.duplicate_count,
-                    self.task_deduplicator.total_seen
+                    self.task_deduplicator.total_seen,
+                    self.task_deduplicator.unique_count
                 )
             ))
 

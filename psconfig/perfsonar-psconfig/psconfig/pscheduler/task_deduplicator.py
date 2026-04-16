@@ -102,6 +102,10 @@ class TaskDeduplicator:
     def duplicate_count(self):
         return self._duplicate_count
 
+    @property
+    def unique_count(self):
+        return len(self._key_order)
+
     def add(self, tg):
         '''
         Accept a TaskGenerator after a successful next() call.
