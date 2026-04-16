@@ -320,20 +320,18 @@ class TestTaskDeduplicator(unittest.TestCase):
         tasks = list(dedup.unique_tasks())
         self.assertNotIn('_meta', tasks[0].data)
 
-    def test_archive_schema_collected_as_array(self):
-        arc1 = _make_archive(schema=1)
-        arc2 = _make_archive(schema=2)
+    def test_archive_schema_minimum_kept(self):
+        arc1 = _make_archive(schema=2)
+        arc2 = _make_archive(schema=5)
         dedup = TaskDeduplicator()
         dedup.add(MockTaskGenerator(archives=[arc1]))
         dedup.add(MockTaskGenerator(archives=[arc2]))
         tasks = list(dedup.unique_tasks())
         archives = tasks[0].data.get('archives', [])
         self.assertEqual(len(archives), 1)
-        self.assertIsInstance(archives[0].get('schema'), list)
-        self.assertIn(1, archives[0]['schema'])
-        self.assertIn(2, archives[0]['schema'])
+        self.assertEqual(archives[0].get('schema'), 2)
 
-    def test_archive_schema_single_not_wrapped(self):
+    def test_archive_schema_single_kept_as_scalar(self):
         arc = _make_archive(schema=3)
         dedup = TaskDeduplicator()
         dedup.add(MockTaskGenerator(archives=[arc]))

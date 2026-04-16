@@ -249,13 +249,13 @@ class TaskDeduplicator:
                    tools, pscheduler_url, bind_map, addresses,
                    priority, reference, subtask_refs, task_meta):
         '''Create a new storage entry for a first-seen unique task.'''
-        # Build per-archive schema tracker: identity_key -> [schema values]
+        # Build per-archive schema tracker: identity_key -> min schema value
         archive_schemas = {}
         for arc in pre_archives:
             arc_key = _archive_identity_key(arc)
             schema_val = arc.get('schema')
             if schema_val is not None:
-                archive_schemas.setdefault(arc_key, []).append(schema_val)
+                archive_schemas[arc_key] = schema_val
 
         return {
             # Data needed to build the final pScheduler task
@@ -272,7 +272,7 @@ class TaskDeduplicator:
             'merged_reference': reference,   # dict or None
             'subtask_refs': set(subtask_refs),
             'task_metas': [task_meta] if task_meta is not None else [],
-            'archive_schemas': archive_schemas,  # identity_key -> [schema, ...]
+            'archive_schemas': archive_schemas,  # identity_key -> min schema value
         }
 
     def _merge(self, entry, priority, reference, subtask_refs, task_meta, archives):
@@ -292,14 +292,15 @@ class TaskDeduplicator:
         if task_meta is not None:
             entry['task_metas'].append(task_meta)
 
-        # Archive schemas: collect per-archive
+        # Archive schemas: keep minimum per-archive
         for arc in archives:
             schema_val = arc.get('schema')
             if schema_val is not None:
                 arc_key = _archive_identity_key(arc)
-                entry['archive_schemas'].setdefault(arc_key, [])
-                if schema_val not in entry['archive_schemas'][arc_key]:
-                    entry['archive_schemas'][arc_key].append(schema_val)
+                if arc_key not in entry['archive_schemas']:
+                    entry['archive_schemas'][arc_key] = schema_val
+                else:
+                    entry['archive_schemas'][arc_key] = min(entry['archive_schemas'][arc_key], schema_val)
 
     def _build_pscheduler_task(self, entry):
         '''
@@ -312,17 +313,14 @@ class TaskDeduplicator:
         test = copy.deepcopy(entry['pre_test'])
         task_data['test'] = _pscheduler_prep(test)
 
-        # Archives: apply merged schema arrays, then strip _meta via prep
+        # Archives: apply minimum schema value, then strip _meta via prep
         if entry['pre_archives']:
             archives = copy.deepcopy(entry['pre_archives'])
             for arc in archives:
                 arc_key = _archive_identity_key(arc)
-                schemas = entry['archive_schemas'].get(arc_key)
-                if schemas is not None:
-                    if len(schemas) == 1:
-                        arc['schema'] = schemas[0]
-                    else:
-                        arc['schema'] = schemas
+                schema = entry['archive_schemas'].get(arc_key)
+                if schema is not None:
+                    arc['schema'] = schema
                 _pscheduler_prep(arc)
             task_data['archives'] = archives
 
