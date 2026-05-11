@@ -183,6 +183,11 @@ mkdir -p %{config_base}/grafana.d/
 chown perfsonar:perfsonar %{config_base}/grafana.d/
 mkdir -p %{psconfig_datadir}/grafana_template_cache
 chown perfsonar:perfsonar %{psconfig_datadir}/grafana_template_cache
+# Ensure correct permissions on config file for both new installs and upgrades
+if [ -f %{config_base}/grafana-agent.json ]; then
+    chmod 0600 %{config_base}/grafana-agent.json
+    chown perfsonar:perfsonar %{config_base}/grafana-agent.json
+fi
 %systemd_post psconfig-grafana-agent.service
 if [ "$1" = "1" ]; then
     systemctl enable --now psconfig-grafana-agent.service
@@ -271,7 +276,7 @@ fi
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755, perfsonar, perfsonar) %{psconfig_bin_base}/psconfig_grafana_agent 
-%config(noreplace) %{config_base}/grafana-agent.json
+%attr(0600,perfsonar,perfsonar) %config(noreplace) %{config_base}/grafana-agent.json
 %config(noreplace) %{config_base}/grafana-agent-logger.conf
 %{template_base}/grafana.json.j2
 %{template_base}/endpoints.json.j2
