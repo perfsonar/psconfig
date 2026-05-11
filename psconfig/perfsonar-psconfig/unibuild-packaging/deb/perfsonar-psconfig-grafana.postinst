@@ -12,6 +12,11 @@ case "$1" in
         chown perfsonar:perfsonar /etc/perfsonar/psconfig/grafana.d/
         mkdir -p /var/lib/perfsonar/psconfig/grafana_template_cache
         chown perfsonar:perfsonar /var/lib/perfsonar/psconfig/grafana_template_cache
+        # Ensure correct permissions on config file for both new installs and upgrades
+        if [ -f /etc/perfsonar/psconfig/grafana-agent.json ]; then
+            chmod 0600 /etc/perfsonar/psconfig/grafana-agent.json
+            chown perfsonar:perfsonar /etc/perfsonar/psconfig/grafana-agent.json
+        fi
         # check if installation or update, where version is a parameter
         if [ -z "$2" ]; then
 
