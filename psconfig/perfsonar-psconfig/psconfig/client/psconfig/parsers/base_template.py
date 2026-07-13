@@ -31,7 +31,7 @@ class BaseTemplate():
         #find the variables used
         template_var_map = {}
 
-        for template_var in re.findall('{%\s+(.+?)\s+%\}', obj_str):
+        for template_var in re.findall(r'{%\s+(.+?)\s+%\}', obj_str):
             template_var = template_var.strip()
             if template_var_map.get(template_var):
                 continue
@@ -99,7 +99,7 @@ class BaseTemplate():
             IPv6_re = "{}:(".format(G)+IPv6_re+"|{})".format(_)
 
         IPv6_re = ":(:" + G + "){0,5}((:" + G + "){1,2}|:" + IPv4 + ")|" + IPv6_re
-        IPv6_re = re.sub('\(', '(?:', IPv6_re)
+        IPv6_re = re.sub(r'\(', '(?:', IPv6_re)
         json_str = re.sub('(https?)://'+'('+IPv6_re+')', r'\g<1>://[\g<2>]', json_str)
 
         return json_str

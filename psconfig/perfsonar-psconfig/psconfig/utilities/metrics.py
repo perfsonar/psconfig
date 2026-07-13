@@ -138,7 +138,7 @@ class PSConfigMetricCalculator:
                         stats.end = run_end_match.group(1)
                         stats.pid = run_end_match.group(2)
                         stats.guid = run_end_match.group(3)
-                        run_start_regex = re.compile(f'^(.+) INFO pid={stats.pid} prog=.+? line=.+? guid={stats.guid} msg=Running agent\.\.\.$')
+                        run_start_regex = re.compile(f'^(.+) INFO pid={stats.pid} prog=.+? line=.+? guid={stats.guid} msg=Running agent\\.\\.\\.$')
 
         #Check if we found a guid, return if not
         if stats.guid is None:
