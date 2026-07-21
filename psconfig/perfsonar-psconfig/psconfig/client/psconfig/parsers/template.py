@@ -14,10 +14,10 @@ class Template(BaseTemplate):
         self.flip = kwargs.get('flip', False)
 
     def _expand_var(self, template_var):
-        addr_match = re.match('^address\[(\d+)\]$', template_var)
-        pscheduler_address_match = re.match('^pscheduler_address\[(\d+)\]$', template_var)
-        lead_bind_address_match = re.match('^lead_bind_address\[(\d+)\]$', template_var)
-        jq_match = re.match('^jq (.+)$', template_var)
+        addr_match = re.match(r'^address\[(\d+)\]$', template_var)
+        pscheduler_address_match = re.match(r'^pscheduler_address\[(\d+)\]$', template_var)
+        lead_bind_address_match = re.match(r'^lead_bind_address\[(\d+)\]$', template_var)
+        jq_match = re.match(r'^jq (.+)$', template_var)
 
         if addr_match:
             val = self._parse_group_address(int(addr_match.group(1)))
@@ -111,4 +111,3 @@ class Template(BaseTemplate):
         
         #otherwise use localhost
         return 'localhost'
-    
