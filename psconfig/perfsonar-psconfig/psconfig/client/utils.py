@@ -111,7 +111,7 @@ def build_err_msg(http_response):
 def extract_url_uuid(url):
     url = url.strip()
     url = url.strip('"')
-    # pattern = re.compile('([0-9a-zA-Z\-]+)$')
+    # pattern = re.compile(r'([0-9a-zA-Z\-]+)$')
     # Raw string for a standard UUID v4 pattern:
     # 8-4-4-4-12 hex digits, with hyphens
     pattern = re.compile(
