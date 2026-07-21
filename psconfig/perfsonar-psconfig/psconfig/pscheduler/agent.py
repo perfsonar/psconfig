@@ -4,6 +4,7 @@
 from ..client.pscheduler.task_manager import TaskManager
 from ..client.psconfig.parsers.task_generator import TaskGenerator
 from .config_connect import ConfigConnect
+from .task_deduplicator import TaskDeduplicator
 from ..utilities.iso8601 import duration_to_seconds
 from ..base_agent import BaseAgent
 import time
@@ -145,6 +146,9 @@ class Agent(BaseAgent):
         self.pscheduler_fails = 0
         self.task_manager = task_manager
 
+        # Initialize deduplicator -- accumulates tasks across all psconfig sources
+        self.task_deduplicator = TaskDeduplicator(logger=self.logger, logf=self.logf)
+
         return True
     
     def _run_handle_psconfig(self, psconfig, agent_conf, remote=None):
@@ -186,17 +190,12 @@ class Agent(BaseAgent):
                 if tg.error:
                     self.logger.error(tg.error)
                     continue
-                #build pscheduler
-                psc_task = tg.pscheduler_task()
 
-                if not psc_task:
-                    self.logger.error(self.logf.format("Error converting task to pscheduler: " + str(tg.error)))
+                #accumulate into deduplicator (pscheduler_task() is deferred to _run_end)
+                if not self.task_deduplicator.add(tg):
+                    self.logger.error(self.logf.format("Error adding task to deduplicator: " + str(tg.error)))
                     continue
 
-                self.task_manager.add_task(task=psc_task)
-                #log task to task log. Do here because even if was not added, want record that
-                # it is a task that this host manages
-                self.task_logger.info(self.logf.format_task(psc_task))
             tg.stop()
             
         
@@ -204,6 +203,23 @@ class Agent(BaseAgent):
     
     def _run_end(self, agent_conf):
         task_manager = self.task_manager
+
+        ##
+        #flush deduplicated tasks to task_manager and log each
+        for psc_task in self.task_deduplicator.unique_tasks():
+            task_manager.add_task(task=psc_task)
+            #log task to task log
+            self.task_logger.info(self.logf.format_task(psc_task))
+
+        #log dedup stats if any duplicates were removed
+        if self.task_deduplicator.duplicate_count > 0:
+            self.logger.info(self.logf.format(
+                "Deduplicated {} duplicate task(s) out of {} total expanded task(s), {} unique task(s) remaining".format(
+                    self.task_deduplicator.duplicate_count,
+                    self.task_deduplicator.total_seen,
+                    self.task_deduplicator.unique_count
+                )
+            ))
 
         ##
         #commit tasks

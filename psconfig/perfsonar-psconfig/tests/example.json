@@ -1,0 +1,121 @@
+{
+    "addresses": {
+        "circle1": {
+            "address": "circle1.perfsonar.net",
+            "_meta": {
+                "shape": "circle",
+                "color": "blue"
+            }
+        },
+        "circle2": {
+            "address": "circle2.perfsonar.net",
+            "_meta": {
+                "shape": "circle",
+                "color": "red"
+            }
+        },
+        "circle3": {
+            "address": "circle3.perfsonar.net",
+            "_meta": {
+                "shape": "circle",
+                "color": "green"
+            }
+        }
+    },
+    "groups": {
+        "colors_mesh": {
+            "type": "mesh",
+            "addresses": [
+                {
+                    "name": "circle1"
+                },
+                {
+                    "name": "circle2"
+                },
+                {
+                    "name": "circle3"
+                }
+            ]
+        },
+        "more_colors_mesh": {
+            "type": "mesh",
+            "addresses": [
+                {
+                    "name": "circle1"
+                },
+                {
+                    "name": "circle2"
+                },
+                {
+                    "name": "circle3"
+                }
+            ]
+        }
+    },
+    "tests": {
+        "latency_test": {
+            "type": "latencybg",
+            "spec": {
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
+                "packet-interval": 0.1,
+                "packet-count": 600
+            }
+        },
+        "throughput_test": {
+            "type": "throughput",
+            "spec": {
+                "source": "{% address[0] %}",
+                "dest": "{% address[1] %}",
+                "duration": "PT30S"
+            }
+        }
+    },
+    "archives": {
+        "central_archive": {
+            "archiver": "http",
+            "data": {
+                "schema": 3,
+                "_url": "https://example.archive/logstash",
+                "verify-ssl": false,
+                "op": "put",
+                "_headers": {
+                    "x-ps-observer": "{% scheduled_by_address %}",
+                    "content-type": "application/json"
+                }
+            }
+        }
+    },
+    "schedules": {
+        "every_4_hours": {
+            "repeat": "PT4H",
+            "slip": "PT4H",
+            "sliprand": true
+        }
+    },
+    "tasks": {
+        "latency_task": {
+            "group": "latency_group",
+            "test": "latency_test",
+            "archives": [
+                "central_archive"
+            ]
+        },
+        "throughput_task": {
+            "group": "colors_mesh",
+            "test": "throughput_test",
+            "archives": [
+                "central_archive"
+            ],
+            "schedule": "every_4_hours"
+        },
+        "throughput_task2": {
+            "group": "more_colors_mesh",
+            "test": "throughput_test",
+            "archives": [
+                "central_archive"
+            ],
+            "schedule": "every_4_hours"
+        }
+    }
+}
