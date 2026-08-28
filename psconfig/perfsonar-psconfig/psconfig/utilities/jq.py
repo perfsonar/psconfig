@@ -2,13 +2,13 @@
 Utilities for running JQ.
 '''
 
-import pyjq
+# This dodges a name collision
+import jq as _jq
 
-def jq(jq, json_obj, formatting_params=None, timeout=None):
+def jq(script, input_data):
+    '''
+    Run a jq script with input and return the first result
+    '''
 
-    #initialize formatting params
-    try:
-        value = pyjq.one(jq, json_obj)
-        return value
-    except Exception as e:
-        raise Exception('jq error: {}'.format(e))
+    # On failure, this raises ValueError('jq: ...')
+    return _jq.compile(script).input_value(input_data).first()
