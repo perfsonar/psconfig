@@ -57,7 +57,7 @@ Summary:		perfSONAR pSConfig Python Libraries
 Requires:       %{_python}
 Requires:       %{_python}-requests
 Requires:       %{_python}-jsonschema >= 3.0
-Requires:       %{_python}-pyjq >= 2.2.0
+Requires:       %{_python}-jq
 Requires:       %{_python}-netifaces
 Requires:       %{_python}-isodate
 Requires:       %{_python}-dns

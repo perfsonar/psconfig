@@ -30,7 +30,7 @@ setup(
     ],
     install_requires=['requests',
                       'jsonschema',
-                      'pyjq',
+                      'jq',
                       'isodate'
                       'python-dateutil==2.8.2',
                       'pyinotify',
