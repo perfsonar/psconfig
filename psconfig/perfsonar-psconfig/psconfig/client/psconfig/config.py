@@ -283,7 +283,7 @@ class Config(BaseMetaNode):
                 label = address.label(label_name)
                 #check label context refs
                 if label and label.context_refs():
-                    for context_ref in label.context_refs:
+                    for context_ref in label.context_refs():
                         if not self.context(context_ref):
                             ref_errors.append("Address {} has a label {} using a context object {} that does not exist.".format(addr_name, label_name, context_ref))
                         
