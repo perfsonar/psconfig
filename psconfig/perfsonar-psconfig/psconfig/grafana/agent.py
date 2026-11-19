@@ -177,6 +177,29 @@ class Agent(BaseAgent):
 
         return True
     
+    @staticmethod
+    def _dimension_addresses(group, psconfig, dimension):
+        """Return the addresses of one group dimension (rows or cols) as strings.
+
+        For a selector with a label this is the label's address. Returning the
+        AddressLabel object instead made sorted() fail with a TypeError and the
+        agent exit on every run (perfsonar/psconfig#189). A selector whose label
+        does not exist on the address is skipped.
+        """
+        addresses = []
+        for addr_sel in group.dimension(dimension):
+            for nla in addr_sel.select(psconfig):
+                address = nla.get("address", None)
+                if not address:
+                    continue
+                if nla.get("label", None):
+                    label = address.label(nla["label"])
+                    if label and label.address():
+                        addresses.append(label.address())
+                else:
+                    addresses.append(address.address())
+        return addresses
+
     def _run_handle_psconfig(self, psconfig, agent_conf, remote=None):
         #####
         # Build map of displays for faster lookups when we compare to tasks
@@ -303,14 +326,7 @@ class Agent(BaseAgent):
             #parse rows and cols   
             d_keys = ["rows", "cols"]
             for d in range(0,2):
-                addresses = []
-                for addr_sel in group.dimension(d):
-                    for nla in addr_sel.select(psconfig):
-                        if nla.get("label", None) and nla.get("address", None):
-                            addresses.append(nla["address"].label(nla["label"]))
-                        elif nla.get("address", None):
-                            addresses.append(nla["address"].address())
-                var_obj[d_keys[d]] = addresses
+                var_obj[d_keys[d]] = self._dimension_addresses(group, psconfig, d)
 
             for mdc_name, mdc in matching_display_config.items():
                 ##
